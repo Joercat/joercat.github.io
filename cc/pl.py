@@ -1,10 +1,10 @@
-"""
-CatCode: A Programming Language for Cat Lovers
 
-CatCode is a programming language designed for cat enthusiasts. It allows users to write code that interacts with and controls virtual cats. The language includes commands for moving cats, feeding them, and even making them perform tricks.
+# CatCode: A Programming Language for Cat Lovers
 
-This module provides the core functionality of the CatCode language, including the interpreter and the implementation of the various CatCode commands.
-"""
+# CatCode is a programming language designed for cat enthusiasts. It allows users to write code that interacts with and controls virtual cats. The language includes commands for moving cats, feeding them, and even making them perform tricks.
+
+# This module provides the core functionality of the CatCode language, including the interpreter and the implementation of the various CatCode commands.
+
 
 class CatCodeInterpreter:
     """
