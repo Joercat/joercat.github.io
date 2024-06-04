@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube to WAV Converter</title>
+    <title>Audio Converter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,136 +16,61 @@
             background-color: #f0f0f0;
         }
         .container {
-            background: white;
+            background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"] {
-            width: 300px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .container h1 {
+            margin-bottom: 20px;
         }
-        button {
+        .container input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .container button {
             padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
+            background-color: #007BFF;
+            color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
-        button:disabled {
-            background-color: #ccc;
+        .container button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>YouTube to WAV Converter</h1>
-        <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
-        <button id="convertButton" onclick="convertToWav()">Convert to WAV</button>
-        <p id="statusMessage"></p>
+        <h1>Audio Converter</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="audioFile" accept="audio/*" required>
+            <button type="submit">Convert</button>
+        </form>
     </div>
 
     <script>
-        /**
-         * Function to simulate the conversion process.
-         * In a real-world scenario, this would involve server-side processing.
-         */
-        function convertToWav() {
-            const youtubeUrl = document.getElementById('youtubeUrl').value;
-            const statusMessage = document.getElementById('statusMessage');
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
 
-            if (!youtubeUrl) {
-                statusMessage.textContent = 'Please enter a valid YouTube URL.';
-                return;
-            }
-
-            // Simulate the conversion process
-            statusMessage.textContent = 'Converting... Please wait.';
-
-            // Simulate a delay for the conversion process
-            setTimeout(() => {
-                statusMessage.textContent = 'Conversion complete! Download link: [Simulated Link]';
-            }, 3000);
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube to WAV Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        input[type="text"] {
-            width: 300px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:disabled {
-            background-color: #ccc;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>YouTube to WAV Converter</h1>
-        <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
-        <button id="convertButton" onclick="convertToWav()">Convert to WAV</button>
-        <p id="statusMessage"></p>
-    </div>
-
-    <script>
-        /**
-         * Function to simulate the conversion process.
-         * In a real-world scenario, this would involve server-side processing.
-         */
-        function convertToWav() {
-            const youtubeUrl = document.getElementById('youtubeUrl').value;
-            const statusMessage = document.getElementById('statusMessage');
-
-            if (!youtubeUrl) {
-                statusMessage.textContent = 'Please enter a valid YouTube URL.';
-                return;
-            }
-
-            // Simulate the conversion process
-            statusMessage.textContent = 'Converting... Please wait.';
-
-            // Simulate a delay for the conversion process
-            setTimeout(() => {
-                statusMessage.textContent = 'Conversion complete! Download link: [Simulated Link]';
-            }, 3000);
-        }
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File converted successfully!');
+                } else {
+                    alert('File conversion failed.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while converting the file.');
+            });
+        });
     </script>
 </body>
 </html>
