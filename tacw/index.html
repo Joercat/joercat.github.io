@@ -4,92 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube to WAV Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.10.0/ffmpeg.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
-        #container {
-            max-width: 600px;
-            margin: auto;
-            text-align: center;
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input, button {
+        input[type="text"] {
+            width: 300px;
             padding: 10px;
-            margin: 10px;
-            width: 80%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
         }
     </style>
 </head>
 <body>
-    <div id="container">
+    <div class="container">
         <h1>YouTube to WAV Converter</h1>
         <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
-        <button onclick="convertToWav()">Convert to WAV</button>
-        <div id="status"></div>
+        <button id="convertButton" onclick="convertToWav()">Convert to WAV</button>
+        <p id="statusMessage"></p>
     </div>
 
     <script>
         /**
-         * Function to extract video ID from YouTube URL
-         * @param {string} url - The YouTube URL
-         * @returns {string} - The video ID
+         * Function to simulate the conversion process.
+         * In a real-world scenario, this would involve server-side processing.
          */
-        function extractVideoId(url) {
-            const regex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/;
-            const matches = url.match(regex);
-            return matches ? matches[1] : null;
-        }
+        function convertToWav() {
+            const youtubeUrl = document.getElementById('youtubeUrl').value;
+            const statusMessage = document.getElementById('statusMessage');
 
-        /**
-         * Function to convert YouTube video to WAV
-         */
-        async function convertToWav() {
-            const url = document.getElementById('youtubeUrl').value;
-            const videoId = extractVideoId(url);
-
-            if (!videoId) {
-                document.getElementById('status').innerText = 'Invalid YouTube URL';
+            if (!youtubeUrl) {
+                statusMessage.textContent = 'Please enter a valid YouTube URL.';
                 return;
             }
 
-            document.getElementById('status').innerText = 'Downloading audio...';
+            // Simulate the conversion process
+            statusMessage.textContent = 'Converting... Please wait.';
 
-            try {
-                // Fetch audio stream from YouTube (this is a placeholder, actual implementation may vary)
-                const audioStream = await fetchAudioStream(videoId);
-
-                document.getElementById('status').innerText = 'Converting to WAV...';
-
-                // Convert audio stream to WAV using ffmpeg.js
-                const ffmpeg = new FFMPEG();
-                const wavData = await ffmpeg.convertToWav(audioStream);
-
-                // Create a download link for the WAV file
-                const blob = new Blob([wavData], { type: 'audio/wav' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${videoId}.wav`;
-                a.click();
-
-                document.getElementById('status').innerText = 'Conversion complete!';
-            } catch (error) {
-                document.getElementById('status').innerText = 'Error: ' + error.message;
-            }
-        }
-
-        /**
-         * Placeholder function to fetch audio stream from YouTube
-         * @param {string} videoId - The YouTube video ID
-         * @returns {Promise<Uint8Array>} - The audio stream
-         */
-        async function fetchAudioStream(videoId) {
-            // This is a placeholder function. You would need to implement actual logic to fetch the audio stream.
-            // For example, you could use a server-side service to download the audio and send it to the client.
-            return new Uint8Array();
+            // Simulate a delay for the conversion process
+            setTimeout(() => {
+                statusMessage.textContent = 'Conversion complete! Download link: [Simulated Link]';
+            }, 3000);
         }
     </script>
 </body>
-</html
+</html>
