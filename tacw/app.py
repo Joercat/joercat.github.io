@@ -29,7 +29,7 @@ def convert_audio():
         return "No selected file", 400
 
     format = request.form['format']
-    if format not in ['mp3', 'wav', 'ogg']:
+    if format not in ['mp3']:
         return "Invalid format", 400
 
     # Save the uploaded file
