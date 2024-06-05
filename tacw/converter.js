@@ -18,7 +18,7 @@ document.getElementById('convertForm').addEventListener('submit', function(event
     }
 
     // Simulate conversion process
-    resultDiv.innerHTML = '<p>Converting...</p>';
+    resultDiv.innerHTML = '<p>Converting... please wait</p>';
 
     // Simulate a delay for conversion
     setTimeout(() => {
