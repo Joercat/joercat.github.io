@@ -1,0 +1,42 @@
+{
+  "application": {
+    "name": "YouTube Audio Converter",
+    "version": "1.0.0",
+    "developer": "Your Name or Company",
+    "description": "A tool to convert YouTube videos to audio files."
+  },
+  "settings": {
+    "output_format": "mp3",  // Default output format for audio files
+    "bitrate": "192kbps",   // Default bitrate for the audio conversion
+    "sample_rate": 44100,   // Default sample rate for the audio conversion
+    "channels": 2,          // Number of audio channels (1 for mono, 2 for stereo)
+    "output_directory": "converted_audios",  // Directory where converted files will be saved
+    "temp_directory": "temp_files",          // Directory for temporary files during conversion
+    "max_concurrent_downloads": 3,           // Maximum number of concurrent downloads
+    "retry_attempts": 5                      // Number of retry attempts for failed downloads
+  },
+  "youtube": {
+    "api_key": "YOUR_YOUTUBE_API_KEY",  // API key for accessing YouTube data
+    "download_quality": "best",         // Quality of the video to download (e.g., best, worst)
+    "proxy": null                       // Proxy settings if needed (null if not used)
+  },
+  "logging": {
+    "level": "INFO",                    // Logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    "log_to_file": true,                // Whether to log to a file
+    "log_file_path": "logs/converter.log"  // Path to the log file
+  },
+  "notifications": {
+    "email": {
+      "enabled": false,                 // Enable or disable email notifications
+      "smtp_server": "smtp.example.com",
+      "smtp_port": 587,
+      "username": "your_email@example.com",
+      "password": "your_email_password",
+      "from_address": "your_email@example.com",
+      "to_address": "recipient@example.com"
+    },
+    "desktop": {
+      "enabled": true                   // Enable or disable desktop notifications
+    }
+  }
+}
