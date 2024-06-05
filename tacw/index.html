@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Converter</title>
+    <title>YouTube to WAV Converter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,53 +24,64 @@
         .container h1 {
             margin-bottom: 20px;
         }
-        .container input[type="file"] {
-            margin-bottom: 20px;
+        .container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         .container button {
             padding: 10px 20px;
-            background-color: #007BFF;
-            color: #fff;
             border: none;
             border-radius: 4px;
+            background-color: #28a745;
+            color: #fff;
             cursor: pointer;
         }
-        .container button:hover {
-            background-color: #0056b3;
+        .container button:disabled {
+            background-color: #ccc;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Audio Converter</h1>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="audioFile" accept="audio/*" required>
+        <h1>YouTube to WAV Converter</h1>
+        <form id="convertForm">
+            <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL" required>
             <button type="submit">Convert</button>
         </form>
+        <p id="statusMessage"></p>
     </div>
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        document.getElementById('convertForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const formData = new FormData(this);
+            const youtubeUrl = document.getElementById('youtubeUrl').value;
+            const statusMessage = document.getElementById('statusMessage');
 
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('File converted successfully!');
-                } else {
-                    alert('File conversion failed.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while converting the file.');
-            });
+            // Validate YouTube URL
+            if (!isValidYouTubeUrl(youtubeUrl)) {
+                statusMessage.textContent = 'Please enter a valid YouTube URL.';
+                return;
+            }
+
+            // Display a message to the user
+            statusMessage.textContent = 'Conversion process would start here.';
+
+            // Here you would typically send the URL to a server-side script for processing
+            // Since server-side scripting is not allowed, we will just display a message
         });
+
+        /**
+         * Validate if the provided URL is a valid YouTube URL.
+         * @param {string} url - The YouTube URL to validate.
+         * @returns {boolean} - Returns true if the URL is valid, false otherwise.
+         */
+        function isValidYouTubeUrl(url) {
+            const regex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
+            return regex.test(url);
+        }
     </script>
 </body>
 </html>
