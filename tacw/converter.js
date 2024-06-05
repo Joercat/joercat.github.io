@@ -3,7 +3,7 @@ document.getElementById('convertForm').addEventListener('submit', function(event
     var youtubeUrl = document.getElementById('youtubeUrl').value;
     var resultsDiv = document.getElementById('result');
    
-    fetch('https://http://127.0.0.1:5000/download' + youtubeUrl)
+    fetch('https://127.0.0.1:5000/download' + youtubeUrl)
         .then(response => response.blob())
         .then(blob => {
             var url = window.URL.createObjectURL(blob);
