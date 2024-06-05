@@ -22,7 +22,7 @@ document.getElementById('convertForm').addEventListener('submit', function(event
 
     // Simulate a delay for conversion
     setTimeout(() => {
-        resultDiv.innerHTML = '<p>Conversion complete! <a href="path/to/your/your-sound-file-downloaded-free-on-joercat.github.io/tacw.wav" download>Download WAV</a></p>';
+        resultDiv.innerHTML = '<p>Conversion complete! <a href="response.json" download>Download WAV</a></p>';
     }, 3000);
 });
 
