@@ -1,64 +1,43 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #2e2e2e;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background-color: #282c34;
+    color: white;
+    text-align: center;
     margin: 0;
+    padding: 20px;
 }
 
-#game-container {
-    text-align: center;
-    background-color: #1e1e1e;
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #3a3f47;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.difficulty-button {
-    margin: 5px;
+button {
     padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+    margin: 10px;
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-}
-
-.difficulty-button:disabled {
-    background-color: #444;
-    cursor: not-allowed;
-}
-
-#word-list-container {
-    margin: 20px 0;
-}
-
-.word {
-    display: inline-block;
-    margin: 5px;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #444;
+    background-color: #61dafb;
+    color: #282c34;
     cursor: pointer;
 }
 
-.word:hover {
-    background-color: green;
+button:hover {
+    background-color: #21a1f1;
 }
 
-#guess-bar {
-    margin: 20px 0;
+#word-list span {
+    display: inline-block;
     padding: 10px;
-    background-color: #555;
+    margin: 5px;
+    border: 1px solid #61dafb;
     border-radius: 5px;
+    cursor: pointer;
 }
 
-#message {
-    margin-top: 20px;
-    font-size: 18px;
-    color: red;
+#word-list span:hover {
+    background-color: green;
 }
