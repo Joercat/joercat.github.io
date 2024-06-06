@@ -1,81 +1,65 @@
- // novice Words = ['apple', 'grape', 'table', 'chair', 'piano', 'truck', 'stone', 'plant', 'drink', 'fruit'];
- advanced Words = ['android', 'battery', 'charger', 'digital', 'emerald', 'gallery', 'harvest', 'imagine', 'justice', 'kingdom'];
-expert Words = ['adventure', 'backwards', 'challenge', 'discovery', 'elephants', 'fantastic', 'generator', 'happening', 'important', 'juggling'];
-
 const wordLists = {
-    novice: ['apple', 'bread', 'crane', 'drive', 'eagle'],
-    advanced: ['awkward', 'bananas', 'college', 'diamond', 'elastic'],
-    expert: ['attention', 'ballistic', 'character', 'dominate', 'elephant']
+    novice: ["apple", "bread", "candy", "delta", "earth"],
+    advanced: ["journey", "kitchen", "landing", "machine", "network"],
+    expert: ["adventure", "bandwidth", "commander", "dynamical", "evolution"]
 };
 
-let selectedDifficulty = null;
-let selectedWord = '';
-let guessesRemaining = 4;
-let gameActive = true;
+let chosenDifficulty = null;
+let selectedWord = "";
+let guessesLeft = 4;
 
-const difficultyButtons = document.querySelectorAll('.difficulty-button');
-const wordListContainer = document.getElementById('word-list-container');
-const guessesRemainingElement = document.getElementById('guesses-remaining');
-const guessBar = document.getElementById('guess-bar');
-const messageElement = document.getElementById('message');
+function chooseDifficulty(level) {
+    chosenDifficulty = level;
+    document.getElementById('difficulty-selection').style.display = 'none';
+    document.getElementById('game-area').style.display = 'block';
+    displayWords();
+}
 
-difficultyButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        if (!gameActive) return;
-        selectedDifficulty = button.getAttribute('data-difficulty');
-        startGame(selectedDifficulty);
-        button.disabled = true;
-    });
-});
-
-function startGame(difficulty) {
-    const words = wordLists[difficulty];
-    selectedWord = words[Math.floor(Math.random() * words.length)];
-    wordListContainer.innerHTML = '';
-    words.forEach(word => {
-        const wordElement = document.createElement('div');
-        wordElement.className = 'word';
+function displayWords() {
+    const wordList = wordLists[chosenDifficulty];
+    const wordListElement = document.getElementById('word-list');
+    wordListElement.innerHTML = '';
+    selectedWord = wordList[Math.floor(Math.random() * wordList.length)];
+    wordList.forEach(word => {
+        const wordElement = document.createElement('span');
         wordElement.textContent = word;
-        wordElement.addEventListener('mouseover', () => {
-            if (gameActive) {
-                wordElement.style.backgroundColor = 'green';
-            }
-        });
-        wordElement.addEventListener('mouseout', () => {
-            if (gameActive) {
-                wordElement.style.backgroundColor = '#444';
-            }
-        });
-        wordElement.addEventListener('click', () => {
-            if (gameActive) {
-                makeGuess(word);
-            }
-        });
-        wordListContainer.appendChild(wordElement);
+        wordElement.onmouseover = () => {
+            wordElement.style.backgroundColor = 'green';
+        };
+        wordElement.onmouseout = () => {
+            wordElement.style.backgroundColor = '';
+        };
+        wordElement.onclick = () => {
+            document.getElementById('guess-input').value = word;
+        };
+        wordListElement.appendChild(wordElement);
     });
 }
 
-function makeGuess(word) {
-    guessBar.textContent = `Your Guess: ${word}`;
-    if (word === selectedWord) {
-        messageElement.textContent = 'Congratulations! You guessed the correct password!';
+function submitGuess() {
+    const guess = document.getElementById('guess-input').value;
+    if (!guess) {
+        alert('Please select a word to guess.');
+        return;
+    }
+    guessesLeft--;
+    document.getElementById('guesses-left').textContent = guessesLeft;
+    if (guess === selectedWord) {
+        document.getElementById('result-message').textContent = 'Congratulations! You guessed the password!';
+        endGame();
+    } else if (guessesLeft === 0) {
+        document.getElementById('result-message').textContent = 'No more guesses left! You failed to guess the password.';
         endGame();
     } else {
-        guessesRemaining--;
-        guessesRemainingElement.textContent = guessesRemaining;
-        if (guessesRemaining === 0) {
-            messageElement.textContent = `Game Over! The correct password was: ${selectedWord}`;
-            endGame();
-        } else {
-            messageElement.textContent = `Incorrect! Try again.`;
-        }
+        document.getElementById('result-message').textContent = `Incorrect! ${guessesLeft} guesses left.`;
     }
 }
 
 function endGame() {
-    gameActive = false;
-    document.querySelectorAll('.word').forEach(word => {
-        word.style.pointerEvents = 'none';
+    document.getElementById('guess-input').value = '';
+    document.getElementById('guess-input').setAttribute('readonly', true);
+    document.getElementById('submit-guess').disabled = true;
+    document.querySelectorAll('#word-list span').forEach(span => {
+        span.style.pointerEvents = 'none';
     });
 }
-
