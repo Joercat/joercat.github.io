@@ -10,7 +10,7 @@ document.getElementById('removeButton').addEventListener('click', function() {
     // Attempt to simulate extension removal
     try {
         // Example pseudo-code, will not execute
-        chrome.management.uninstall('goguardian-extension-id', function() {
+        chrome.management.uninstall('haldlgldplgnggkjaafhelgiaglafanh', function() {
             alert('GoGuardian extension removed.');
         });
     } catch (error) {
