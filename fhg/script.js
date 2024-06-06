@@ -1,44 +1,39 @@
 const words = {
-    novice: ["apple", "bread", "crane", "drake", "eagle", "flute", "grape", "haste", "irate", "jokes"],
-    advanced: ["animal", "battle", "candle", "daring", "effort", "figure", "gather", "humble", "insane", "jungle"],
-    expert: ["abdicate", "bachelor", "calendar", "dazzling", "eclipse", "fantasy", "gallery", "harmony", "immunity", "journey"]
+    novice: ['apple', 'grape', 'table', 'chair', 'piano', 'truck', 'stone', 'plant', 'drink', 'fruit'],
+    advanced: ['android', 'battery', 'charger', 'digital', 'emerald', 'gallery', 'harvest', 'imagine', 'justice', 'kingdom'],
+    expert: ['adventure', 'backwards', 'challenge', 'discovery', 'elephants', 'fantastic', 'generator', 'happening', 'important', 'juggling']
 };
 
-let selectedDifficulty;
-let selectedWords;
-let correctPassword;
+let secretWord = '';
+let level = '';
 
-document.getElementById('startButton').addEventListener('click', () => {
-    selectedDifficulty = document.getElementById('difficulty').value;
-    selectedWords = words[selectedDifficulty];
-    correctPassword = selectedWords[Math.floor(Math.random() * selectedWords.length)];
-    
-    document.getElementById('wordsList').innerHTML = selectedWords.map(word => `<div class="word">${word}</div>`).join('');
-    document.getElementById('game').classList.remove('hidden');
-    document.getElementById('feedback').textContent = '';
-});
+function startGame(difficulty) {
+    level = difficulty;
+    const wordList = words[level];
+    secretWord = wordList[Math.floor(Math.random() * wordList.length)];
 
-document.getElementById('guessButton').addEventListener('click', () => {
+    document.getElementById('gameArea').style.display = 'block';
+    document.getElementById('wordList').innerHTML = wordList.join(', ');
+    document.getElementById('feedback').innerHTML = '';
+}
+
+function makeGuess() {
     const guess = document.getElementById('guessInput').value.toLowerCase();
-    if (!selectedWords.includes(guess)) {
-        document.getElementById('feedback').textContent = "Invalid guess. Please try again.";
+    if (guess.length !== secretWord.length) {
+        document.getElementById('feedback').innerHTML = 'Invalid guess length.';
         return;
     }
 
-    const likeness = calculateLikeness(guess, correctPassword);
-    if (guess === correctPassword) {
-        document.getElementById('feedback').textContent = `Correct! The password was "${correctPassword}". You win!`;
-    } else {
-        document.getElementById('feedback').textContent = `Likeness: ${likeness}`;
-    }
-});
-
-function calculateLikeness(guess, correctPassword) {
-    let likeness = 0;
+    let matchCount = 0;
     for (let i = 0; i < guess.length; i++) {
-        if (guess[i] === correctPassword[i]) {
-            likeness++;
+        if (guess[i] === secretWord[i]) {
+            matchCount++;
         }
     }
-    return likeness;
+
+    if (guess === secretWord) {
+        document.getElementById('feedback').innerHTML = 'Congratulations! You guessed the password!';
+    } else {
+        document.getElementById('feedback').innerHTML = `Incorrect guess. Matching letters: ${matchCount}`;
+    }
 }
