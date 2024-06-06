@@ -33,7 +33,7 @@ guessButton.addEventListener('click', () => {
         feedback.textContent = `Congratulations! You guessed the correct password: ${correctPassword}`;
     } else {
         const matchCount = getMatchCount(guess, correctPassword);
-        feedback.textContent = `Incorrect! You have ${matchCount} correct letters.`;
+        feedback.textContent = `Incorrect, Likeness: ${matchCount} .`;
     }
     
     guessInput.value = '';
