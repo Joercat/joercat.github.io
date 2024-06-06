@@ -1,40 +1,44 @@
-const words = ["ARRAY", "BRAIN", "CRANE", "DRAIN", "EAGER", "FABLE"];
-const correctPassword = words[Math.floor(Math.random(), words.length)];
-const guessInput = document.getElementById('guessInput');
-const guessButton = document.getElementById('guessButton');
-const feedback = document.getElementById('feedback');
-const wordsList = document.getElementById('wordsList');
+const words = {
+    novice: ["apple", "bread", "crane", "drake", "eagle", "flute", "grape", "haste", "irate", "jokes"],
+    advanced: ["animal", "battle", "candle", "daring", "effort", "figure", "gather", "humble", "insane", "jungle"],
+    expert: ["abdicate", "bachelor", "calendar", "dazzling", "eclipse", "fantasy", "gallery", "harmony", "immunity", "journey"]
+};
 
-// Display the list of words
-words.forEach(word => {
-    const wordElement = document.createElement('div');
-    wordElement.textContent = word;
-    wordsList.appendChild(wordElement);
+let selectedDifficulty;
+let selectedWords;
+let correctPassword;
+
+document.getElementById('startButton').addEventListener('click', () => {
+    selectedDifficulty = document.getElementById('difficulty').value;
+    selectedWords = words[selectedDifficulty];
+    correctPassword = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+    
+    document.getElementById('wordsList').innerHTML = selectedWords.map(word => `<div class="word">${word}</div>`).join('');
+    document.getElementById('game').classList.remove('hidden');
+    document.getElementById('feedback').textContent = '';
 });
 
-function getMatchCount(guess, correct) {
-    let count = 0;
-    for (let i = 0; i < guess.length; i++) {
-        if (guess[i] === correct[i]) {
-            count++;
-        }
-    }
-    return count;
-}
-
-guessButton.addEventListener('click', () => {
-    const guess = guessInput.value.toUpperCase();
-    if (!words.includes(guess)) {
-        feedback.textContent = "Invalid guess. Please choose a word from the list.";
+document.getElementById('guessButton').addEventListener('click', () => {
+    const guess = document.getElementById('guessInput').value.toLowerCase();
+    if (!selectedWords.includes(guess)) {
+        document.getElementById('feedback').textContent = "Invalid guess. Please try again.";
         return;
     }
-    
+
+    const likeness = calculateLikeness(guess, correctPassword);
     if (guess === correctPassword) {
-        feedback.textContent = `Congratulations! You guessed the correct password: ${correctPassword}`;
+        document.getElementById('feedback').textContent = `Correct! The password was "${correctPassword}". You win!`;
     } else {
-        const matchCount = getMatchCount(guess, correctPassword);
-        feedback.textContent = `Incorrect, Likeness: ${matchCount} .`;
+        document.getElementById('feedback').textContent = `Likeness: ${likeness}`;
     }
-    
-    guessInput.value = '';
 });
+
+function calculateLikeness(guess, correctPassword) {
+    let likeness = 0;
+    for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === correctPassword[i]) {
+            likeness++;
+        }
+    }
+    return likeness;
+}
