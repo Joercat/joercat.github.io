@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fallout 4 hacking terminal</title>
+    <title>Password Guessing Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Password Guessing Game</h1>
-        <div id="wordsList"></div>
-        <input type="text" id="guessInput" placeholder="Enter your guess">
-        <button id="guessButton">Guess</button>
-        <div id="feedback"></div>
+        <label for="difficulty">Select Difficulty:</label>
+        <select id="difficulty">
+            <option value="novice">Novice</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+        </select>
+        <button id="startButton">Start Game</button>
+        <div id="game" class="hidden">
+            <p>Guess the password:</p>
+            <div id="wordsList"></div>
+            <input type="text" id="guessInput" placeholder="Enter your guess">
+            <button id="guessButton">Guess</button>
+            <p id="feedback"></p>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
