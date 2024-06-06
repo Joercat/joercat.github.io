@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remove File Extension</title>
+    <script>
+        async function removeExtension() {
+            const filePath = document.getElementById('file-path').value;
+
+            const response = await fetch('/app.py', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ file_path: filePath }),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('result').innerText = 'New file path: ' + result.new_file_path;
+            } else {
+                document.getElementById('result').innerText = 'Error: ' + result.error;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Remove File Extension</h1>
+    <input type="text" id="file-path" placeholder="Enter file path">
+    <button onclick="removeExtension()">Remove Extension</button>
+    <p id="result"></p>
+</body>
+</html>
