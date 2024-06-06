@@ -7,19 +7,20 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
+    <div class="container">
         <h1>Password Guessing Game</h1>
-        <div id="difficulty-container">
-            <button class="difficulty-button" data-difficulty="novice">Novice</button>
-            <button class="difficulty-button" data-difficulty="advanced">Advanced</button>
-            <button class="difficulty-button" data-difficulty="expert">Expert</button>
+        <div id="difficulty-selection">
+            <button onclick="chooseDifficulty('novice')">Novice</button>
+            <button onclick="chooseDifficulty('advanced')">Advanced</button>
+            <button onclick="chooseDifficulty('expert')">Expert</button>
         </div>
-        <div id="word-list-container"></div>
-        <div id="guess-container">
-            <h2>Guesses Remaining: <span id="guesses-remaining">4</span></h2>
-            <div id="guess-bar"></div>
+        <div id="game-area" style="display: none;">
+            <p id="word-list"></p>
+            <p id="guess-bar">Guesses left: <span id="guesses-left">4</span></p>
+            <input type="text" id="guess-input" readonly>
+            <button id="submit-guess" onclick="submitGuess()">Submit Guess</button>
+            <p id="result-message"></p>
         </div>
-        <div id="message"></div>
     </div>
     <script src="script.js"></script>
 </body>
