@@ -4,25 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Guessing Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            text-align: center;
+            padding: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Password Guessing Game</h1>
-        <label for="difficulty">Select Difficulty:</label>
-        <select id="difficulty">
-            <option value="novice">Novice</option>
-            <option value="advanced">Advanced</option>
-            <option value="expert">Expert</option>
-        </select>
-        <button id="startButton">Start Game</button>
-        <div id="game" class="hidden">
-            <p>Guess the password:</p>
-            <div id="wordsList"></div>
-            <input type="text" id="guessInput" placeholder="Enter your guess">
-            <button id="guessButton">Guess</button>
-            <p id="feedback"></p>
-        </div>
+    <h1>Password Guessing Game</h1>
+    <div>
+        <button onclick="startGame('novice')">Novice</button>
+        <button onclick="startGame('advanced')">Advanced</button>
+        <button onclick="startGame('expert')">Expert</button>
+    </div>
+    <div id="gameArea" style="display:none;">
+        <h2>Guess the Password</h2>
+        <div id="wordList"></div>
+        <input type="text" id="guessInput" placeholder="Enter your guess" maxlength="9">
+        <button onclick="makeGuess()">Guess</button>
+        <p id="feedback"></p>
     </div>
     <script src="script.js"></script>
 </body>
