@@ -4,110 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Guessing Game</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #282c34;
-            color: white;
-        }
-        .container {
-            text-align: center;
-        }
-        .level {
-            margin-bottom: 20px;
-        }
-        .word-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .word {
-            margin: 5px;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .word:hover {
-            background-color: green;
-        }
-        .guess-bar {
-            margin-bottom: 20px;
-        }
-        .guess {
-            display: inline-block;
-            margin: 0 10px;
-            padding: 10px;
-            background-color: #333;
-            border-radius: 5px;
-        }
-        .disabled {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="level">
-            <button onclick="startGame('novice')">Novice</button>
-            <button onclick="startGame('advanced')">Advanced</button>
-            <button onclick="startGame('expert')">Expert</button>
+    <div id="game-container">
+        <h1>Password Guessing Game</h1>
+        <div id="difficulty-container">
+            <button class="difficulty-button" data-difficulty="novice">Novice</button>
+            <button class="difficulty-button" data-difficulty="advanced">Advanced</button>
+            <button class="difficulty-button" data-difficulty="expert">Expert</button>
         </div>
-        <div class="word-list" id="word-list">
-            <!-- Words will be populated here -->
-        </div>
-        <div class="guess-bar" id="guess-bar">
-            <!-- Guesses will be shown here -->
+        <div id="word-list-container"></div>
+        <div id="guess-container">
+            <h2>Guesses Remaining: <span id="guesses-remaining">4</span></h2>
+            <div id="guess-bar"></div>
         </div>
         <div id="message"></div>
     </div>
-
-    <script>
-        const wordList = {
-            novice: ["apple", "house", "robot", "table", "green"],
-            advanced: ["machine", "library", "picture", "captain", "diamond"],
-            expert: ["operation", "universal", "magnitude", "dinosaur", "alligator"]
-        };
-
-        let selectedWords = [];
-        let correctWord = '';
-        let guesses = 0;
-
-        function startGame(level) {
-            selectedWords = wordList[level];
-            correctWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
-            guesses = 0;
-            document.getElementById('word-list').innerHTML = selectedWords.map(word => `<div class="word" onclick="makeGuess('${word}')">${word}</div>`).join('');
-            document.getElementById('guess-bar').innerHTML = '';
-            document.getElementById('message').textContent = '';
-            document.querySelectorAll('.word').forEach(el => el.classList.remove('disabled'));
-        }
-
-        function makeGuess(word) {
-            guesses++;
-            const guessBar = document.getElementById('guess-bar');
-            guessBar.innerHTML += `<div class="guess">${word}</div>`;
-            if (word === correctWord) {
-                document.getElementById('message').textContent = 'You guessed the correct word!';
-                disableGame();
-            } else if (guesses >= 4) {
-                document.getElementById('message').textContent = 'Out of guesses! Refresh the page to try again.';
-                disableGame();
-            } else {
-                document.getElementById('message').textContent = `Incorrect! You have ${4 - guesses} guesses left.`;
-            }
-        }
-
-        function disableGame() {
-            document.querySelectorAll('.word').forEach(el => el.classList.add('disabled'));
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
