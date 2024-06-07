@@ -3,25 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Guessing Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Hacking Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 600px;
+        }
+        .word {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+        }
+        .word:hover {
+            background-color: #00ff00;
+            color: #1e1e1e;
+        }
+        #guess-bar {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Password Guessing Game</h1>
-        <div id="difficulty-selection">
-            <button onclick="chooseDifficulty('novice')">Novice</button>
-            <button onclick="chooseDifficulty('advanced')">Advanced</button>
-            <button onclick="chooseDifficulty('expert')">Expert</button>
-        </div>
-        <div id="game-area" style="display: none;">
-            <p id="word-list"></p>
-            <p id="guess-bar">Guesses left: <span id="guesses-left">4</span></p>
-            <input type="text" id="guess-input" readonly>
-            <button id="submit-guess" onclick="submitGuess()">Submit Guess</button>
-            <p id="result-message"></p>
-        </div>
+    <h1>Terminal Hacking Game</h1>
+    <div>
+        <button onclick="startGame('novice')">Novice</button>
+        <button onclick="startGame('advanced')">Advanced</button>
+        <button onclick="startGame('expert')">Expert</button>
     </div>
-    <script src="script.js"></script>
+
+<div id="guess-bar">Guess: </div>
+    <div class="word-list" id="word-list"></div>
+    <div id="message"></div>
+    <script>
+        const words = {
+            novice: ["apple", "grape", "house", "table", "shirt", "later", "bombs", "chair", "house", "banks"]
+            advanced: ["android", "battery", "charger", "digital", "emerald", "gallery", "harvest", "imagine", "justice", "kingdom"]
+            expert: ["adventure", "backwards", "challenge", "discovery", "elephants", "fantastic", "generator", "happening", "important", "juggling"]
+        };
+
+        let selectedWords = [];
+        let correctWord = "";
+        let guesses = 4;
+
+        function startGame(level) {
+            const wordListElement = document.getElementById('word-list');
+            const guessBarElement = document.getElementById('guess-bar');
+            const messageElement = document.getElementById('message');
+            
+            wordListElement.innerHTML = '';
+            guessBarElement.textContent = 'Guess: ';
+            messageElement.textContent = '';
+            guesses = 4;
+
+            selectedWords = words[level];
+            correctWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+
+            selectedWords.forEach(word => {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word';
+                wordElement.textContent = word;
+                wordElement.onclick = () => guessWord(word);
+                wordListElement.appendChild(wordElement);
+            });
+        }
+
+        function guessWord(word) {
+            const guessBarElement = document.getElementById('guess-bar');
+            const messageElement = document.getElementById('message');
+            guessBarElement.textContent = `Guess: ${word}`;
+
+            if (word === correctWord) {
+                messageElement.textContent = 'Success! You have guessed the correct word!';
+                document.getElementById('word-list').innerHTML = '';
+            } else {
+                guesses--;
+                if (guesses > 0) {
+                    messageElement.textContent = `Incorrect. You have ${guesses} guesses left.`;
+                } else {
+                    messageElement.textContent = 'Failed. Please refresh the page to try again.';
+                    document.getElementById('word-list').innerHTML = '';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
