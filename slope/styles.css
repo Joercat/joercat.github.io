@@ -4,10 +4,9 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: #000;
-    overflow: hidden;
+    background-color: #000;
 }
 
-#gameCanvas {
-    border: 2px solid #fff;
+canvas {
+    border: 1px solid #fff;
 }
