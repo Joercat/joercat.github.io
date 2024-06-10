@@ -37,6 +37,15 @@
             margin-top: 20px;
             font-size: 1.2em;
         }
+        .other {
+text-decoration: none;
+            backgroud-color: black;
+            color: #00ff00;
+        }
+        .other:hover {
+background-color: #00ff00;
+            color: black;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +55,7 @@
         <button onclick="startGame('advanced')">Advanced</button>
         <button onclick="startGame('expert')">Expert</button>
     </div>
+  
     <div class="word-list" id="word-list"></div>
     <div id="guess-bar">Guess: </div>
     <div id="message"></div>
@@ -88,18 +98,22 @@
             guessBarElement.textContent = `Guess: ${word}`;
 
             if (word === correctWord) {
-                messageElement.textContent = 'Success! You have guessed the correct word!';
+                messageElement.textContent = 'acsess granted! You have guessed the correct word!';
                 document.getElementById('word-list').innerHTML = '';
             } else {
                 guesses--;
                 if (guesses > 0) {
                     messageElement.textContent = `Incorrect. You have ${guesses} guesses left.`;
                 } else {
-                    messageElement.textContent = 'Failed. Please refresh the page to try again.';
+                    messageElement.textContent = 'int lockout, Please refresh the page to try again.';
                     document.getElementById('word-list').innerHTML = '';
                 }
             }
         }
     </script>
+    <br>
+    <button class="other">
+        <a href="joercat.github.io/fhg/sub.html/">
+    </button>
 </body>
 </html>
