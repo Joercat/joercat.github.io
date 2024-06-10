@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#game {
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+#words span {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #0f0;
+    cursor: pointer;
+}
+
+#words span:hover {
+    background-color: #0f0;
+    color: #000;
+}
