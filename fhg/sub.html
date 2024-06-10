@@ -4,27 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terminal Hacking Game</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+            color: green;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        .word {
+            display: inline-block;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .word:hover {
+            color: lime;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px;
+            background-color: green;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+        .guess-bar {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div id="game">
+    <div class="container">
         <h1>Terminal Hacking Game</h1>
-        <div id="difficulty">
-            <label for="difficulty-select">Choose difficulty:</label>
-            <select id="difficulty-select">
-                <option value="novice">Novice</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
-            </select>
-            <button onclick="startGame()">Start Game</button>
-        </div>
-        <div id="words" class="hidden"></div>
-        <div id="guess-bar" class="hidden">
-            <p>Your Guess: <span id="current-guess"></span></p>
-            <p>Attempts Left: <span id="attempts-left">3</span></p>
-        </div>
-        <div id="feedback" class="hidden"></div>
+        <button class="button" onclick="startGame()">Start Game</button>
+        <div id="words-container"></div>
+        <div class="guess-bar" id="guess-bar"></div>
     </div>
-    <script src="scripting.js"></script>
+    <script>
+        const words = {
+            novice: ["apple", "bread", "candy", "drama", "eagle"],
+            advanced: ["notable", "bravery", "courage", "dragon", "expert", "frozen", "glider"],
+            expert: ["location", "fidelity", "tracking", "harmony", "journeys", "quickest", "realized", "showdown", "terminal"]
+        };
+
+        let selectedWords = [];
+        let correctWord = "";
+        let guesses = 0;
+        const maxGuesses = 3;
+
+        function startGame() {
+            const difficulty = prompt("Choose difficulty: novice, advanced, expert").toLowerCase();
+            if (!words[difficulty]) {
+                alert("Invalid difficulty level!");
+                return;
+            }
+            selectedWords = words[difficulty];
+            correctWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+            guesses = 0;
+
+            displayWords();
+            updateGuessBar();
+        }
+
+        function displayWords() {
+            const wordsContainer = document.getElementById("words-container");
+            wordsContainer.innerHTML = "";
+            selectedWords.forEach(word => {
+                const wordElement = document.createElement("div");
+                wordElement.classList.add("word");
+                wordElement.textContent = word;
+                wordElement.onclick = () => makeGuess(word);
+                wordsContainer.appendChild(wordElement);
+            });
+        }
+
+        function makeGuess(word) {
+            guesses++;
+            if (word === correctWord) {
+                alert("Access granted!");
+                disableGame();
+            } else {
+                alert(`Access denied! ${maxGuesses - guesses} attempts remaining.`);
+                if (guesses >= maxGuesses) {
+                    alert("You've been locked out!");
+                    disableGame();
+                }
+            }
+            updateGuessBar(word);
+        }
+
+        function disableGame() {
+            const wordsContainer = document.getElementById("words-container");
+            wordsContainer.innerHTML = "";
+        }
+
+        function updateGuessBar(guess = "") {
+            const guessBar = document.getElementById("guess-bar");
+            guessBar.textContent = guess ? `Last guess: ${guess}` : "";
+        }
+    </script>
 </body>
 </html>
