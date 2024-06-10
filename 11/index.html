@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get 11 Game</title>
+    <style>
+	    body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #faf8ef;
+}
+
+#game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(4, 100px);
+    gap: 10px;
+}
+
+.tile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    background-color: #eee4da;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.tile-0 {
+    background-color: #cdc1b4;
+}
+
+.tile-2 {
+    background-color: #eee4da;
+}
+
+.tile-3 {
+    background-color: #ede0c8;
+}
+
+.tile-4 {
+    background-color: #f2b179;
+}
+
+.tile-5 {
+    background-color: #f59563;
+}
+
+.tile-6 {
+    background-color: #f67c5f;
+}
+
+.tile-7 {
+    background-color: #f65e3b;
+}
+
+.tile-8 {
+    background-color: #edcf72;
+}
+
+.tile-9 {
+    background-color: #edcc61;
+}
+
+.tile-10 {
+    background-color: #edc850;
+}
+
+.tile-11 {
+    background-color: #edc53f;
+    color: #f9f6f2;
+}
+
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-board"></div>
+    </div>
+    <script>
+	    document.addEventListener('DOMContentLoaded', () => {
+    const size = 4;
+    let board = [];
+    
+    function initBoard() {
+        for (let i = 0; i < size; i++) {
+            board[i] = [];
+            for (let j = 0; j < size; j++) {
+                board[i][j] = 0;
+            }
+        }
+        addRandomTile();
+        addRandomTile();
+        drawBoard();
+    }
+
+    function drawBoard() {
+        const boardDiv = document.getElementById('game-board');
+        boardDiv.innerHTML = '';
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.classList.add(`tile-${board[i][j]}`);
+                if (board[i][j] !== 0) {
+                    tile.innerText = board[i][j];
+                }
+                boardDiv.appendChild(tile);
+            }
+        }
+    }
+
+    function addRandomTile() {
+        let emptyTiles = [];
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (board[i][j] === 0) {
+                    emptyTiles.push({ x: i, y: j });
+                }
+            }
+        }
+
+        if (emptyTiles.length > 0) {
+            let randomTile = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+            board[randomTile.x][randomTile.y] = 2;
+        }
+    }
+
+    function slide(row) {
+        row = row.filter(val => val);
+        for (let i = 0; i < size - 1; i++) {
+            if (row[i] === row[i + 1]) {
+                row[i] += 1;
+                row[i + 1] = 0;
+            }
+        }
+        return row.filter(val => val);
+    }
+
+    function moveLeft() {
+        for (let i = 0; i < size; i++) {
+            board[i] = slide(board[i]);
+            while (board[i].length < size) {
+                board[i].push(0);
+            }
+        }
+    }
+
+    function rotateBoard() {
+        let newBoard = [];
+        for (let i = 0; i < size; i++) {
+            newBoard[i] = [];
+            for (let j = 0; j < size; j++) {
+                newBoard[i][j] = board[j][i];
+            }
+        }
+        board = newBoard;
+    }
+
+    function move(direction) {
+        switch (direction) {
+            case 'left':
+                moveLeft();
+                break;
+            case 'right':
+                rotateBoard();
+                rotateBoard();
+                moveLeft();
+                rotateBoard();
+                rotateBoard();
+                break;
+            case 'up':
+                rotateBoard();
+                moveLeft();
+                rotateBoard();
+                rotateBoard();
+                rotateBoard();
+                break;
+            case 'down':
+                rotateBoard();
+                rotateBoard();
+                rotateBoard();
+                moveLeft();
+                rotateBoard();
+                break;
+        }
+        addRandomTile();
+        drawBoard();
+        checkGameOver();
+    }
+
+    function checkGameOver() {
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (board[i][j] === 11) {
+                    alert('You win!');
+                    initBoard();
+                    return;
+                }
+            }
+        }
+        let hasMoves = false;
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (board[i][j] === 0) {
+                    hasMoves = true;
+                }
+                if (i < size - 1 && board[i][j] === board[i + 1][j]) {
+                    hasMoves = true;
+                }
+                if (j < size - 1 && board[i][j] === board[i][j + 1]) {
+                    hasMoves = true;
+                }
+            }
+        }
+        if (!hasMoves) {
+            alert('Game over!');
+            initBoard();
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            move('left');
+        } else if (e.key === 'ArrowRight') {
+            move('right');
+        } else if (e.key === 'ArrowUp') {
+            move('up');
+        } else if (e.key === 'ArrowDown') {
+            move('down');
+        }
+    });
+
+    initBoard();
+});
+
+    </script>
+</body>
+</html>
