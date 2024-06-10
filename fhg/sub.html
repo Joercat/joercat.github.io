@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Hacking Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game">
+        <h1>Terminal Hacking Game</h1>
+        <div id="difficulty">
+            <label for="difficulty-select">Choose difficulty:</label>
+            <select id="difficulty-select">
+                <option value="novice">Novice</option>
+                <option value="advanced">Advanced</option>
+                <option value="expert">Expert</option>
+            </select>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+        <div id="words" class="hidden"></div>
+        <div id="guess-bar" class="hidden">
+            <p>Your Guess: <span id="current-guess"></span></p>
+            <p>Attempts Left: <span id="attempts-left">3</span></p>
+        </div>
+        <div id="feedback" class="hidden"></div>
+    </div>
+    <script src="scripting.js"></script>
+</body>
+</html>
