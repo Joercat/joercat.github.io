@@ -1,12 +1,1 @@
-body {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #000;
-}
-
-canvas {
-    border: 1px solid #fff;
-}
+/* another not deleted useless css file */
