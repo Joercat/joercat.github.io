@@ -1,7 +1,15 @@
 document.addEventListener('DOMContentLoaded', (event) => {
     const iframe = document.getElementById('embeddedFrame');
     const url = 'https://example.com'; // Replace with the desired URL
-    const encryptionKey = 'my-secret-key'; // Replace with your encryption key
+    const encryptionKey = 'function generateBase64Key(length) {
+    const array = new Uint8Array(length);
+    window.crypto.getRandomValues(array);
+    return btoa(String.fromCharCode.apply(null, array));
+}
+
+// Generate a 32-byte key (256-bit key for AES)
+const base64Key = generateBase64Key(32);
+console.log(base64Key);'; // Replace with your encryption key
 
     // Function to encrypt the URL
     function encryptUrl(url, key) {
