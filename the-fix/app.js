@@ -1,56 +1,29 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
     const iframe = document.getElementById('embeddedFrame');
-    const url = 'https://example.com'; // Replace with the desired URL
-    const encryptionKey = 'function generateBase64Key(length) {
-    const array = new Uint8Array(length);
-    window.crypto.getRandomValues(array);
-    return btoa(String.fromCharCode.apply(null, array));
-}
+    const urlToEmbed = 'https://example.com'; // Replace with the URL you want to embed
 
-// Generate a 32-byte key (256-bit key for AES)
-const base64Key = generateBase64Key(32);
-console.log(base64Key);'; // Replace with your encryption key
+    // Encrypt URL using Base32
+    const encodedUrl = base32.encode(new TextEncoder().encode(urlToEmbed));
+    const decodedUrl = new TextDecoder().decode(base32.decode(encodedUrl));
 
-    // Function to encrypt the URL
-    function encryptUrl(url, key) {
-        return CryptoJS.AES.encrypt(url, key).toString();
-    }
+    // Set iframe source to the decoded URL
+    iframe.src = decodedUrl;
 
-    // Function to decrypt the URL
-    function decryptUrl(encryptedUrl, key) {
-        const bytes = CryptoJS.AES.decrypt(encryptedUrl, key);
-        return bytes.toString(CryptoJS.enc.Utf8);
-    }
-
-    // Encrypt the URL
-    const encryptedUrl = encryptUrl(url, encryptionKey);
-
-    // Create a blob URL for the iframe to decrypt and load the URL
-    const blobContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Embedded Frame</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-        </head>
-        <body>
-            <script>
-                const encryptionKey = '${encryptionKey}';
-                const encryptedUrl = '${encryptedUrl}';
-                function decryptUrl(encryptedUrl, key) {
-                    const bytes = CryptoJS.AES.decrypt(encryptedUrl, key);
-                    return bytes.toString(CryptoJS.enc.Utf8);
-                }
-                const url = decryptUrl(encryptedUrl, encryptionKey);
-                window.location.href = url;
-            </script>
-        </body>
-        </html>
+    // Create a dedicated worker with encrypted content
+    const workerScript = `
+        self.onmessage = function(event) {
+            const decodedMessage = new TextDecoder().decode(base32.decode(event.data));
+            console.log('Worker received message:', decodedMessage);
+        };
     `;
-    const blob = new Blob([blobContent], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
 
-    // Set the iframe src to the blob URL
-    iframe.src = blobUrl;
+    const encodedWorkerScript = base32.encode(new TextEncoder().encode(workerScript));
+
+    const blob = new Blob([new TextDecoder().decode(base32.decode(encodedWorkerScript))], { type: 'application/javascript' });
+    const worker = new Worker(URL.createObjectURL(blob));
+
+    // Sending an encrypted message to the worker
+    const message = 'Hello, Worker!';
+    const encodedMessage = base32.encode(new TextEncoder().encode(message));
+    worker.postMessage(encodedMessage);
 });
