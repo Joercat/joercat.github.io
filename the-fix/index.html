@@ -1,57 +1,27 @@
-
-<title>Website unblocker</title>
-
- <link rel="icon" type="image/png" href="https://th.bing.com/th/id/OIG3.ru8BCpFuO9n7.YwwehDG?w=270&h=270&c=6&r=0&o=5&pid=ImgGn">
-  
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Web Viewer</title>
+    <title>X-Frame Embedder</title>
+    <script src="app.js" defer></script>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
         iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .url-bar {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            display: flex;
-        }
-        .url-input {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .url-button {
-            padding: 10px;
-            font-size: 16px;
+            width: 80%;
+            height: 80%;
+            border: 2px solid #000;
         }
     </style>
 </head>
 <body>
-    <div class="url-bar">
-        <input id="url-input" class="url-input" type="text" placeholder="Enter URL here">
-        <button class="url-button" onclick="loadUrl()">Go</button>
-    </div>
-    <iframe id="web-frame" src=""></iframe>
-
-    <script>
-        function loadUrl() {
-            const url = document.getElementById('url-input').value;
-            if (url) {
-                document.getElementById('web-frame').src = url;
-            }
-        }
-    </script>
+    <button onclick="openUrl()">Open URL in Frame</button>
+    <iframe id="embeddedFrame" src=""></iframe>
 </body>
 </html>
