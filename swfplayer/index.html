@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> .swf File Player</title>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+ 
+</head>
+  <center>
+<body>
+    <h3>To use this website you choose an .swf file from your computer.</h3>
+  <h3>And then your .swf file will be run and you can play it.</h3>
+  
+    <input type="file" id="file-input" accept=".swf">
+    <div id="swf-container"></div>
+
+    <script>
+        // Initialize Ruffle
+        const ruffle = window.RufflePlayer.newest();
+        const ruffleContainer = document.getElementById('swf-container');
+
+        // Handle file input
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file && file.type === "application/x-shockwave-flash") {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+
+                    // Create a blob from the array buffer
+                    const blob = new Blob([arrayBuffer], { type: "application/x-shockwave-flash" });
+
+                    // Create a URL for the blob
+                    const objectURL = URL.createObjectURL(blob);
+
+                    // Clear previous content
+                    ruffleContainer.innerHTML = '';
+
+                    // Create and configure the Ruffle player instance
+                    const rufflePlayer = ruffle.createPlayer();
+                    ruffleContainer.appendChild(rufflePlayer);
+
+                    // Load the SWF file
+                    rufflePlayer.load(objectURL);
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert("Please select a valid SWF file.");
+            }
+        });
+    </script>
+  </center>
+</body>
+</html>
