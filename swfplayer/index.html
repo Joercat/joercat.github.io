@@ -9,7 +9,15 @@
  
 </head>
   <center>
-<body>
+<style>
+  .download {
+background-color: white;
+    color: black;
+    text-decoration: none;
+  }
+</style>
+    <body>
+
     <h3>To use this website you choose an .swf file from your computer.</h3>
   <h3>And then your .swf file will be run and you can play it.</h3>
   
@@ -47,10 +55,13 @@
                 };
                 reader.readAsArrayBuffer(file);
             } else {
-                alert("Please select a valid SWF file.");
+                alert("Please select a valid swf file.");
             }
         });
     </script>
+  <button>
+    <a class="download" href="https://github.com/Joercat/swfarchive.git"><h3>Click here if you need an swf file.</h3></a>
+  </button>
   </center>
 </body>
 </html>
