@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REMOTE_ADDR} ^73\.253\.134\.88$
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{REMOTE_ADDR} ^555\.666\.777\.888$
+    RewriteRule ^ - [F,L]
+</IfModule>
