@@ -1,4 +1,5 @@
 // Base32 encoding/decoding functions
+
 const base32 = {
     encode: function (input) {
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=';
