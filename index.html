@@ -16,38 +16,33 @@ color: black;
 
 
 
-  
-
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+ body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
 }
 
-.rectangle {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 200px;
-    height: 100%;
-    background-color: #3498db;
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+#rectangle {
+  width: 200px;
+  height: 100%;
+  background-color: lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
 }
 
-.hidden {
-    transform: translateX(-200px);
+#rectangle.hidden {
+  transform: translateX(-200px);
 }
 
-.toggle-button {
-    background-color: #fff;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    font-size: 24px;
-    outline: none;
+#toggleButton {
+  background-color: white;
+  border: 1px solid black;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left
 }
 
 </style>
@@ -60,23 +55,26 @@ color: black;
 
 
 
+ <div id="rectangle">
+    <button id="toggleButton"><</button>
+  </div>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+  const rectangle = document.getElementById('rectangle');
+  const toggleButton = document.getElementById('toggleButton');
 
-    <div id="rectangle" class="rectangle">
-        <button id="toggleButton" class="toggle-button"><</button>
-    </div>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-    const rectangle = document.getElementById('rectangle');
-    const toggleButton = document.getElementById('toggleButton');
-
-    toggleButton.addEventListener('click', function () {
-        rectangle.classList.toggle('hidden');
-        toggleButton.textContent = rectangle.classList.contains('hidden') ? '>' : '<';
-    });
+  toggleButton.addEventListener('click', () => {
+    if (rectangle.classList.contains('hidden')) {
+      rectangle.classList.remove('hidden');
+      toggleButton.textContent = '<';
+    } else {
+      rectangle.classList.add('hidden');
+      toggleButton.textContent = '>';
+    }
+  });
 });
-    </script>
-
+</script>
 
 
 
