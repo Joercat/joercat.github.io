@@ -12,6 +12,44 @@ text-align: right
   .hidden {
 color: black;
   }
+
+
+
+
+  
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.rectangle {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100%;
+    background-color: #3498db;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    transform: translateX(-200px);
+}
+
+.toggle-button {
+    background-color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    outline: none;
+}
+
 </style>
 
   <div class="right" >
@@ -19,6 +57,38 @@ color: black;
   </div>
     <center>
   <br>
+
+
+
+
+
+    <div id="rectangle" class="rectangle">
+        <button id="toggleButton" class="toggle-button"><</button>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+    const rectangle = document.getElementById('rectangle');
+    const toggleButton = document.getElementById('toggleButton');
+
+    toggleButton.addEventListener('click', function () {
+        rectangle.classList.toggle('hidden');
+        toggleButton.textContent = rectangle.classList.contains('hidden') ? '>' : '<';
+    });
+});
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
       
       <br>
       <a class="btn btn-default" href="https://joercat.github.io/old-uc/"><h2>Old site</h2></a>
