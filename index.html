@@ -14,36 +14,37 @@ color: black;
   }
 
 
-
-
- body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  display: flex;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
 
-#rectangle {
-  width: 200px;
-  height: 100%;
-  background-color: lightgray;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s;
+.left-bar {
+    width: 200px;
+    height: 100vh;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 20px;
 }
 
-#rectangle.hidden {
-  transform: translateX(-200px);
+.left-bar ul {
+    list-style-type: none;
+    padding: 0;
 }
 
-#toggleButton {
-  background-color: white;
-  border: 1px solid black;
-  padding: 10px;
-  cursor: pointer;
-
+.left-bar ul li {
+    margin: 10px 0;
 }
+
+.main-content {
+    margin-left: 220px; /* Adjust this value based on the width of the left bar */
+    padding: 20px;
+}
+
+
 
 </style>
 
@@ -55,31 +56,14 @@ color: black;
 
 
 
- <div id="rectangle">
-    <button id="toggleButton"><</button>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-  const rectangle = document.getElementById('rectangle');
-  const toggleButton = document.getElementById('toggleButton');
-
-  toggleButton.addEventListener('click', () => {
-    if (rectangle.classList.contains('hidden')) {
-      rectangle.classList.remove('hidden');
-      toggleButton.textContent = '<';
-    } else {
-      rectangle.classList.add('hidden');
-      toggleButton.textContent = '>';
-    }
-  });
-});
-</script>
-
-
-
-
-
+  <div class="left-bar">
+      
+        
+    </div>
+    <div class="main-content">
+    
+        
+    </div>
 
 
 
