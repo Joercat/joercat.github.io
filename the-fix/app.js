@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const iframe = document.getElementById('embeddedFrame');
-    const urlToEmbed = 'https://example.com'; // Replace with the URL you want to embed
+    const urlToEmbed = 'https://poki.com'; // Replace with the URL you want to embed
 
     // Encrypt URL using Base32
     const encodedUrl = base32.encode(new TextEncoder().encode(urlToEmbed));
