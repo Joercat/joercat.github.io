@@ -6,12 +6,13 @@
  url: https://bidoofery.github.io/gfiles/gfiles/html5/chromedino/
  date: Sat May  6 14:23:55 2023
 --><head>
+	 <img class="img" src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" width="36" height="36">
 <meta charset="utf-8"/>
 <meta content="light dark" name="color-scheme"/>
 <meta content="#fff" name="theme-color"/>
 <meta content="width=device-width, initial-scale=1.0,
                                  maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>chrome://dino/ | Project Sentinel</title>
+<title>Chrome Dino</title>
 <style>/* Copyright 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
@@ -1851,16 +1852,16 @@ function getSuggestedContentDiv(item, index) {
   const source = 'src';
   if (item.thumbnail_data_uri) {
     extraContainerClasses.push('suggestion-with-image');
-    thumbnail = `<img ${source}="${item.thumbnail_data_uri}">`;
+    thumbnail = `< ${source}="${item.thumbnail_data_uri}">`;
   } else {
     extraContainerClasses.push('suggestion-with-icon');
     const iconClass = getIconForSuggestedItem(item);
-    thumbnail = `<div><img class="${iconClass}"></div>`;
+    thumbnail = `<div>< class="${iconClass}"></div>`;
   }
 
   let favicon = '';
   if (item.favicon_data_uri) {
-    favicon = `<img ${source}="${item.favicon_data_uri}">`;
+    favicon = `<i ${source}="${item.favicon_data_uri}">`;
   } else {
     extraContainerClasses.push('no-favicon');
   }
@@ -6733,9 +6734,9 @@ class LoadTimeData {
   expect(!loadTimeData, 'should only include this file once');
   loadTimeData = new LoadTimeData;
 
-  // Expose |loadTimeData| directly on |window|, since within a JS module the
-  // scope is local and not all files have been updated to import the exported
-  // |loadTimeData| explicitly.
+
   window.loadTimeData = loadTimeData;
 
   console.warn('crbug/1173575, non-JS module files deprecated.');</script><script jstcache="0">const pageData = {"dinoGameA11yAriaLabel":"","dinoGameA11yDescription":"Dino game. A pixelated dinosaur dodges cacti and pterodactyls as it runs across a desolate landscape. When you hear an audio cue, press space to jump over obstacles.","dinoGameA11yGameOver":"Game over, your score is $1.","dinoGameA11yHighScore":"Your highest score is $1.","dinoGameA11yJump":"Jump!","dinoGameA11ySpeedToggle":"Start slower","dinoGameA11yStartGame":"Game started.","errorCode":"","fontfamily":"'Segoe UI', Tahoma, sans-serif","fontsize":"75%","heading":{"hostName":"dino","msg":"Press space to play"},"iconClass":"icon-offline","language":"en","textdirection":"ltr","title":"chrome://dino/"};loadTimeData.data = pageData;var tp = document.getElementById('t');jstProcess(new JsEvalContext(pageData), tp);</script></body></html>
+
+<button class="download" href="https://joercat.gihub.io/cd/chromedino.html" download>Download to play offline</button>	
