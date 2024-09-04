@@ -3,7 +3,7 @@ session_start();
 
 // Dummy user data (in a real scenario, this would be fetched from a database)
 $valid_users = array(
-    'user1' => 'password1',
+    'jr' => 'pass',
     'user2' => 'password2'
 );
 
