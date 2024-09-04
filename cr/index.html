@@ -4,18 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form {
+    margin-top: 20px;
+    display: flex;
+}
+
+input[type="text"], button {
+    padding: 10px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 3px;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+#chatbox {
+    height: 300px;
+    overflow-y: scroll;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#chatbox div {
+    margin-bottom: 5px;
+    padding: 5px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+}
+
+h2 {
+    text-align: center;
+}
+</style>
 </head>
-    
 <body>
     <div class="chat-container">
-        <h2>Welcome to the Chat Room</h2>
-        <form id="nameForm" onsubmit="setUsername(); return false;">
-            <input type="text" id="usernameInput" placeholder="Enter your name" required>
-            <button type="submit">Join Chat</button>
-        </form>
+        <div id="nameSection">
+            <h2>Enter Your Name:</h2>
+            <form id="nameForm" onsubmit="setName(); return false;">
+                <input type="text" id="nameInput" placeholder="Your Name" required>
+                <button type="submit">Set Name</button>
+            </form>
+        </div>
+        <div id="chatSection" style="display: none;">
+            <h2>Welcome, <span id="displayName"></span></h2>
+            <div id="chatbox">
+                <!-- Chat messages will be displayed here -->
+            </div>
+            <form id="chatForm" onsubmit="sendMessage(); return false;">
+                <input type="text" id="messageInput" placeholder="Type your message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>let username = '';
+
+function setName() {
+    username = document.getElementById('nameInput').value;
+    if (username) {
+        document.getElementById('nameSection').style.display = 'none';
+        document.getElementById('chatSection').style.display = 'block';
+        document.getElementById('displayName').innerText = username;
+    }
+}
+
+function sendMessage() {
+    const message = document.getElementById('messageInput').value;
+    if (message) {
+        appendMessage(username, message);
+        document.getElementById('messageInput').value = '';
+    }
+}
+
+function appendMessage(user, message) {
+    const chatbox = document.getElementById('chatbox');
+    const messageElement = document.createElement('div');
+    messageElement.innerText = `${user}: ${message}`;
+    chatbox.appendChild(messageElement);
+}
+</script>
 </body>
 </html>
