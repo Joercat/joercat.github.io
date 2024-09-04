@@ -19,14 +19,16 @@
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 form {
     margin-top: 20px;
     display: flex;
+    justify-content: center;
 }
 
-input[type="text"], button {
+input[type="text"], input[type="submit"], button {
     padding: 10px;
     margin-right: 10px;
     border: none;
@@ -44,67 +46,62 @@ button {
     overflow-y: scroll;
     border: 1px solid #ddd;
     padding: 10px;
+    margin-top: 20px;
+}
+
+.message {
     margin-bottom: 10px;
-}
-
-#chatbox div {
-    margin-bottom: 5px;
-    padding: 5px;
+    padding: 10px;
     background-color: #f9f9f9;
-    border-radius: 3px;
-}
-
-h2 {
-    text-align: center;
+    border-radius: 5px;
 }
 </style>
 </head>
 <body>
     <div class="chat-container">
-        <div id="nameSection">
-            <h2>Enter Your Name:</h2>
-            <form id="nameForm" onsubmit="setName(); return false;">
-                <input type="text" id="nameInput" placeholder="Your Name" required>
-                <button type="submit">Set Name</button>
-            </form>
-        </div>
-        <div id="chatSection" style="display: none;">
-            <h2>Welcome, <span id="displayName"></span></h2>
-            <div id="chatbox">
-                <!-- Chat messages will be displayed here -->
-            </div>
-            <form id="chatForm" onsubmit="sendMessage(); return false;">
-                <input type="text" id="messageInput" placeholder="Type your message..." required>
-                <button type="submit">Send</button>
-            </form>
-        </div>
+        <h2>Choose Your Name</h2>
+        <form id="nameForm">
+            <input type="text" id="usernameInput" placeholder="Enter Your Name" required>
+            <button type="submit">Enter Chat</button>
+        </form>
     </div>
 
-    <script>let username = '';
+    <script>document.addEventListener('DOMContentLoaded', function() {
+    var username = null;
+    var chatbox = document.getElementById('chatbox');
+    var nameForm = document.getElementById('nameForm');
+    var messageInput = document.getElementById('messageInput');
 
-function setName() {
-    username = document.getElementById('nameInput').value;
-    if (username) {
-        document.getElementById('nameSection').style.display = 'none';
-        document.getElementById('chatSection').style.display = 'block';
-        document.getElementById('displayName').innerText = username;
+    nameForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        username = document.getElementById('usernameInput').value;
+        nameForm.style.display = 'none';
+        initializeChat();
+    });
+
+    function initializeChat() {
+        var chatForm = document.getElementById('chatForm');
+        chatForm.style.display = 'block';
+
+        chatForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var message = messageInput.value;
+            if (message.trim() !== '') {
+                sendMessage(username, message);
+                messageInput.value = '';
+            }
+        });
     }
-}
 
-function sendMessage() {
-    const message = document.getElementById('messageInput').value;
-    if (message) {
-        appendMessage(username, message);
-        document.getElementById('messageInput').value = '';
+    function sendMessage(username, message) {
+        var messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.innerHTML = '<strong>' + username + '</strong>: ' + message;
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        // Here you would typically send `username` and `message` to the server for broadcast
     }
-}
-
-function appendMessage(user, message) {
-    const chatbox = document.getElementById('chatbox');
-    const messageElement = document.createElement('div');
-    messageElement.innerText = `${user}: ${message}`;
-    chatbox.appendChild(messageElement);
-}
+});
 </script>
 </body>
 </html>
