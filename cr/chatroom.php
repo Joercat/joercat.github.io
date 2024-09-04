@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // Dummy user data (in a real scenario, this would be fetched from a database)
