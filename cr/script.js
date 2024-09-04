@@ -1,25 +1,40 @@
+function setUsername() {
+    var username = document.getElementById('usernameInput').value;
+    if (username.trim() !== '') {
+        // Send username to server (PHP script)
+        var formData = new FormData();
+        formData.append('username', username);
+
+        fetch('chatroom.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.replace('chatroom.html');
+            } else {
+                alert('Failed to set username');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to set username');
+        });
+    } else {
+        alert('Please enter a valid username');
+    }
+}
+
 function sendMessage() {
     var message = document.getElementById('messageInput').value;
-    var sender = "<?php echo $_SESSION['username']; ?>"; // Get current user's username
-    appendMessage(sender, message);
+    // You would typically send this message to a server for broadcasting to other users
+    appendMessage(message);
     document.getElementById('messageInput').value = '';
 }
 
-function appendMessage(sender, message) {
+function appendMessage(message) {
     var chatbox = document.getElementById('chatbox');
-    var messageContainer = document.createElement('div');
-    messageContainer.classList.add('message-container');
-
-    var senderElement = document.createElement('span');
-    senderElement.classList.add('message-sender');
-    senderElement.innerText = sender + ": ";
-
-    var messageElement = document.createElement('span');
-    messageElement.classList.add('message-text');
+    var messageElement = document.createElement('div');
     messageElement.innerText = message;
-
-    messageContainer.appendChild(senderElement);
-    messageContainer.appendChild(messageElement);
-
-    chatbox.appendChild(messageContainer);
+    chatbox.appendChild(messageElement);
 }
