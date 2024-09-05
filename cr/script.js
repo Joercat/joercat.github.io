@@ -1,40 +1,28 @@
-function setUsername() {
-    var username = document.getElementById('usernameInput').value;
-    if (username.trim() !== '') {
-        // Send username to server (PHP script)
-        var formData = new FormData();
-        formData.append('username', username);
+// Connect to the server
+const socket = io();
 
-        fetch('chatroom.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.replace('chatroom.html');
-            } else {
-                alert('Failed to set username');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to set username');
-        });
-    } else {
-        alert('Please enter a valid username');
-    }
-}
-
+// Function to send a message
 function sendMessage() {
-    var message = document.getElementById('messageInput').value;
-    // You would typically send this message to a server for broadcasting to other users
-    appendMessage(message);
+    const username = document.getElementById('usernameInput').value;
+    const message = document.getElementById('messageInput').value;
+
+    // Emit message to the server
+    socket.emit('chat message', { username, message });
+
+    // Clear message input field
     document.getElementById('messageInput').value = '';
 }
 
-function appendMessage(message) {
-    var chatbox = document.getElementById('chatbox');
-    var messageElement = document.createElement('div');
-    messageElement.innerText = message;
+// Function to append a message to the chatbox
+function appendMessage(data) {
+    const { username, message } = data;
+    const chatbox = document.getElementById('chatbox');
+    const messageElement = document.createElement('div');
+    messageElement.innerHTML = `<strong>${username}:</strong> ${message}`;
     chatbox.appendChild(messageElement);
 }
+
+// Listen for incoming messages from the server
+socket.on('chat message', function(data) {
+    appendMessage(data);
+});
