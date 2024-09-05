@@ -1,28 +1,38 @@
-// Connect to the server
-const socket = io();
+var name = '';
 
-// Function to send a message
 function sendMessage() {
-    const username = document.getElementById('usernameInput').value;
-    const message = document.getElementById('messageInput').value;
+    var message = document.getElementById('messageInput').value;
+    if (message.trim() === '') {
+        alert('Please enter a message.');
+        return;
+    }
 
-    // Emit message to the server
-    socket.emit('chat message', { username, message });
+    if (!name) {
+        name = document.getElementById('nameInput').value.trim();
+        if (name === '') {
+            alert('Please enter your name.');
+            return;
+        }
+    }
 
-    // Clear message input field
+    var messageData = {
+        name: name,
+        message: message
+    };
+
+    // Simulate sending message to server (in real application, this would be done via AJAX or WebSocket)
+    appendMessage(messageData);
+
+    // Clear message input
     document.getElementById('messageInput').value = '';
 }
 
-// Function to append a message to the chatbox
-function appendMessage(data) {
-    const { username, message } = data;
-    const chatbox = document.getElementById('chatbox');
-    const messageElement = document.createElement('div');
-    messageElement.innerHTML = `<strong>${username}:</strong> ${message}`;
+function appendMessage(messageData) {
+    var chatbox = document.getElementById('chatbox');
+    var messageElement = document.createElement('div');
+    messageElement.innerHTML = `<strong>${messageData.name}:</strong> ${messageData.message}`;
     chatbox.appendChild(messageElement);
-}
 
-// Listen for incoming messages from the server
-socket.on('chat message', function(data) {
-    appendMessage(data);
-});
+    // Scroll to bottom of chatbox
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
