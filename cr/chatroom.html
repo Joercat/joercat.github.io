@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
-    <link rel="stylesheet"href="styles.css">
-    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="chat-container">
-        <h2>Welcome, <?php echo $_SESSION['username']; ?></h2>
+        <h2>Welcome to the Chat Room</h2>
         <div id="chatbox">
             <!-- Chat messages will be displayed here -->
         </div>
         <form id="chatForm" onsubmit="sendMessage(); return false;">
-            <input type="text" id="messageInput" placeholder="Type your message...">
+            <input type="text" id="usernameInput" placeholder="Your Name" required>
+            <input type="text" id="messageInput" placeholder="Type your message..." required>
             <button type="submit">Send</button>
         </form>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
