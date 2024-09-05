@@ -20,7 +20,7 @@ form {
     display: flex;
 }
 
-input[type="text"], input[type="password"], input[type="submit"], button {
+input[type="text"], input[type="submit"], button {
     padding: 10px;
     margin-right: 10px;
     border: none;
