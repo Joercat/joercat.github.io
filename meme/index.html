@@ -41,7 +41,7 @@ background-color: white;
 
 
 
-
+<center>
 <p>Taco bell</p><img src="tacobell.png" onclick="playAudio()">
 <hr>
 <p>Android notification</p><img src="android.png" onclick="play()">
@@ -66,11 +66,16 @@ background-color: white;
 <hr>
 <p>Bruh</p><img src="sfx.png" onclick="c()">
 <hr>
-
+ <button onclick="get()"></button>
+</center>
 
 
 
     <script>
+     function get() {
+
+     }
+     
         function playAudio() {
             var audio = document.getElementById("myAudio");
             audio.play();
