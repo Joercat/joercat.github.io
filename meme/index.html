@@ -1,0 +1,243 @@
+<title>Memes Soundboard</title>
+<html lang="en">
+ <link rel="icon" type="image/png" href="meme.jpeg">
+
+<style>
+body {
+   font-family: sans-serif;
+}
+
+ img {
+   width: 40px;
+   height: 40px;
+}
+ .img2 {
+   width: 40px;
+   height: 40px;
+   background-color: white;
+}
+
+ body {
+background-color: black;
+color: #39ff14;
+}
+ img:hover {
+background-color: gray;
+}
+ img:active {
+  background-color: red;
+}
+ .main {
+ border: 3px Solid gray;
+}
+ .sub {
+ position: center;
+}
+</style>
+<body>
+
+<audio id="myAudio" src="taco bell.wav" preload="auto"></audio>
+<audio id="Audio" src="android.wav" preload="auto"></audio>
+<audio id="a" src="vine boom.wav" preload="auto"></audio>
+<audio id="audi" src="puffer fish augh.wav" preload="auto"></audio>
+<audio id="aud" src="oi oi oi.mp3" preload="auto"></audio>
+<audio id="au" src="ahhhhhhhhhhhhhhhhhhh.wav" preload="auto"></audio>
+<audio id="o" src="alert.wav" preload="auto"></audio>
+<audio id="aoo" src="audio1.wav" preload="auto"></audio>
+<audio id="oao" src="audio2.wav" preload="auto"></audio>
+<audio id="aao" src="audio3.wav" preload="auto"></audio>
+<audio id="b" src="audio4.wav" preload="auto"></audio>
+<audio id="c" src="audio5.wav" preload="auto"></audio>
+<audio id="cat" src="huh.wav" preload="auto"></audio>
+<audio id="metal" src="metalpipe.wav" preload="auto"></audio>
+
+
+
+<center>
+<div class="main">
+<div class="sub">
+<p>Taco bell</p><img src="tacobell.png" onclick="playAudio()"  Id="one" >
+
+<p>Android notification</p><img src="android.png" onclick="play()" Id="two" >
+
+<p>Vine boom</p><img src="sfx.png" onclick="audio()" Id="three" >
+
+<p>Pufferfish augh</p><img src="pufferfish.png" onclick="aud()" Id="four" >
+</div>
+<div class="sub">
+<p>oi oi oi</p><img src="oioioi.png" onclick="audi() Id="five" ">
+
+<p>ahhhhhhhhhhhhh</p><img src="sfx.png" onclick="au()" Id="six" >
+
+<p>Alert</p><img src="alert.png" onclick="o()" Id="seven" >
+
+<p>Piano riff</p><img src="piano.png" onclick="aoo()" Id="eight" >
+
+<p>Reverb fart</p><img class="img2" src="f.png" onclick="oao()" Id="nine" >
+</div>
+<div class="sub">
+<p>Error</p><img class="img2" src="error.png" onclick="aao()" Id="ten" >
+
+<p>What da dog doin</p><img src="wddd.png" onclick="b()" Id="eleven" >
+
+<p>Bruh</p><img src="sfx.png" onclick="c()" Id="twelve" >
+
+<p>Huh cat</p><img src="sfx.png" onclick="huh()" Id="thirteen" >
+
+<p>Metal pipe</p><img src="metalpipe.png" onclick="pipe()" Id="fourteen" >
+</div>
+
+</div>
+</center>
+
+
+
+
+    <script>
+
+        function playAudio() {
+            var audio = document.getElementById("myAudio");
+            audio.play();
+
+            const img = document.getElementById("one");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        } 
+
+   function play() {
+            var audio = document.getElementById("Audio");
+            audio.play();
+            const img = document.getElementById("two");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function audio() {
+            var audio = document.getElementById("a");
+audio.volume -= 0.1
+            audio.play();
+            const img = document.getElementById("three");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function aud() {
+            var audio = document.getElementById("audi");
+            audio.play();
+            const img = document.getElementById("four");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+ function audi() {
+            var audio = document.getElementById("aud");
+            audio.play();
+            const img = document.getElementById("five");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+ function au() {
+            var audio = document.getElementById("au");
+            audio.play();
+            const img = document.getElementById("six");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function o() {
+            var audio = document.getElementById("o");
+            audio.play();
+            const img = document.getElementById("seven");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function aoo() {
+            var audio = document.getElementById("aoo");
+            audio.play();
+            const img = document.getElementById("eight");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function oao() {
+            var audio = document.getElementById("oao");
+            audio.play();
+            const img = document.getElementById("nine");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function aao() {
+            var audio = document.getElementById("aao");
+            audio.play();
+            const img = document.getElementById("ten");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function b() {
+            var audio = document.getElementById("b");
+            audio.play();
+            const img = document.getElementById("eleven");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function c() {
+            var audio = document.getElementById("c");
+            audio.play();
+            const img = document.getElementById("twelve");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function huh() {
+            var audio = document.getElementById("cat");
+            audio.play();
+            const img = document.getElementById("thirteen");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+function pipe() {
+            var audio = document.getElementById("metal");
+            audio.play();
+            const img = document.getElementById("fourteen");
+            img.classList.add("monkey");
+            audio.addEventListener("ended", function() {
+              img.classList.remove("monkey");
+            });
+        }
+
+
+
+    </script>
+</body>
