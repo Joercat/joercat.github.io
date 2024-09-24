@@ -63,8 +63,9 @@ color: white;
   }
  .largeimg {
 margin-left: 900px;
-   margin-top: -300px;
+   margin-top: -500px;
    postion: top;
+   postion: absolute;  
  }
   .font1 { /* for buttons only */
  font-family: Caveat;
