@@ -1,0 +1,107 @@
+ .banner {
+background-color: blue;
+    width: 100%;
+    height: 50px;
+    postion: top;
+    margin-bottom: 80px;
+  }
+  body {
+overflow-x: hidden;
+  }
+.right {
+text-align: right
+}
+  .hidden {
+color: black;
+  }
+  .place {
+margin-bottom: 100px;
+  }
+a {
+text-decoration: none;
+}
+body {
+    margin: 0;
+    font-family: 'Railway'
+}
+
+.left-bar {
+    width: 200px;
+    height: 207vh;
+    background-color: blue;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 20px;
+}
+.caveat {
+font-family: 'caveat';
+  font-size: 18px;
+  color: blue;
+}
+ 
+.main-content {
+    margin-left: 150px; 
+    padding: 20px;
+}
+h5 {
+color: white;
+}
+ .sc {
+background-color: black;
+   color: white;
+   text-decoration: none;
+  width: 80%;
+    margin-left: 20vh;
+ } 
+  .name {
+color: white;
+    font-size: 23px;
+    font-weight: light;
+    font-family: 'Raleway';
+  }
+ .largeimg {
+margin-left: 900px;
+   margin-top: -150px;
+   postion: top;
+ }
+  .font1 { /* for buttons only */
+ font-family: Caveat;
+    color: white;
+  }
+  .img {
+margin-right: 75px;
+  }
+  .welcome {
+margin-left: 5px;
+    font-family: 'Raleway';
+    font-size: 38px;
+    font-weight: 'extra light';
+    color: blue;
+  }
+  .red-bar {
+postion: bottom;
+    background-color: red;
+    width: 100vw;
+    height: 350px;
+    margin-top: 53vh;
+  }
+  .note {
+color: #00ff00;
+    text-decoration: underline;
+    font-family: 'caveat';
+    font-size: 36px;
+  }
+  .issue {
+background-color: white;
+    color: black;
+    text-decoration: none;
+    width: 80%;
+    margin-left: 20vh;
+  }
+  .download {
+color: blue;
+    margin-top: 350px;
+    font-size: 30px;
+    font-family: 'caveat';
+  }
