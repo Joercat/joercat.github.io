@@ -30,7 +30,7 @@ body {
     width: 200px;
     height: -250px;
     background-color: blue;
-    position: absolute;
+    position: bottom;
     top: 0;
     left: 0;
     padding: 20px;
