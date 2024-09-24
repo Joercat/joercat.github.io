@@ -137,7 +137,9 @@ color: blue;
     <br>
     <br>
     <br>
-         <h5 class="name">The Unblocked cat</h5>
+    <div id="a"></div>
+          <div id="a"></div>
+        
     
     <br>
     <br>
@@ -194,6 +196,24 @@ color: blue;
     <div class="main-content">
    <div><h1 class="welcome" >Welcome to the unblocked cat</h1> 
   <img class="largeimg" src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" width="134" height="134"> 
+     <script>
+       document.getElementById("a");
+       var today = new Date();
+var hourNow = today.getHours();
+var greeting;
+
+if (hourNow > 18) {
+    greeting = 'Good evening!';
+} else if (hourNow > 12) {
+    greeting = 'Good afternoon!';
+} else if (hourNow > 0) {
+    greeting = 'Good morning!';
+} else {
+    greeting = 'Welcome!';
+}
+
+document.write('<h5 class="name">' + greeting + " and welcome to the unblocked cat" + '</h5>');
+     </script>
 
      
      
