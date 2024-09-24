@@ -28,7 +28,7 @@ body {
 
 .left-bar {
     width: 200px;
-    height: 207vh;
+    height: 100%;
     background-color: blue;
     position: absolute;
     top: 0;
@@ -63,7 +63,7 @@ color: white;
   }
  .largeimg {
 margin-left: 900px;
-   margin-top: -150px;
+   margin-top: 0px;
    postion: top;
  }
   .font1 { /* for buttons only */
