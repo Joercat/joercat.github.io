@@ -13,4 +13,4 @@
       greeting = 'Hello!';
   }
 
-  document.write('<h1 class="welcome">' + greeting + '</h1>');
+  document.write('<h1 class="welcome2">' + greeting + '</h1>');
