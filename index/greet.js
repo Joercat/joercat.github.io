@@ -10,7 +10,7 @@
   } else if (hourNow > 0) {
       greeting = 'Good morning!';
   } else {
-      greeting = 'Hello!';
+      greeting = 'Have a nice day!';
   }
 
   document.write('<h1 class="welcome2">' + greeting + '</h1>');
