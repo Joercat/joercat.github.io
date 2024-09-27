@@ -1,7 +1,54 @@
-<title>Tunnel rush</title>
-<link rel="icon" type="image/png" href="https://joercat.github.io/img/theunblockedcatfavicon.png">
-<link href="https://cdn.jsdelivr.net/gh/hyperwood/h4tfgh7@c4d52c61c545cc2d537d647ee6a882856d9baf34/style.css">
+<title>Tunnel Rush</title>
+<div class="cover"></div>
+<style>.webgl-content * {border: 0; margin: 0; padding: 0} .webgl-content {top: 0; left: 0;} .webgl-content .logo, .progress {position: absolute; left: 50%; top: 50%; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);} .webgl-content .logo {background: url('progressLogo.Light.png') no-repeat center / contain; width: 154px; height: 130px;} .webgl-content .progress {height: 18px; width: 141px; margin-top: 90px;} .webgl-content .progress .empty {background: url('progressEmpty.Light.png') no-repeat right / cover; float: right; width: 100%; height: 100%; display: inline-block;} .webgl-content .progress .full {background: url('progressFull.Light.png') no-repeat left / cover; float: left; width: 0%; height: 100%; display: inline-block;} .webgl-content .logo.Dark {background-image: url('progressLogo.Dark.png');} .webgl-content .progress.Dark .empty {background-image: url('progressEmpty.Dark.png');} .webgl-content .progress.Dark .full {background-image: url('progressFull.Dark.png');} .webgl-content .footer {margin-top: 5px; height: 38px; line-height: 38px; font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 18px;} .webgl-content .footer .webgl-logo, .title, .fullscreen {height: 100%; display: inline-block; background: transparent center no-repeat;} .webgl-content .footer .webgl-logo {background-image: url('webgl-logo.png'); width: 204px; float: left;} .webgl-content .footer .title {margin-right: 10px; float: right;} .webgl-content .footer .fullscreen {background-image: url('fullscreen.png'); width: 38px; float: right;} body, html{ margin:0; padding:0; } #gameContainer canvas{ position:absolute; transform:translate(-50%, -50%); top:50%; left:50%; } .simmer{ position:absolute; bottom:10px; right:10px; color:#aaa; font-size:9px; font-family:sans-serif; font-family:sans-serif; /*want to remove the simmer branding? uncomment display:none below!*/ /*display:none;*/ } .simmer a{ color:#cccccc; text-decoration:none; font-size:12px; transition:opacity 3s; } .simmer a:hover{ color:#fff; text-decoration:underline; } .simmer.hide { opacity:0; }</style>
 <script src="https://cdn.jsdelivr.net/gh/hyperwood/h4tfgh7@c4d52c61c545cc2d537d647ee6a882856d9baf34/UnityProgress.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyperwood/h4tfgh7@c4d52c61c545cc2d537d647ee6a882856d9baf34/unityloader49.js"></script>
 
- <script> var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/hyperwood/h4tfgh7@c4d52c61c545cc2d537d647ee6a882856d9baf34/tunnel-rush_v9.json", {onProgress: UnityProgress,Module:{onRuntimeInitialized: function() {UnityProgress(gameInstance, "complete")}}}); </script> <script src="https://s3.amazonaws.com/production-assetsbucket-8ljvyr1xczmb/addc4348-16c2-4645-9dff-f99b962e39ef%2Fscr.js"></script> <div class="webgl-content"> <div id="gameContainer" style="width: 100vw; height: 100vh"></div> </div>
+ <script> 
+ var gameInstance = UnityLoader.instantiate("gameContainer", 
+ "https://cdn.jsdelivr.net/gh/hyperwood/h4tfgh7@c4d52c61c545cc2d537d647ee6a882856d9baf34/tunnel-rush_v9.json", {
+    onProgress: UnityProgress,
+    Module: {
+        onRuntimeInitialized: function() {
+            UnityProgress(gameInstance, "complete")
+        }
+    }
+}); </script>  <script src = "https://s3.amazonaws.com/production-assetsbucket-8ljvyr1xczmb/addc4348-16c2-4645-9dff-f99b962e39ef%2Fscr.js"> </script> <center>
+<br><br><br><br>
+<div class="webgl-content">
+ <div id="gameContainer" style="width: 70%; height: 60%"></div> 
+</div>
+<div class="a"></div>
+<img onclick="a()" src="https://joercat.github.io/w/e/h/s/v/img.png">
+</center>
+<style>
+ body {  
+background-color: black;
+}
+ .cover {
+background-color: white;
+position: top;
+margin-left: 50px;
+}
+
+ img {
+width: 50px;
+height: 50px;
+background-color: gray; 
+padding: 10px;
+margin-bottom: -20px;
+}
+img:hover {
+background-color: #A9A9A9; 
+}
+img:active {
+background-color: red; 
+}
+</style>
+<script>
+function a() {
+let x = window.open(''); 
+x.document.write('<html><style>iframe { width: 101%; height: 101%; }</style><title></title><center><iframe src="https://joercat.github.io/tr2"></center></html>');
+}
+</script>
+
