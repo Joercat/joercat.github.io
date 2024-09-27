@@ -1,3 +1,4 @@
+
 const socket = io();
 const chatMessages = document.getElementById('chat-messages');
 const usernameInput = document.getElementById('username');
