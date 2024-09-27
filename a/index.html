@@ -1,7 +1,14 @@
 
 <script>
 function a() {
-window.open("https://joercat.github.io/tr", "_blank");
+const w = window.open() // access the "about:blank" window you've opened
+w.document.body.innerHTML = "<html>
+  <iframe src="https://joercat.github.io/tr/"> </html>"
+// or access other parts to add more JS or CSS
+const style = w.document.createElement("link")
+link.href = "style.css"
+link.rel = "stylesheet"
+w.document.head.appendChild(style)
 } 
   </script>
 
