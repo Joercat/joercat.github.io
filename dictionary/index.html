@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Dictionary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-container {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+
+        #search-input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        #search-button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        #result-container {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>HTML Dictionary</h1>
+    </header>
+    <main>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Enter an HTML element...">
+            <button id="search-button">Search</button>
+        </div>
+        <div id="result-container">
+            <h2 id="element-name"></h2>
+            <p id="element-description"></p>
+            <h3>Example:</h3>
+            <pre><code id="element-example"></code></pre>
+<center>
+<button><a href="https://joercat.github.io/"</button>
+</center>
+        </div>
+    </main>
+  <script src="elements.js"></script>
+    <script src="htmlsearch.js"></script>
+    
+</body>
+</html>
