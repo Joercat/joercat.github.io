@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to FLAC Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>YouTube to FLAC Converter</h1>
+    <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
+    <button onclick="convertToFlac()">Convert to FLAC</button>
+    <div id="result"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+    <script>
+async function convertToFlac() {
+    const youtubeUrl = document.getElementById('youtubeUrl').value;
+    const resultDiv = document.getElementById('result');
+
+    if (!youtubeUrl) {
+        resultDiv.innerHTML = 'Please enter a valid YouTube URL';
+        return;
+    }
+
+    resultDiv.innerHTML = 'Converting...';
+
+    try {
+        // Simulate fetching audio data from YouTube
+        const audioData = await simulateFetchAudio(youtubeUrl);
+
+        // Convert audio data to FLAC
+        const flacBlob = await convertToFlacBlob(audioData);
+
+        // Create download link
+        const downloadUrl = URL.createObjectURL(flacBlob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = 'converted_audio.flac';
+        downloadLink.innerHTML = 'Download FLAC';
+
+        resultDiv.innerHTML = '';
+        resultDiv.appendChild(downloadLink);
+    } catch (error) {
+        resultDiv.innerHTML = `Error: ${error.message}`;
+    }
+}
+
+async function simulateFetchAudio(url) {
+    // This function simulates fetching audio data from YouTube
+    // In a real-world scenario, you'd need a server-side component to handle this
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const dummyAudioData = new Uint8Array(1000).map(() => Math.floor(Math.random() * 256));
+            resolve(dummyAudioData);
+        }, 2000);
+    });
+}
+
+async function convertToFlacBlob(audioData) {
+    // In a real-world scenario, you'd use a FLAC encoder library here
+    // For this example, we'll create a mock FLAC file using MP3 encoding
+
+    return new Promise((resolve) => {
+        const mp3encoder = new lamejs.Mp3Encoder(1, 44100, 128);
+        const mp3Data = mp3encoder.encodeBuffer(audioData);
+        const mp3Blob = new Blob([mp3Data], { type: 'audio/mpeg' });
+
+        // Simulate FLAC conversion by changing the MIME type
+        const flacBlob = new Blob([mp3Blob], { type: 'audio/flac' });
+        resolve(flacBlob);
+    });
+}
+
+    </script>
+</body>
+</html>
