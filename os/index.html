@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCos 1.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="full">
+    <div class="computer">
+        <div class="screen">
+            <div class="pad">
+                <div id="loading-screen">
+                    <h1>Booting SCos 1.0...</h1>
+                </div>
+
+                <div class="desktop-icon" onclick="showApp('calculator')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/891/891175.png" alt="Calculator">
+                    <div>Calculator</div>
+                </div>
+                <div class="desktop-icon" onclick="showApp('memory')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1665/1665680.png" alt="Memory">
+                    <div>Memory</div>
+                </div>
+                <div class="desktop-icon" onclick="showApp('internet')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2985/2985995.png" alt="Internet">
+                    <div>Internet</div>
+                </div>
+                <div class="desktop-icon" onclick="showApp('games')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3097/3097980.png" alt="Games">
+                    <div>Games</div>
+                </div>
+
+                <div id="calculator" class="app">
+                    <div class="app-header">
+                        <h2>Calculator</h2>
+                        <button class="close-button" onclick="closeApp('calculator')">X</button>
+                    </div>
+                    <div>
+                        <input type="number" id="num1" placeholder="Number 1">
+                        <input type="number" id="num2" placeholder="Number 2">
+                    </div>
+                    <div>
+                        <button onclick="compute('add')">Add</button>
+                        <button onclick="compute('subtract')">Subtract</button>
+                        <button onclick="compute('multiply')">Multiply</button>
+                        <button onclick="compute('divide')">Divide</button>
+                    </div>
+                    <div class="output-bar" id="calculator-output"></div>
+                </div>
+
+                <div id="memory" class="app">
+                    <div class="app-header">
+                        <h2>Memory Storage</h2>
+                        <button class="close-button" onclick="closeApp('memory')">X</button>
+                    </div>
+                    <div>
+                        <input type="text" id="memoryKey" placeholder="Memory Storage Key">
+                        <input type="number" id="memoryValue" placeholder="What number do you want saved?">
+                    </div>
+                    <div>
+                        <button onclick="setMemory()">Set Memory</button>
+                        <button onclick="getMemory()">Get Memory</button>
+                    </div>
+                    <div class="output-bar" id="memory-output"></div>
+                </div>
+
+                <div id="internet" class="app">
+                    <div class="app-header">
+                        <h2>Internet</h2>
+                        <button class="close-button" onclick="closeApp('internet')">X</button>
+                    </div>
+                    <div>
+                        <button onclick="switchIframe('google')">Google</button>
+                        <button onclick="switchIframe('cybertoilet')">TUC net (beta)</button>
+                    </div>
+                    <div id="google-frame" class="iframe-container">
+                        <iframe src="https://www.google.com/webhp?igu=1" width="100%" height="110%"></iframe>
+                    </div>
+                    <div id="cybertoilet-frame" class="iframe-container">
+                        <iframe src="https://cybertoilet.github.io" width="100%" height="100%"></iframe>
+                    </div>
+                    <div class="output-bar" id="internet-output"></div>
+                </div>
+
+                <div id="games" class="app">
+                    <div class="app-header">
+                        <h2>Games</h2>
+                        <button class="close-button" onclick="closeApp('games')">X</button>
+                    </div>
+                    <button onclick="openUnblockedCat()">Open Unblocked Cat</button>
+                    <iframe id="game-frame" src="about:blank" width="100%" height="calc(100% - 80px)"></iframe>
+                    <div class="output-bar" id="games-output"></div>
+                </div>
+            </div>
+        </div>
+        <div class="taskbar">
+            <button class="start-button">Start</button>
+        </div>
+    </div>
+ </div>
+    <script src="computer.js"></script>
+
+</body>
+</html>
