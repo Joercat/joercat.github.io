@@ -1,18 +1,194 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCos 1.0</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .computer {
+            width: 800px;
+            height: 600px;
+            background-color: #333;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .screen {
+            width: 100%;
+            height: 560px;
+            background-color: #000;
+            position: relative;
+            overflow: auto;
+        }
+        .pad {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .taskbar {
+            height: 40px;
+            background-color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .start-button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        input, button {
+            margin: 5px;
+            padding: 5px;
+        }
+        .output-bar {
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #111;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #444;
+            height: 60px;
+            overflow-y: auto;
+        }
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: #0f0;
+        }
+        .app {
+            display: none;
+            margin-bottom: 20px;
+            color: #0f0;
+            background-color: #222;
+            border: 1px solid #444;
+            padding: 10px;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 80%;
+            height: 80%;
+            overflow: auto;
+        }
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .close-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .desktop-icon {
+            display: inline-block;
+            text-align: center;
+            margin: 10px;
+            cursor: pointer;
+            color: #fff;
+        }
+        .desktop-icon img {
+            width: 48px;
+            height: 48px;
+        }
+        .desktop-icon img:hover {
+            width: 46px;
+            height: 46px;
+
+        }
+        iframe {
+            width: 100%;
+            height: calc(100% - 110px);
+            border: none;
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100% - 80px);
+            display: none;
+        }
+        .iframe-container.active {
+            display: block;
+        }
+        .app-loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+        }
+        .loading-bar {
+            width: 200px;
+            height: 20px;
+            background-color: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background-color: #39FF14;
+            transition: width 1.4s linear;
+        }
+        .logo {
+            width: 35px;
+            height: 36px;
+            margin-top: 10%;
+            margin-left: 875%;
+        }
+        .time {
+            margin-top: 0%;
+            margin-left: 55%;
+            color: #39FF14;
+            font-size: 12px;
+        }
+        .boot {
+            width: 35px;
+            height: 36px;
+            margin-left: 5%;
+        }
+    </style>
 </head>
 <body>
-    <div class="full">
     <div class="computer">
         <div class="screen">
             <div class="pad">
                 <div id="loading-screen">
-                    <h1>Booting SCos 1.0...</h1>
+                    <h1>SC os  </h1>
+                    <p> 1.0</p>
+                    <img class="boot" type="image/png" src="SClogo.png" alt="SC logo">
                 </div>
 
                 <div class="desktop-icon" onclick="showApp('calculator')">
@@ -57,7 +233,7 @@
                     </div>
                     <div>
                         <input type="text" id="memoryKey" placeholder="Memory Storage Key">
-                        <input type="number" id="memoryValue" placeholder="What number do you want saved?">
+                        <input type="text" id="memoryValue" placeholder="Value to be saved">
                     </div>
                     <div>
                         <button onclick="setMemory()">Set Memory</button>
@@ -73,15 +249,14 @@
                     </div>
                     <div>
                         <button onclick="switchIframe('google')">Google</button>
-                        <button onclick="switchIframe('cybertoilet')">TUC net (beta)</button>
+                        <button onclick="switchIframe('cybertoilet')">Cyber Toilet</button>
                     </div>
                     <div id="google-frame" class="iframe-container">
-                        <iframe src="https://www.google.com/webhp?igu=1" width="100%" height="110%"></iframe>
+                        <iframe src="https://www.google.com/webhp?igu=1" width="100%" height="100%"></iframe>
                     </div>
                     <div id="cybertoilet-frame" class="iframe-container">
                         <iframe src="https://cybertoilet.github.io" width="100%" height="100%"></iframe>
                     </div>
-                    <div class="output-bar" id="internet-output"></div>
                 </div>
 
                 <div id="games" class="app">
@@ -91,16 +266,180 @@
                     </div>
                     <button onclick="openUnblockedCat()">Open Unblocked Cat</button>
                     <iframe id="game-frame" src="about:blank" width="100%" height="calc(100% - 80px)"></iframe>
-                    <div class="output-bar" id="games-output"></div>
                 </div>
             </div>
         </div>
         <div class="taskbar">
             <button class="start-button">Start</button>
+<center> <img class="logo" type="image/png" src="SClogo.png" alt="SC logo"> </center>
+    <div class="time">
+<span id="current-date"></span>
+    </div>
         </div>
     </div>
- </div>
-    <script src="computer.js"></script>
 
+    <script>
+        class SimpleComputer {
+            constructor() {
+                this.memory = {};
+            }
+
+            add(a, b) {
+                return a + b;
+            }
+
+            subtract(a, b) {
+                return a - b;
+            }
+
+            multiply(a, b) {
+                return a * b;
+            }
+
+            divide(a, b) {
+                if (b === 0) {
+                    throw new Error("Division by zero");
+                }
+                return a / b;
+            }
+
+            setMemory(key, value) {
+                this.memory[key] = value;
+            }
+
+            getMemory(key) {
+                return this.memory[key] || "Not found";
+            }
+        }
+
+        const computer = new SimpleComputer();
+
+        function compute(operation) {
+            const num1 = parseFloat(document.getElementById("num1").value);
+            const num2 = parseFloat(document.getElementById("num2").value);
+            let result;
+
+            try {
+                switch (operation) {
+                    case 'add':
+                        result = computer.add(num1, num2);
+                        break;
+                    case 'subtract':
+                        result = computer.subtract(num1, num2);
+                        break;
+                    case 'multiply':
+                        result = computer.multiply(num1, num2);
+                        break;
+                    case 'divide':
+                        result = computer.divide(num1, num2);
+                        break;
+                }
+                displayOutput('calculator', `Result: ${result}`);
+            } catch (error) {
+                displayOutput('calculator', `Error: ${error.message}`);
+            }
+        }
+
+        function setMemory() {
+            const key = document.getElementById("memoryKey").value;
+            const value = document.getElementById("memoryValue").value;
+            computer.setMemory(key, value);
+            displayOutput('memory', `Stored "${value}" in memory at key "${key}"`);
+        }
+
+        function getMemory() {
+            const key = document.getElementById("memoryKey").value;
+            const value = computer.getMemory(key);
+            displayOutput('memory', `Value at key "${key}": ${value}`);
+        }
+
+        function displayOutput(appName, message) {
+            const outputBar = document.getElementById(`${appName}-output`);
+            outputBar.innerHTML += `<div>${message}</div>`;
+            outputBar.scrollTop = outputBar.scrollHeight;
+        }
+
+        function showApp(appName) {
+            const app = document.getElementById(appName);
+            if (app.style.display === 'block') {
+                return; // App is already open, do nothing
+            }
+
+            document.querySelectorAll('.app').forEach(a => {
+                a.style.display = 'none';
+            });
+
+            const loadingScreen = document.createElement('div');
+            loadingScreen.className = 'app-loading-screen';
+            loadingScreen.innerHTML = `
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+            `;
+            app.appendChild(loadingScreen);
+            app.style.display = 'block';
+
+            setTimeout(() => {
+                const progress = loadingScreen.querySelector('.loading-progress');
+                progress.style.width = '100%';
+            }, 50);
+
+            setTimeout(() => {
+                loadingScreen.remove();
+                if (appName === 'internet') {
+                    switchIframe('google');
+                }
+            }, 1500);
+        }
+
+        function closeApp(appName) {
+            document.getElementById(appName).style.display = 'none';
+        }
+
+        function switchIframe(frame) {
+            document.getElementById('google-frame').classList.remove('active');
+            document.getElementById('cybertoilet-frame').classList.remove('active');
+            document.getElementById(`${frame}-frame`).classList.add('active');
+            displayOutput('internet', `Switched to ${frame === 'google' ? 'Google' : 'Cyber Toilet'}`);
+        }
+
+        function openUnblockedCat() {
+            const frame = document.getElementById('game-frame');
+            frame.src = 'https://joercat.github.io';
+            displayOutput('games', 'Loading Unblocked Cat');
+        }
+
+        // Loading screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.display = 'none';
+            }, 7000);
+        });
+        function updateDate() {
+            const currentDateElement = document.getElementById('current-date');
+            const today = new Date();
+            
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            
+            const formattedDate = today.toLocaleDateString('en-US', options);
+            
+            currentDateElement.textContent = formattedDate;
+        }
+
+        // Update the date immediately
+        updateDate();
+
+        // Update the date every second
+        setInterval(updateDate, 1000);
+
+    </script>
 </body>
 </html>
