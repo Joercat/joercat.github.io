@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCos 1.1</title>
+    <link rel="icon" type="image/png" href="SClogo.png">
     <style>
 body {
     background-color: #f0f0f0;
@@ -50,12 +51,19 @@ body {
 }
 
 .start-button {
-    background-color: #0078d7;
-    color: white;
+    background-color: #39FF14;
+    color: black;
     border: none;
-    padding: 5px 10px;
+    padding: 10px 5px;
     border-radius: 3px;
     cursor: pointer;
+    width: 65px;
+    height: 55px;
+    margin-top: -5000%;
+}
+.start-button:hover {
+    width: 63px;
+    height: 52px;
 }
 
 input, button {
@@ -208,15 +216,16 @@ input, button {
 .logo {
     width: 35px;
     height: 36px;
-    margin-top: 10%;
-    margin-left: 875%;
+    margin-top: 12%;
+    margin-left: 1050%;
 }
 
 .time {
-    margin-top: 0%;
-    margin-left: 55%;
+    margin-bottom: 8.5%;
+    margin-left: 77.5%;
     color: #39FF14;
     font-size: 12px;
+    z-index: 1000;
 }
 
 .boot {
@@ -286,6 +295,11 @@ input, button {
                 </div>
 
                 <!-- Desktop Icons -->
+ <div class="desktop-icon">
+            <button class="start-button"><strong>Account Settings</strong></button>
+<div>Account</div>
+</div>
+
                 <div class="desktop-icon" onclick="showApp('calculator')">
                     <img src="https://cdn-icons-png.flaticon.com/512/891/891175.png" alt="Calculator">
                     <div>Calculator</div>
@@ -413,8 +427,6 @@ input, button {
 
 
         <div class="taskbar">
-            <button class="start-button">Account</button>
-
             <center><img class="logo" type="image/png" src="SClogo.png" alt="SC logo"></center>
             <div class="time">
                 <span id="current-date"></span>
@@ -422,7 +434,7 @@ input, button {
         </div>
     </div>
 <script>
-const availableApps = [
+ const availableApps = [
     {
         id: 'text-editor',
         name: 'Text Editor',
@@ -978,22 +990,24 @@ function initCalculatorPro() {
     const calculator = document.querySelector('.calculator-grid');
     calculator.innerHTML = `
         <div class="display">0</div>
-        <button onclick="calcInput('7')">7</button>
-        <button onclick="calcInput('8')">8</button>
-        <button onclick="calcInput('9')">9</button>
-        <button onclick="calcInput('+')">+</button>
-        <button onclick="calcInput('4')">4</button>
-        <button onclick="calcInput('5')">5</button>
-        <button onclick="calcInput('6')">6</button>
-        <button onclick="calcInput('-')">-</button>
+<br>
         <button onclick="calcInput('1')">1</button>
         <button onclick="calcInput('2')">2</button>
         <button onclick="calcInput('3')">3</button>
-        <button onclick="calcInput('*')">×</button>
+        <button onclick="calcInput('4')">4</button>
+        <button onclick="calcInput('5')">5</button>
+        <button onclick="calcInput('6')">6</button>
+        <button onclick="calcInput('7')">7</button>
+        <button onclick="calcInput('8')">8</button>
+        <button onclick="calcInput('9')">9</button>
         <button onclick="calcInput('0')">0</button>
         <button onclick="calcInput('.')">.</button>
-        <button onclick="calculate()">=</button>
+        <p>Operatitons</p>
+        <button onclick="calcInput('+')">+</button>
+        <button onclick="calcInput('-')">-</button>
+        <button onclick="calcInput('*')">×</button>
         <button onclick="calcInput('/')">/</button>
+        <button onclick="calculate()">=</button>
     `;
     
     let currentCalculation = '';
@@ -1206,7 +1220,7 @@ function switchIframe(frameId) {
 // Games functionality
 function openUnblockedCat() {
     const gameFrame = document.getElementById('game-frame');
-    gameFrame.src = 'https://www.google.com/logos/2010/pacman10-i.html';
+    gameFrame.src = 'https://joercat.github.io';
     // You can replace the URL with any other game URL you prefer
 }
 // Add this to your existing JavaScript
