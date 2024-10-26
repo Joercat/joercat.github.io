@@ -1,28 +1,24 @@
-<body>
-	<center>
-		<br>
-		<br>
-		<br>
-		<br>
-		<br>
-		<div class="box">
-			<br>
-<h1>Error:</h1> <h1 class="code">404</h1>
-		<p>The page or page content you were looking may have been deleted.</p>
-			<br>
-			<br>
-			<br>
-			<br>
-		</div>
-	</center>
-</body>
+
 <style>
-	.code {
-color: red;
-	font-size:75px	
-	}
-	.box {
-background-color: #f0f0f0;
-		width: 800px;
-	}
+.iframe-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* This ensures the container takes up the full viewport height */
+}
+
+.iframe-container iframe {
+  border: none;
+  width: 101%; /* Adjust this value as needed */
+  height: 101%; /* Adjust this value as needed */
+  max-width: 101%; /* Adjust this value as needed */
+  max-height: 101%; /* Adjust this value as needed */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 </style>
+<div class="iframe-container">
+  <iframe src="https://thepizzaedition.github.io/assets/mainstorage/subwaysurferssaintpitsburg.html"></iframe>
+</div>
