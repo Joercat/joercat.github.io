@@ -1,0 +1,109 @@
+:root {
+    --primary-color: #2ecc71;
+    --secondary-color: #3498db;
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --chat-bg: #2d2d2d;
+}
+
+body {
+    font-family: 'Monaco', monospace;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.chat-container {
+    height: 60vh;
+    overflow-y: auto;
+    background: var(--chat-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--primary-color);
+}
+
+.message {
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.user-message {
+    background: var(--secondary-color);
+    margin-left: auto;
+}
+
+.ai-message {
+    background: #1e1e1e;
+    margin-right: auto;
+    font-size: 14px;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+}
+
+textarea {
+    flex: 1;
+    background: var(--chat-bg);
+    color: var(--text-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 10px;
+    min-height: 100px;
+    font-family: 'Monaco', monospace;
+}
+
+button {
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+.model-selector {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.model-btn {
+    background: var(--chat-bg);
+    color: var(--text-color);
+    border: 1px solid var(--primary-color);
+    padding: 10px 20px;
+    margin: 0 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.model-btn.active {
+    background: var(--primary-color);
+}
+
+pre[class*="language-"] {
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.typing-effect {
+    border-right: 2px solid var(--primary-color);
+    animation: blink 0.75s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { border-color: transparent }
+    50% { border-color: var(--primary-color) }
+}
