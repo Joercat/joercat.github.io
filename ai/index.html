@@ -1,5 +1,30 @@
-<title>JoerAI</title>
-<h1>Redirecting...</h1>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="refresh" content="0; url=https://aituc.github.io/" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Chat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css">
 </head>
+<body>
+    <h1>AI Assistant Chat</h1>
+    <div class="model-selector">
+        <button class="model-btn active" onclick="switchModel('code')" id="codeBtn">Code Assistant</button>
+        <button class="model-btn" onclick="switchModel('chat')" id="chatBtn">Chat Assistant</button>
+    </div>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-container">
+        <textarea id="prompt" placeholder="Ask your question..."></textarea>
+        <button onclick="getResponse()">Send</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-html.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
