@@ -1,8 +1,8 @@
 :root {
-    --primary-color: black;
-    --secondary-color: black;
+    --primary-color: grey;
+    --secondary-color: gray;
     --bg-color: black;
-    --text-color: #39FF14;
+    --text-color: black;
     --chat-bg: grey;
 }
 
