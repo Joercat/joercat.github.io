@@ -80,7 +80,7 @@ button:hover {
 }
 
 .model-btn {
-    background: var(--chat-bg);
+    background-color: black;
     color: var(--text-color);
     border: 1px solid var(--primary-color);
     padding: 10px 20px;
@@ -90,7 +90,7 @@ button:hover {
 }
 
 .model-btn.active {
-    background: var(--primary-color);
+    background-color: black;
 }
 
 pre[class*="language-"] {
