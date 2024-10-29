@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Songs</title>
+    <style>
+        body {
+            background-image: linear-gradient(90deg, blue, red);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+span {
+color: red;
+font-size: 50000px;
+}
+        .container {
+            padding: 20px;
+        }
+        .search-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+        #searchInput {
+            padding: 5px;
+            width: 500px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            width: 75px;
+        }
+        .search-results {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1001;
+            color: black;
+        }
+        .search-results h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: red;
+        }
+        .search-results ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .search-results li {
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .song-info {
+            margin-bottom: 5px;
+        }
+        audio {
+            width: 100%;
+            max-width: 300px;
+        }
+        h4 {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="What do you feel like listening to today? type :help if you have questions ">
+            <button id="searchButton">🔍</button>
+        </div>
+
+        <div id="searchResults" class="search-results"></div>
+
+        <center>
+            <br><br><br><br>
+            <h4>Fading Lights</h4>
+            <audio controls>
+                <source src="DJJR  - Fading Lights.wav" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Calling Out</h4>
+            <audio controls>
+                <source src="DJJR - Calling Out.wav" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Falling Apart</h4>
+            <audio controls>
+                <source src="DJJR - Falling apart.wav" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Fading Flame</h4>
+            <audio controls>
+                <source src="DJJR - Fading Flame.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>The end is Near</h4>
+            <audio controls>
+                <source src="DJJR - The End Is Near.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Realm of Decay</h4>
+            <audio controls>
+                <source src="DJJR - Realm of Decay.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Dancing in the dark</h4>
+            <audio controls>
+                <source src="DJJR - Dancing in the dark.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Hollow Throne</h4>
+            <audio controls>
+                <source src="DJJR - Hollow Throne.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Reaper's Call</h4>
+            <audio controls>
+                <source src="DJJR - Reaper's Call.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Dancing With Ghosts</h4>
+            <audio controls>
+                <source src="DJJR - Dancing With Ghosts.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Can't let go</h4>
+            <audio controls>
+                <source src="DJJR - Can't let go.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Break the Silence</h4>
+            <audio controls>
+                <source src="DJJR - Break the Silence.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Trapped in the Sea</h4>
+            <audio controls>
+                <source src="DJJR - Trapped in the Sea.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>No Way Back Home</h4>
+            <audio controls>
+                <source src="DJJR - No Way Back Home.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <h4>Echoes of You</h4>
+            <audio controls>
+                <source src="DJJR - Echoes of You (instrumental).mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+             <br><br>
+            <h4>Backroads and sunsets</h4>
+            <audio controls>
+                <source src="Backroads and Sunsets.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+                         <br><br>
+            <h4>Feel the vibe</h4>
+            <audio controls>
+                <source src="DJJR - Feel the Vibe.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </center>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        function levenshteinDistance(a, b) {
+            const matrix = [];
+
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[b.length][a.length];
+        }
+
+        function findClosestMatch(word, dictionary) {
+            let closestMatch = '';
+            let minDistance = Infinity;
+
+            for (const dictWord of dictionary) {
+                const distance = levenshteinDistance(word, dictWord);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestMatch = dictWord;
+                }
+            }
+
+            return closestMatch;
+        }
+
+        const dictionary = [
+            "alternative rock", "dance", "death", "hard rock", "heavy metal",
+            "metal", "nu metal", "nu-metal", "numetal", "rap", "rock", "sad",
+            "male", "male singing", "female", "female singing", "break the silence",
+            "cant let go", "dancing in the dark", "dancing with ghosts",
+            "fading flame", "hollow throne", "no way back home", "realm of decay",
+            "reapers call", "the end is near", "trapped in the sea", "fading lights",
+            "calling out", "falling apart", "echos of you", "all", ":help", 
+            "backroads and sunsets", "new", "country", "upbeat", "feel the vibe"
+        ];
+
+        function autoCorrect(input) {
+            const words = input.split(' ');
+            const correctedWords = words.map(word => {
+                if (dictionary.includes(word.toLowerCase())) {
+                    return word;
+                } else {
+                    return findClosestMatch(word.toLowerCase(), dictionary);
+                }
+            });
+            return correctedWords.join(' ');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchButton = document.getElementById('searchButton');
+            searchButton.addEventListener('click', performSearch);
+
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+
+        function performSearch() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const correctedInput = autoCorrect(searchInput);
+            const searchResults = document.getElementById("searchResults");
+
+            searchResults.innerHTML = "";
+
+
+
+            const filteredData = data.filter(item => 
+                item.category.toLowerCase().includes(correctedInput)
+            );
+
+            displayResults(filteredData, correctedInput);
+        }
+
+        function displayResults(results, searchTerm) {
+            const searchResults = document.getElementById("searchResults");
+            searchResults.style.display = "block";
+
+            const closeBtn = document.createElement("span");
+            closeBtn.innerHTML = "&times;";
+            closeBtn.className = "close-btn";
+            closeBtn.onclick = () => searchResults.style.display = "none";
+            searchResults.appendChild(closeBtn);
+
+            const heading = document.createElement("h2");
+            heading.textContent = `Closest search result: ${searchTerm}`;
+            searchResults.appendChild(heading);
+
+            const extra = document.createElement("p");
+            extra.innerHTML = ' Searched songs may repeat <br><br><br> ';
+            searchResults.appendChild(extra);
+
+            if (results.length === 0) {
+                const noResults = document.createElement("p");
+                noResults.innerHTML = 'No results found. <a href="https://forms.gle/21Lu5ZdMGNmnzK2h8/">Report this error?</a>';
+                searchResults.appendChild(noResults);
+            } else {
+                const ul = document.createElement("ul");
+                results.forEach(item => {
+                    const li = document.createElement("li");
+                    
+                    const songInfo = document.createElement("div");
+                    songInfo.className = "song-info";
+                    songInfo.textContent = `${item.artist} - ${item.name}`;
+                    li.appendChild(songInfo);
+
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    const source = document.createElement("source");
+                    source.src = item.audio;
+                    source.type = "audio/mpeg";
+                    audio.appendChild(source);
+                    li.appendChild(audio);
+
+                    ul.appendChild(li);
+                });
+                searchResults.appendChild(ul);
+            }
+        }
+
+    </script>
+</body>
+</html>
