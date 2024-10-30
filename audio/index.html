@@ -205,146 +205,149 @@ font-size: 50000px;
 
     <script src="data.js"></script>
     <script>
-        function levenshteinDistance(a, b) {
-            const matrix = [];
+function levenshteinDistance(a, b) {
+    const matrix = [];
 
-            for (let i = 0; i <= b.length; i++) {
-                matrix[i] = [i];
-            }
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
 
-            for (let j = 0; j <= a.length; j++) {
-                matrix[0][j] = j;
-            }
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
 
-            for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j - 1] + 1,
-                            matrix[i][j - 1] + 1,
-                            matrix[i - 1][j] + 1
-                        );
-                    }
-                }
-            }
-
-            return matrix[b.length][a.length];
-        }
-
-        function findClosestMatch(word, dictionary) {
-            let closestMatch = '';
-            let minDistance = Infinity;
-
-            for (const dictWord of dictionary) {
-                const distance = levenshteinDistance(word, dictWord);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestMatch = dictWord;
-                }
-            }
-
-            return closestMatch;
-        }
-
-        const dictionary = [
-            "alternative rock", "dance", "death", "hard rock", "heavy metal",
-            "metal", "nu metal", "nu-metal", "numetal", "rap", "rock", "sad",
-            "male", "male singing", "female", "female singing", "break the silence",
-            "cant let go", "dancing in the dark", "dancing with ghosts",
-            "fading flame", "hollow throne", "no way back home", "realm of decay",
-            "reapers call", "the end is near", "trapped in the sea", "fading lights",
-            "calling out", "falling apart", "echos of you", "all", ":help", 
-            "new", "upbeat", "feel the vibe", "the new age is here", 
-            "hold me through the night"
-        ];
-
-        function autoCorrect(input) {
-            const words = input.split(' ');
-            const correctedWords = words.map(word => {
-                if (dictionary.includes(word.toLowerCase())) {
-                    return word;
-                } else {
-                    return findClosestMatch(word.toLowerCase(), dictionary);
-                }
-            });
-            return correctedWords.join(' ');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchButton = document.getElementById('searchButton');
-            searchButton.addEventListener('click', performSearch);
-
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    performSearch();
-                }
-            });
-        });
-
-        function performSearch() {
-            const searchInput = document.getElementById("searchInput").value.toLowerCase();
-            const correctedInput = autoCorrect(searchInput);
-            const searchResults = document.getElementById("searchResults");
-
-            searchResults.innerHTML = "";
-
-
-
-            const filteredData = data.filter(item => 
-                item.category.toLowerCase().includes(correctedInput)
-            );
-
-            displayResults(filteredData, correctedInput);
-        }
-
-        function displayResults(results, searchTerm) {
-            const searchResults = document.getElementById("searchResults");
-            searchResults.style.display = "block";
-
-            const closeBtn = document.createElement("span");
-            closeBtn.innerHTML = "&times;";
-            closeBtn.className = "close-btn";
-            closeBtn.onclick = () => searchResults.style.display = "none";
-            searchResults.appendChild(closeBtn);
-
-            const heading = document.createElement("h2");
-            heading.textContent = `Closest search result: ${searchTerm}`;
-            searchResults.appendChild(heading);
-
-            const extra = document.createElement("p");
-            extra.innerHTML = ' Searched songs may repeat <br><br><br> ';
-            searchResults.appendChild(extra);
-
-            if (results.length === 0) {
-                const noResults = document.createElement("p");
-                noResults.innerHTML = 'No results found. <a href="https://forms.gle/21Lu5ZdMGNmnzK2h8/">Report this error?</a>';
-                searchResults.appendChild(noResults);
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
             } else {
-                const ul = document.createElement("ul");
-                results.forEach(item => {
-                    const li = document.createElement("li");
-                    
-                    const songInfo = document.createElement("div");
-                    songInfo.className = "song-info";
-                    songInfo.textContent = `${item.artist} - ${item.name}`;
-                    li.appendChild(songInfo);
-
-                    const audio = document.createElement("audio");
-                    audio.controls = true;
-                    const source = document.createElement("source");
-                    source.src = item.audio;
-                    source.type = "audio/mpeg";
-                    audio.appendChild(source);
-                    li.appendChild(audio);
-
-                    ul.appendChild(li);
-                });
-                searchResults.appendChild(ul);
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
             }
         }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+function findClosestMatch(word, dictionary) {
+    let closestMatch = '';
+    let minDistance = Infinity;
+
+    for (const dictWord of dictionary) {
+        const distance = levenshteinDistance(word, dictWord);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestMatch = dictWord;
+        }
+    }
+
+    return closestMatch;
+}
+
+const dictionary = [
+    "alternative rock", "dance", "death", "hard rock", "heavy metal",
+    "metal", "nu metal", "nu-metal", "numetal", "rap", "rock", "sad",
+    "male", "male singing", "female", "female singing", "break the silence",
+    "cant let go", "dancing in the dark", "dancing with ghosts",
+    "fading flame", "hollow throne", "no way back home", "realm of decay",
+    "reapers call", "the end is near", "trapped in the sea", "fading lights",
+    "calling out", "falling apart", "echos of you", "all", ":help", 
+    "new", "upbeat", "feel the vibe", "the new age is here", 
+    "hold me through the night"
+];
+
+function autoCorrect(input) {
+    const words = input.split(' ');
+    const correctedWords = words.map(word => {
+        if (dictionary.includes(word.toLowerCase())) {
+            return word;
+        } else {
+            return findClosestMatch(word.toLowerCase(), dictionary);
+        }
+    });
+    return correctedWords.join(' ');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchButton = document.getElementById('searchButton');
+    searchButton.addEventListener('click', performSearch);
+
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+});
+
+function performSearch() {
+    const searchInput = document.getElementById("searchInput").value.toLowerCase();
+    const correctedInput = autoCorrect(searchInput);
+    const searchResults = document.getElementById("searchResults");
+    
+    searchResults.innerHTML = "";
+    
+    const filteredData = data.filter(item => {
+        const searchTerms = correctedInput.split(' ');
+        return searchTerms.some(term => 
+            item.category.toLowerCase().includes(term) ||
+            item.name.toLowerCase().includes(term) ||
+            item.artist.toLowerCase().includes(term)
+        );
+    });
+    
+    displayResults(filteredData, correctedInput);
+}
+
+function displayResults(results, searchTerm) {
+    const searchResults = document.getElementById("searchResults");
+    searchResults.style.display = "block";
+
+    const closeBtn = document.createElement("span");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.className = "close-btn";
+    closeBtn.onclick = () => searchResults.style.display = "none";
+    searchResults.appendChild(closeBtn);
+
+    const heading = document.createElement("h2");
+    heading.textContent = `Search results for: ${searchTerm}`;
+    searchResults.appendChild(heading);
+
+    const extra = document.createElement("p");
+    extra.innerHTML = 'Results are sorted by relevance<br><br>';
+    searchResults.appendChild(extra);
+
+    if (results.length === 0) {
+        const noResults = document.createElement("p");
+        noResults.innerHTML = 'No results found. Try different keywords or check the spelling.';
+        searchResults.appendChild(noResults);
+    } else {
+        const ul = document.createElement("ul");
+        results.forEach(item => {
+            const li = document.createElement("li");
+            
+            const songInfo = document.createElement("div");
+            songInfo.className = "song-info";
+            songInfo.textContent = `${item.artist} - ${item.name}`;
+            li.appendChild(songInfo);
+
+            const audio = document.createElement("audio");
+            audio.controls = true;
+            const source = document.createElement("source");
+            source.src = item.audio;
+            source.type = "audio/mpeg";
+            audio.appendChild(source);
+            li.appendChild(audio);
+
+            ul.appendChild(li);
+        });
+        searchResults.appendChild(ul);
+    }
+}
 
     </script>
 </body>
