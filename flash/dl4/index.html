@@ -1,15 +1,34 @@
 <title>Duck life 4</title>
 <link rel="icon" type="image/png" href="https://img.poki.com/cdn-cgi/image/quality=78,width=314,height=314,fit=cover,f=auto/d0048d89-e4fa-4adb-9c77-adc51e4e1c6b.png">
-
-<object type="application/x-shockwave-flash" data="game.swf" width="1350" height="650">
+<div class="iframe-container">
+<object type="application/x-shockwave-flash" data="game.swf" width="100%" height="100%">
 		<param name="movie" value="game.swf" />
 		You need a more recent version of <a href="http://get.adobe.com/flashplayer/">Adobe Flash Player</a>.
+
+	</object>
+</div>
 	<style>
 a { 
 text-decoration: underline;
 }
-	</style>
-	</object>
+		.iframe-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; 
+}
 
+.iframe-container object {
+  border: none;
+  width: 101%; 
+  height: 101%; 
+  max-width: 101%; 
+  max-height: 101%; 
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+	</style>
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
