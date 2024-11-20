@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to FLAC Downloader</title>
+    <script src="https://cdn.jsdelivr.net/npm/ytdl-core@latest/dist/browser.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #urlInput {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube to FLAC Downloader</h1>
+        <input type="text" id="urlInput" placeholder="Enter YouTube URL">
+        <button onclick="downloadAudio()">Download as FLAC</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function downloadAudio() {
+            const url = document.getElementById('urlInput').value;
+            const status = document.getElementById('status');
+            
+            try {
+                status.innerHTML = 'Starting download...';
+                
+                const info = await ytdl.getInfo(url);
+                const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+                
+                const audioStream = ytdl(url, { format: audioFormat });
+                const fileName = `${info.videoDetails.title}.flac`;
+                
+                // Create download link
+                const blob = await streamToBlob(audioStream);
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = fileName;
+                a.click();
+                
+                status.innerHTML = 'Download complete!';
+            } catch (error) {
+                status.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function streamToBlob(stream) {
+            const chunks = [];
+            for await (const chunk of stream) {
+                chunks.push(chunk);
+            }
+            return new Blob(chunks, { type: 'audio/flac' });
+        }
+    </script>
+</body>
+</html>
