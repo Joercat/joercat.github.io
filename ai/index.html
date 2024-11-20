@@ -2,29 +2,247 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Assistant Chat</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css">
+    <title>LearningScript IDE</title>
+    <style>
+        :root {
+            --primary: #1e1e1e;
+            --secondary: #252526;
+            --accent: #0078d4;
+            --text: #d4d4d4;
+            --error: #ff5555;
+            --success: #50fa7b;
+            --info: #8be9fd;
+            --warning: #ffd700;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Consolas', monospace;
+            background: var(--primary);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            background: var(--secondary);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: '⚡';
+            font-size: 1.4rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        #ide-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #editor-section {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #code-editor {
+            flex-grow: 1;
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            border-radius: 4px;
+        }
+
+        #visualization-container {
+            height: 250px;
+            background: var(--secondary);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        #output-section {
+            background: var(--secondary);
+            padding: 1rem;
+            border-left: 2px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #console-output {
+            flex-grow: 1;
+            background: #1a1a1a;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            border-radius: 4px;
+            overflow-y: auto;
+        }
+
+        .console-line {
+            padding: 0.2rem 0;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .error { color: var(--error); }
+        .success { color: var(--success); }
+        .info { color: var(--info); }
+        .warning { color: var(--warning); }
+
+        #status-bar {
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            border-top: 1px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--secondary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--accent);
+            display: none;
+        }
+
+        .has-tooltip:hover .tooltip {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <h1>AI Assistant Chat</h1>
-    <div class="model-selector">
-        <button class="model-btn active" onclick="switchModel('code')" id="codeBtn">Code Assistant</button>
-        <button class="model-btn" onclick="switchModel('chat')" id="chatBtn">Chat Assistant</button>
-    </div>
-    <div class="chat-container" id="chatContainer"></div>
-    <div class="input-container">
-        <textarea id="prompt" placeholder="Ask your question..."></textarea>
-        <button onclick="getResponse()">Send</button>
+    <nav class="top-nav">
+        <div class="logo">LearningScript IDE</div>
+        <div class="controls">
+            <button id="theme-btn">🌙 Theme</button>
+            <button id="share-btn">📤 Share</button>
+            <button id="settings-btn">⚙️ Settings</button>
+        </div>
+    </nav>
+
+    <div id="ide-container">
+        <div id="editor-section">
+            <div class="toolbar">
+                <button id="run-btn">▶️ Run</button>
+                <button id="save-btn">💾 Save</button>
+                <button id="load-btn">📂 Load Example</button>
+            </div>
+            <textarea id="code-editor" spellcheck="false">// LearningScript Code
+model [3, 4, 4, 1]
+load_data "training.lsdf"
+train epochs=1000
+predict [0.5, 0.8, 0.2]</textarea>
+            <div id="visualization-container">
+                <canvas id="network-viz"></canvas>
+            </div>
+        </div>
+        <div id="output-section">
+            <div class="output-header">
+                <h3>Output Console</h3>
+                <button id="clear-console">🗑️ Clear</button>
+            </div>
+            <div id="console-output"></div>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-php.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-html.min.js"></script>
-    <script src="script.js"></script>
+    <div id="status-bar">
+        <span id="status">Ready</span>
+        <span id="memory-usage">Memory: 0 MB</span>
+    </div>
+
+    <script src="LearningScript.js"></script>
+    <script>
+        // Initialize the IDE
+        document.addEventListener('DOMContentLoaded', () => {
+            const ls = new LearningScript();
+            
+            // Setup event listeners
+            document.getElementById('run-btn').addEventListener('click', () => {
+                const code = document.getElementById('code-editor').value;
+                try {
+                    ls.execute(code);
+                    logToConsole('Code executed successfully! ✨', 'success');
+                } catch (error) {
+                    logToConsole(`Error: ${error.message}`, 'error');
+                }
+            });
+
+            // Console logging function
+            function logToConsole(message, type = 'info') {
+                const console = document.getElementById('console-output');
+                const line = document.createElement('div');
+                line.className = `console-line ${type}`;
+                line.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+                console.appendChild(line);
+                console.scrollTop = console.scrollHeight;
+            }
+
+            // Initialize with welcome message
+            logToConsole('Welcome to LearningScript IDE! 🚀', 'info');
+        });
+    </script>
 </body>
 </html>
