@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bomber Classic</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            border: 2px solid #444;
+        }
+        #gameStats {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameStats"></div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const stats = document.getElementById('gameStats');
+        
+        // Set canvas size to 15x13 grid (original game proportions)
+        canvas.width = 600;
+        canvas.height = 520;
+        
+        const TILE_SIZE = 40;
+        const COLS = 15;
+        const ROWS = 13;
+        
+        // Game states
+        const GAME_STATES = {
+            MENU: 0,
+            PLAYING: 1,
+            GAME_OVER: 2
+        };
+        
+        let gameState = GAME_STATES.MENU;
+        let players = [];
+        let bombs = [];
+        let explosions = [];
+        let powerups = [];
+        let blocks = [];
+        let aiPlayers = [];
+        
+        // Power-up types
+        const POWERUP_TYPES = {
+            EXTRA_BOMB: 0,
+            FIRE_UP: 1,
+            SPEED_UP: 2,
+            KICK: 3,
+            THROW: 4,
+            REMOTE: 5,
+            SKULL: 6,
+            FULL_FIRE: 7
+        };
+
+        class Player {
+            constructor(x, y, color, controls, isAI = false) {
+                this.x = x * TILE_SIZE;
+                this.y = y * TILE_SIZE;
+                this.color = color;
+                this.controls = controls;
+                this.isAI = isAI;
+                this.speed = 3;
+                this.bombCount = 1;
+                this.maxBombs = 1;
+                this.firepower = 1;
+                this.canKick = false;
+                this.canThrow = false;
+                this.hasRemote = false;
+                this.alive = true;
+                this.direction = 0;
+                this.bombsPlaced = [];
+                this.diseased = false;
+                this.diseaseTimer = 0;
+            }
+
+            update() {
+                if (!this.alive) return;
+
+                if (this.diseased) {
+                    this.diseaseTimer--;
+                    if (this.diseaseTimer <= 0) {
+                        this.diseased = false;
+                    }
+                }
+
+                if (!this.isAI) {
+                    this.handleInput();
+                } else {
+                    this.updateAI();
+                }
+            }
+
+            handleInput() {
+                let dx = 0;
+                let dy = 0;
+
+                if (keys[this.controls.up]) dy -= this.speed;
+                if (keys[this.controls.down]) dy += this.speed;
+                if (keys[this.controls.left]) dx -= this.speed;
+                if (keys[this.controls.right]) dx += this.speed;
+
+                if (this.diseased) {
+                    dx *= -1;
+                    dy *= -1;
+                }
+
+                if (dx !== 0 || dy !== 0) {
+                    const newX = this.x + dx;
+                    const newY = this.y + dy;
+                    
+                    if (!this.checkCollision(newX, this.y)) this.x = newX;
+                    if (!this.checkCollision(this.x, newY)) this.y = newY;
+                }
+
+                // Place bomb
+                if (keys[this.controls.bomb] && !this.lastBombKey) {
+                    this.placeBomb();
+                }
+                this.lastBombKey = keys[this.controls.bomb];
+
+                // Remote detonation
+                if (this.hasRemote && keys[this.controls.special] && !this.lastSpecialKey) {
+                    this.detonateRemoteBombs();
+                }
+                this.lastSpecialKey = keys[this.controls.special];
+            }
+
+            updateAI() {
+                // Basic AI logic
+                if (Math.random() < 0.02) {
+                    this.direction = Math.floor(Math.random() * 4);
+                }
+
+                const moves = [
+                    { dx: 0, dy: -this.speed },
+                    { dx: 0, dy: this.speed },
+                    { dx: -this.speed, dy: 0 },
+                    { dx: this.speed, dy: 0 }
+                ];
+
+                const move = moves[this.direction];
+                const newX = this.x + move.dx;
+                const newY = this.y + move.dy;
+
+                if (!this.checkCollision(newX, this.y)) this.x = newX;
+                if (!this.checkCollision(this.x, newY)) this.y = newY;
+
+                // Place bombs strategically
+                if (Math.random() < 0.01) {
+                    this.placeBomb();
+                }
+            }
+
+            checkCollision(x, y) {
+                // Grid alignment
+                const gridX = Math.floor(x / TILE_SIZE);
+                const gridY = Math.floor(y / TILE_SIZE);
+
+                // Check boundaries
+                if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) {
+                    return true;
+                }
+
+                // Check blocks
+                return blocks.some(block => 
+                    Math.floor(block.x / TILE_SIZE) === gridX && 
+                    Math.floor(block.y / TILE_SIZE) === gridY
+                );
+            }
+
+            placeBomb() {
+                if (this.bombsPlaced.length >= this.maxBombs) return;
+
+                const gridX = Math.floor((this.x + TILE_SIZE/2) / TILE_SIZE);
+                const gridY = Math.floor((this.y + TILE_SIZE/2) / TILE_SIZE);
+
+                // Check if bomb already exists at this location
+                if (bombs.some(bomb => 
+                    Math.floor(bomb.x / TILE_SIZE) === gridX && 
+                    Math.floor(bomb.y / TILE_SIZE) === gridY
+                )) return;
+
+                const bomb = {
+                    x: gridX * TILE_SIZE,
+                    y: gridY * TILE_SIZE,
+                    timer: this.hasRemote ? Infinity : 150,
+                    power: this.firepower,
+                    owner: this,
+                    kicked: false,
+                    kickDirection: null,
+                    thrown: false,
+                    throwDirection: null,
+                    throwDistance: 0
+                };
+
+                bombs.push(bomb);
+                this.bombsPlaced.push(bomb);
+            }
+
+            detonateRemoteBombs() {
+                this.bombsPlaced.forEach(bomb => {
+                    if (bomb.timer === Infinity) {
+                        bomb.timer = 1;
+                    }
+                });
+            }
+
+            draw() {
+                if (!this.alive) return;
+                
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
+                
+                // Draw disease effect
+                if (this.diseased) {
+                    ctx.fillStyle = 'rgba(255, 0, 255, 0.3)';
+                    ctx.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+
+        function createExplosion(x, y, power) {
+            const directions = [[0,0], [1,0], [-1,0], [0,1], [0,-1]];
+            
+            directions.forEach(([dx, dy]) => {
+                for (let i = 0; i <= power; i++) {
+                    const newX = x + dx * i * TILE_SIZE;
+                    const newY = y + dy * i * TILE_SIZE;
+                    
+                    // Check if explosion hits a block
+                    const hitBlock = blocks.find(block => 
+                        block.x === newX && block.y === newY
+                    );
+
+                    if (hitBlock) {
+                        if (hitBlock.destructible) {
+                            blocks = blocks.filter(b => b !== hitBlock);
+                            if (Math.random() < 0.3) { // 30% chance for power-up
+                                spawnPowerup(newX, newY);
+                            }
+                        }
+                        break;
+                    }
+
+                    explosions.push({
+                        x: newX,
+                        y: newY,
+                        timer: 30
+                    });
+                }
+            });
+        }
+
+        function spawnPowerup(x, y) {
+            const type = Math.floor(Math.random() * Object.keys(POWERUP_TYPES).length);
+            powerups.push({ x, y, type });
+        }
+
+        function initGame(playerCount) {
+            // Clear all arrays
+            players = [];
+            bombs = [];
+            explosions = [];
+            powerups = [];
+            blocks = [];
+            aiPlayers = [];
+
+            // Create players
+            const controls1 = {
+                up: 'ArrowUp',
+                down: 'ArrowDown',
+                left: 'ArrowLeft',
+                right: 'ArrowRight',
+                bomb: ' ',
+                special: 'ShiftRight'
+            };
+
+            const controls2 = {
+                up: 'w',
+                down: 's',
+                left: 'a',
+                right: 'd',
+                bomb: 'q',
+                special: 'e'
+            };
+
+            players.push(new Player(1, 1, '#3498db', controls1));
+            
+            if (playerCount === 2) {
+                players.push(new Player(COLS-2, 1, '#e74c3c', controls2));
+            } else {
+                // Add AI players
+                aiPlayers.push(new Player(COLS-2, 1, '#e74c3c', {}, true));
+                aiPlayers.push(new Player(1, ROWS-2, '#2ecc71', {}, true));
+                aiPlayers.push(new Player(COLS-2, ROWS-2, '#f1c40f', {}, true));
+            }
+
+            // Create blocks
+            for (let x = 0; x < COLS; x++) {
+                for (let y = 0; y < ROWS; y++) {
+                    // Create border and checkerboard pattern for indestructible blocks
+                    if (x === 0 || x === COLS-1 || y === 0 || y === ROWS-1 || 
+                        (x % 2 === 0 && y % 2 === 0)) {
+                        blocks.push({
+                            x: x * TILE_SIZE,
+                            y: y * TILE_SIZE,
+                            destructible: false
+                        });
+                    }
+                    // Add random destructible blocks
+                    else if (
+                        Math.random() < 0.7 && // 70% chance for a block
+                        !(x === 1 && y === 1) && // Keep player spawn points clear
+                        !(x === COLS-2 && y === 1) &&
+                        !(x === 1 && y === ROWS-2) &&
+                        !(x === COLS-2 && y === ROWS-2)
+                    ) {
+                        blocks.push({
+                            x: x * TILE_SIZE,
+                            y: y * TILE_SIZE,
+                            destructible: true
+                        });
+                    }
+                }
+            }
+
+            gameState = GAME_STATES.PLAYING;
+        }
+
+        // Input handling
+        const keys = {};
+        document.addEventListener('keydown', e => {
+            keys[e.key] = true;
+            if (gameState === GAME_STATES.MENU) {
+                if (e.key === '1') initGame(1);
+                if (e.key === '2') initGame(2);
+            }
+        });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+
+        function updateGame() {
+            if (gameState === GAME_STATES.PLAYING) {
+                // Update players
+                players.forEach(player => player.update());
+                aiPlayers.forEach(ai => ai.update());
+
+                // Update bombs
+                bombs.forEach(bomb => {
+                    if (!bomb.thrown && !bomb.kicked) {
+                        bomb.timer--;
+                    }
+
+                    if (bomb.kicked) {
+                        const speed = 5;
+                        const [dx, dy] = bomb.kickDirection;
+                        const newX = bomb.x + dx * speed;
+                        const newY = bomb.y + dy * speed;
+
+                        // Check for collisions
+                        const gridX = Math.floor(newX / TILE_SIZE);
+                        const gridY = Math.floor(newY / TILE_SIZE);
+
+                        if (blocks.some(block => 
+                            Math.floor(block.x / TILE_SIZE) === gridX && 
+                            Math.floor(block.y / TILE_SIZE) === gridY
+                        )) {
+                            bomb.kicked = false;
+                        } else {
+                            bomb.x = newX;
+                            bomb.y = newY;
+                        }
+                    }
+
+                    if (bomb.thrown) {
+                        // Implement throwing arc physics
+                        bomb.throwDistance += 5;
+                        const [dx, dy] = bomb.throwDirection;
+                        bomb.x += dx * 5;
+                        bomb.y += dy * 5;
+                        
+                        if (bomb.throwDistance >= TILE_SIZE * 3) { // 3 tiles throw distance
+                            bomb.thrown = false;
+                        }
+                    }
+                });
+
+                // Handle bomb explosions
+                bombs.forEach(bomb => {
+                    if (bomb.timer <= 0) {
+                        createExplosion(bomb.x, bomb.y, bomb.power);
+                        bomb.owner.bombsPlaced = bomb.owner.bombsPlaced.filter(b => b !== bomb);
+                    }
+                });
+                bombs = bombs.filter(bomb => bomb.timer > 0);
+
+                // Update explosions
+                explosions.forEach(explosion => explosion.timer--);
+                explosions = explosions.filter(explosion => explosion.timer > 0);
+
+                // Check for player/powerup collisions
+                [...players, ...aiPlayers].forEach(player => {
+                    if (!player.alive) return;
+
+                    powerups.forEach(powerup => {
+                        if (
+                            player.x < powerup.x + TILE_SIZE &&
+                            player.x + TILE_SIZE > powerup.x &&
+                            player.y < powerup.y + TILE_SIZE &&
+                            player.y + TILE_SIZE > powerup.y
+                        ) {
+                            applyPowerup(player, powerup);
+                            powerups = powerups.filter(p => p !== powerup);
+                        }
+                    });
+
+                    // Check for explosion collisions
+                    explosions.forEach(explosion => {
+                        if (
+                            player.x < explosion.x + TILE_SIZE &&
+                            player.x + TILE_SIZE > explosion.x &&
+                            player.y < explosion.y + TILE_SIZE &&
+                            player.y + TILE_SIZE > explosion.y
+                        ) {
+                            player.alive = false;
+                        }
+                    });
+
+                    // Check for bomb kicking
+                    if (player.canKick) {
+                        bombs.forEach(bomb => {
+                            if (!bomb.kicked && !bomb.thrown &&
+                                player.x < bomb.x + TILE_SIZE &&
+                                player.x + TILE_SIZE > bomb.x &&
+                                player.y < bomb.y + TILE_SIZE &&
+                                player.y + TILE_SIZE > bomb.y
+                            ) {
+                                // Determine kick direction
+                                const dx = Math.abs(player.x - bomb.x) > Math.abs(player.y - bomb.y)
+                                    ? (player.x > bomb.x ? 1 : -1)
+                                    : 0;
+                                const dy = Math.abs(player.y - bomb.y) > Math.abs(player.x - bomb.x)
+                                    ? (player.y > bomb.y ? 1 : -1)
+                                    : 0;
+                                
+                                bomb.kicked = true;
+                                bomb.kickDirection = [dx, dy];
+                            }
+                        });
+                    }
+                });
+
+                // Check win condition
+                const alivePlayers = [...players, ...aiPlayers].filter(p => p.alive);
+                if (alivePlayers.length <= 1) {
+                    gameState = GAME_STATES.GAME_OVER;
+                }
+            }
+        }
+
+        function applyPowerup(player, powerup) {
+            switch(powerup.type) {
+                case POWERUP_TYPES.EXTRA_BOMB:
+                    player.maxBombs++;
+                    break;
+                case POWERUP_TYPES.FIRE_UP:
+                    player.firepower++;
+                    break;
+                case POWERUP_TYPES.SPEED_UP:
+                    player.speed = Math.min(player.speed + 0.5, 6);
+                    break;
+                case POWERUP_TYPES.KICK:
+                    player.canKick = true;
+                    break;
+                case POWERUP_TYPES.THROW:
+                    player.canThrow = true;
+                    break;
+                case POWERUP_TYPES.REMOTE:
+                    player.hasRemote = true;
+                    break;
+                case POWERUP_TYPES.SKULL:
+                    player.diseased = true;
+                    player.diseaseTimer = 300;
+                    break;
+                case POWERUP_TYPES.FULL_FIRE:
+                    player.firepower = 8;
+                    break;
+            }
+        }
+
+        function drawGame() {
+            // Clear canvas
+            ctx.fillStyle = '#98c379';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === GAME_STATES.MENU) {
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('BOMBER', canvas.width/2, canvas.height/2 - 40);
+                ctx.font = '20px Arial';
+                ctx.fillText('Press 1 for Single Player', canvas.width/2, canvas.height/2 + 20);
+                ctx.fillText('Press 2 for Two Players', canvas.width/2, canvas.height/2 + 60);
+                return;
+            }
+
+            // Draw blocks
+            blocks.forEach(block => {
+                ctx.fillStyle = block.destructible ? '#d19a66' : '#4b5263';
+                ctx.fillRect(block.x, block.y, TILE_SIZE, TILE_SIZE);
+            });
+
+            // Draw powerups
+            powerups.forEach(powerup => {
+                const colors = ['#ff0', '#f00', '#0f0', '#00f', '#f0f', '#0ff', '#f0f', '#fff'];
+                ctx.fillStyle = colors[powerup.type];
+                ctx.fillRect(powerup.x + 8, powerup.y + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+            });
+
+            // Draw bombs
+            bombs.forEach(bomb => {
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(
+                    bomb.x + TILE_SIZE/2,
+                    bomb.y + TILE_SIZE/2,
+                    TILE_SIZE/3,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            });
+
+            // Draw explosions
+            explosions.forEach(explosion => {
+                ctx.fillStyle = `rgba(255, 100, 0, ${explosion.timer / 30})`;
+                ctx.fillRect(explosion.x, explosion.y, TILE_SIZE, TILE_SIZE);
+            });
+
+            // Draw players
+            players.forEach(player => player.draw());
+            aiPlayers.forEach(ai => ai.draw());
+
+            // Draw game over
+            if (gameState === GAME_STATES.GAME_OVER) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                const winner = [...players, ...aiPlayers].find(p => p.alive);
+                ctx.fillText(
+                    winner ? `${winner.color} WINS!` : 'DRAW!',
+                    canvas.width/2,
+                    canvas.height/2
+                );
+                ctx.font = '20px Arial';
+                ctx.fillText('Press R to restart', canvas.width/2, canvas.height/2 + 40);
+            }
+        }
+
+        function gameLoop() {
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+        document.addEventListener('keydown', e => {
+            if (e.key.toLowerCase() === 'r' && gameState === GAME_STATES.GAME_OVER) {
+                gameState = GAME_STATES.MENU;
+            }
+        });
+    </script>
+</body>
+</html>
+
