@@ -11,6 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            font-family: Arial, sans-serif;
         }
         canvas {
             border: 2px solid #444;
@@ -20,7 +21,13 @@
             top: 10px;
             left: 10px;
             color: white;
-            font-family: Arial;
+            display: flex;
+            gap: 20px;
+        }
+        .playerStats {
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -32,15 +39,14 @@
         const ctx = canvas.getContext('2d');
         const stats = document.getElementById('gameStats');
         
-        // Set canvas size to 15x13 grid (original game proportions)
         canvas.width = 600;
         canvas.height = 520;
         
         const TILE_SIZE = 40;
         const COLS = 15;
         const ROWS = 13;
+        const SPAWN_INVULNERABILITY_TIME = 120; // 2 seconds
         
-        // Game states
         const GAME_STATES = {
             MENU: 0,
             PLAYING: 1,
@@ -55,7 +61,6 @@
         let blocks = [];
         let aiPlayers = [];
         
-        // Power-up types
         const POWERUP_TYPES = {
             EXTRA_BOMB: 0,
             FIRE_UP: 1,
@@ -64,13 +69,13 @@
             THROW: 4,
             REMOTE: 5,
             SKULL: 6,
-            FULL_FIRE: 7
+            EXTRA_LIFE: 7
         };
 
         class Player {
             constructor(x, y, color, controls, isAI = false) {
-                this.x = x * TILE_SIZE;
-                this.y = y * TILE_SIZE;
+                this.spawnPoints = { x, y };
+                this.resetPosition();
                 this.color = color;
                 this.controls = controls;
                 this.isAI = isAI;
@@ -82,13 +87,48 @@
                 this.canThrow = false;
                 this.hasRemote = false;
                 this.alive = true;
+                this.lives = 3;
+                this.score = 0;
                 this.direction = 0;
                 this.bombsPlaced = [];
                 this.diseased = false;
                 this.diseaseTimer = 0;
+                this.respawnTime = 0;
+                this.invulnerableTime = 0;
+            }
+
+            resetPosition() {
+                this.x = this.spawnPoints.x * TILE_SIZE;
+                this.y = this.spawnPoints.y * TILE_SIZE;
+            }
+
+            handleDeath() {
+                if (this.invulnerableTime > 0) return;
+                
+                if (this.lives > 0) {
+                    this.lives--;
+                    this.resetPosition();
+                    this.respawnTime = 60;
+                    this.invulnerableTime = SPAWN_INVULNERABILITY_TIME;
+                    this.alive = false;
+                } else {
+                    this.alive = false;
+                }
             }
 
             update() {
+                if (this.respawnTime > 0) {
+                    this.respawnTime--;
+                    if (this.respawnTime === 0) {
+                        this.alive = true;
+                    }
+                    return;
+                }
+
+                if (this.invulnerableTime > 0) {
+                    this.invulnerableTime--;
+                }
+
                 if (!this.alive) return;
 
                 if (this.diseased) {
@@ -123,17 +163,28 @@
                     const newX = this.x + dx;
                     const newY = this.y + dy;
                     
-                    if (!this.checkCollision(newX, this.y)) this.x = newX;
-                    if (!this.checkCollision(this.x, newY)) this.y = newY;
+                    // Grid alignment
+                    if (!this.checkCollision(newX, this.y)) {
+                        this.x = newX;
+                        // Snap to grid when changing direction
+                        if (dy === 0 && Math.abs(this.y % TILE_SIZE) < this.speed) {
+                            this.y = Math.round(this.y / TILE_SIZE) * TILE_SIZE;
+                        }
+                    }
+                    if (!this.checkCollision(this.x, newY)) {
+                        this.y = newY;
+                        // Snap to grid when changing direction
+                        if (dx === 0 && Math.abs(this.x % TILE_SIZE) < this.speed) {
+                            this.x = Math.round(this.x / TILE_SIZE) * TILE_SIZE;
+                        }
+                    }
                 }
 
-                // Place bomb
                 if (keys[this.controls.bomb] && !this.lastBombKey) {
                     this.placeBomb();
                 }
                 this.lastBombKey = keys[this.controls.bomb];
 
-                // Remote detonation
                 if (this.hasRemote && keys[this.controls.special] && !this.lastSpecialKey) {
                     this.detonateRemoteBombs();
                 }
@@ -141,7 +192,7 @@
             }
 
             updateAI() {
-                // Basic AI logic
+                // Enhanced AI logic
                 if (Math.random() < 0.02) {
                     this.direction = Math.floor(Math.random() * 4);
                 }
@@ -157,26 +208,34 @@
                 const newX = this.x + move.dx;
                 const newY = this.y + move.dy;
 
-                if (!this.checkCollision(newX, this.y)) this.x = newX;
-                if (!this.checkCollision(this.x, newY)) this.y = newY;
+                // Grid-aligned movement for AI
+                if (!this.checkCollision(newX, this.y)) {
+                    this.x = newX;
+                    if (Math.abs(this.y % TILE_SIZE) < this.speed) {
+                        this.y = Math.round(this.y / TILE_SIZE) * TILE_SIZE;
+                    }
+                }
+                if (!this.checkCollision(this.x, newY)) {
+                    this.y = newY;
+                    if (Math.abs(this.x % TILE_SIZE) < this.speed) {
+                        this.x = Math.round(this.x / TILE_SIZE) * TILE_SIZE;
+                    }
+                }
 
-                // Place bombs strategically
+                // Strategic bomb placement
                 if (Math.random() < 0.01) {
                     this.placeBomb();
                 }
             }
 
             checkCollision(x, y) {
-                // Grid alignment
                 const gridX = Math.floor(x / TILE_SIZE);
                 const gridY = Math.floor(y / TILE_SIZE);
 
-                // Check boundaries
                 if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) {
                     return true;
                 }
 
-                // Check blocks
                 return blocks.some(block => 
                     Math.floor(block.x / TILE_SIZE) === gridX && 
                     Math.floor(block.y / TILE_SIZE) === gridY
@@ -186,10 +245,9 @@
             placeBomb() {
                 if (this.bombsPlaced.length >= this.maxBombs) return;
 
-                const gridX = Math.floor((this.x + TILE_SIZE/2) / TILE_SIZE);
-                const gridY = Math.floor((this.y + TILE_SIZE/2) / TILE_SIZE);
+                const gridX = Math.round(this.x / TILE_SIZE);
+                const gridY = Math.round(this.y / TILE_SIZE);
 
-                // Check if bomb already exists at this location
                 if (bombs.some(bomb => 
                     Math.floor(bomb.x / TILE_SIZE) === gridX && 
                     Math.floor(bomb.y / TILE_SIZE) === gridY
@@ -221,19 +279,21 @@
             }
 
             draw() {
-                if (!this.alive) return;
+                if (!this.alive && this.respawnTime > 0) return;
                 
                 ctx.fillStyle = this.color;
+                if (this.invulnerableTime > 0) {
+                    ctx.globalAlpha = 0.5 + Math.sin(this.invulnerableTime * 0.2) * 0.5;
+                }
                 ctx.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
+                ctx.globalAlpha = 1;
                 
-                // Draw disease effect
                 if (this.diseased) {
                     ctx.fillStyle = 'rgba(255, 0, 255, 0.3)';
                     ctx.fillRect(this.x, this.y, TILE_SIZE, TILE_SIZE);
                 }
             }
         }
-
         function createExplosion(x, y, power) {
             const directions = [[0,0], [1,0], [-1,0], [0,1], [0,-1]];
             
@@ -242,7 +302,6 @@
                     const newX = x + dx * i * TILE_SIZE;
                     const newY = y + dy * i * TILE_SIZE;
                     
-                    // Check if explosion hits a block
                     const hitBlock = blocks.find(block => 
                         block.x === newX && block.y === newY
                     );
@@ -250,7 +309,7 @@
                     if (hitBlock) {
                         if (hitBlock.destructible) {
                             blocks = blocks.filter(b => b !== hitBlock);
-                            if (Math.random() < 0.3) { // 30% chance for power-up
+                            if (Math.random() < 0.3) {
                                 spawnPowerup(newX, newY);
                             }
                         }
@@ -272,7 +331,6 @@
         }
 
         function initGame(playerCount) {
-            // Clear all arrays
             players = [];
             bombs = [];
             explosions = [];
@@ -280,7 +338,6 @@
             blocks = [];
             aiPlayers = [];
 
-            // Create players
             const controls1 = {
                 up: 'ArrowUp',
                 down: 'ArrowDown',
@@ -299,21 +356,20 @@
                 special: 'e'
             };
 
+            // Spawn players in corners
             players.push(new Player(1, 1, '#3498db', controls1));
             
             if (playerCount === 2) {
                 players.push(new Player(COLS-2, 1, '#e74c3c', controls2));
             } else {
-                // Add AI players
                 aiPlayers.push(new Player(COLS-2, 1, '#e74c3c', {}, true));
                 aiPlayers.push(new Player(1, ROWS-2, '#2ecc71', {}, true));
                 aiPlayers.push(new Player(COLS-2, ROWS-2, '#f1c40f', {}, true));
             }
 
-            // Create blocks
+            // Create level layout
             for (let x = 0; x < COLS; x++) {
                 for (let y = 0; y < ROWS; y++) {
-                    // Create border and checkerboard pattern for indestructible blocks
                     if (x === 0 || x === COLS-1 || y === 0 || y === ROWS-1 || 
                         (x % 2 === 0 && y % 2 === 0)) {
                         blocks.push({
@@ -322,13 +378,9 @@
                             destructible: false
                         });
                     }
-                    // Add random destructible blocks
                     else if (
-                        Math.random() < 0.7 && // 70% chance for a block
-                        !(x === 1 && y === 1) && // Keep player spawn points clear
-                        !(x === COLS-2 && y === 1) &&
-                        !(x === 1 && y === ROWS-2) &&
-                        !(x === COLS-2 && y === ROWS-2)
+                        Math.random() < 0.7 &&
+                        !isSpawnArea(x, y)
                     ) {
                         blocks.push({
                             x: x * TILE_SIZE,
@@ -340,9 +392,33 @@
             }
 
             gameState = GAME_STATES.PLAYING;
+            updateStats();
         }
 
-        // Input handling
+        function isSpawnArea(x, y) {
+            const spawnPoints = [
+                {x: 1, y: 1},
+                {x: COLS-2, y: 1},
+                {x: 1, y: ROWS-2},
+                {x: COLS-2, y: ROWS-2}
+            ];
+            
+            return spawnPoints.some(point => 
+                (Math.abs(x - point.x) <= 1 && Math.abs(y - point.y) <= 1)
+            );
+        }
+
+        function updateStats() {
+            stats.innerHTML = '';
+            [...players, ...aiPlayers].forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'playerStats';
+                playerDiv.style.backgroundColor = player.color + '40';
+                playerDiv.innerHTML = `Player ${index + 1}: ❤️`.repeat(player.lives);
+                stats.appendChild(playerDiv);
+            });
+        }
+
         const keys = {};
         document.addEventListener('keydown', e => {
             keys[e.key] = true;
@@ -355,11 +431,8 @@
 
         function updateGame() {
             if (gameState === GAME_STATES.PLAYING) {
-                // Update players
-                players.forEach(player => player.update());
-                aiPlayers.forEach(ai => ai.update());
+                [...players, ...aiPlayers].forEach(player => player.update());
 
-                // Update bombs
                 bombs.forEach(bomb => {
                     if (!bomb.thrown && !bomb.kicked) {
                         bomb.timer--;
@@ -371,7 +444,6 @@
                         const newX = bomb.x + dx * speed;
                         const newY = bomb.y + dy * speed;
 
-                        // Check for collisions
                         const gridX = Math.floor(newX / TILE_SIZE);
                         const gridY = Math.floor(newY / TILE_SIZE);
 
@@ -387,19 +459,17 @@
                     }
 
                     if (bomb.thrown) {
-                        // Implement throwing arc physics
                         bomb.throwDistance += 5;
                         const [dx, dy] = bomb.throwDirection;
                         bomb.x += dx * 5;
                         bomb.y += dy * 5;
                         
-                        if (bomb.throwDistance >= TILE_SIZE * 3) { // 3 tiles throw distance
+                        if (bomb.throwDistance >= TILE_SIZE * 3) {
                             bomb.thrown = false;
                         }
                     }
                 });
 
-                // Handle bomb explosions
                 bombs.forEach(bomb => {
                     if (bomb.timer <= 0) {
                         createExplosion(bomb.x, bomb.y, bomb.power);
@@ -408,14 +478,10 @@
                 });
                 bombs = bombs.filter(bomb => bomb.timer > 0);
 
-                // Update explosions
                 explosions.forEach(explosion => explosion.timer--);
                 explosions = explosions.filter(explosion => explosion.timer > 0);
 
-                // Check for player/powerup collisions
                 [...players, ...aiPlayers].forEach(player => {
-                    if (!player.alive) return;
-
                     powerups.forEach(powerup => {
                         if (
                             player.x < powerup.x + TILE_SIZE &&
@@ -428,7 +494,6 @@
                         }
                     });
 
-                    // Check for explosion collisions
                     explosions.forEach(explosion => {
                         if (
                             player.x < explosion.x + TILE_SIZE &&
@@ -436,11 +501,11 @@
                             player.y < explosion.y + TILE_SIZE &&
                             player.y + TILE_SIZE > explosion.y
                         ) {
-                            player.alive = false;
+                            player.handleDeath();
+                            updateStats();
                         }
                     });
 
-                    // Check for bomb kicking
                     if (player.canKick) {
                         bombs.forEach(bomb => {
                             if (!bomb.kicked && !bomb.thrown &&
@@ -449,7 +514,6 @@
                                 player.y < bomb.y + TILE_SIZE &&
                                 player.y + TILE_SIZE > bomb.y
                             ) {
-                                // Determine kick direction
                                 const dx = Math.abs(player.x - bomb.x) > Math.abs(player.y - bomb.y)
                                     ? (player.x > bomb.x ? 1 : -1)
                                     : 0;
@@ -464,8 +528,7 @@
                     }
                 });
 
-                // Check win condition
-                const alivePlayers = [...players, ...aiPlayers].filter(p => p.alive);
+                const alivePlayers = [...players, ...aiPlayers].filter(p => p.lives > 0);
                 if (alivePlayers.length <= 1) {
                     gameState = GAME_STATES.GAME_OVER;
                 }
@@ -496,14 +559,16 @@
                     player.diseased = true;
                     player.diseaseTimer = 300;
                     break;
-                case POWERUP_TYPES.FULL_FIRE:
-                    player.firepower = 8;
+                case POWERUP_TYPES.EXTRA_LIFE:
+                    if (player.lives < 3) {
+                        player.lives++;
+                        updateStats();
+                    }
                     break;
             }
         }
 
         function drawGame() {
-            // Clear canvas
             ctx.fillStyle = '#98c379';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -518,20 +583,17 @@
                 return;
             }
 
-            // Draw blocks
             blocks.forEach(block => {
                 ctx.fillStyle = block.destructible ? '#d19a66' : '#4b5263';
                 ctx.fillRect(block.x, block.y, TILE_SIZE, TILE_SIZE);
             });
 
-            // Draw powerups
             powerups.forEach(powerup => {
                 const colors = ['#ff0', '#f00', '#0f0', '#00f', '#f0f', '#0ff', '#f0f', '#fff'];
                 ctx.fillStyle = colors[powerup.type];
                 ctx.fillRect(powerup.x + 8, powerup.y + 8, TILE_SIZE - 16, TILE_SIZE - 16);
             });
 
-            // Draw bombs
             bombs.forEach(bomb => {
                 ctx.fillStyle = '#000';
                 ctx.beginPath();
@@ -545,24 +607,20 @@
                 ctx.fill();
             });
 
-            // Draw explosions
             explosions.forEach(explosion => {
                 ctx.fillStyle = `rgba(255, 100, 0, ${explosion.timer / 30})`;
                 ctx.fillRect(explosion.x, explosion.y, TILE_SIZE, TILE_SIZE);
             });
 
-            // Draw players
-            players.forEach(player => player.draw());
-            aiPlayers.forEach(ai => ai.draw());
+            [...players, ...aiPlayers].forEach(player => player.draw());
 
-            // Draw game over
             if (gameState === GAME_STATES.GAME_OVER) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#fff';
                 ctx.font = '30px Arial';
                 ctx.textAlign = 'center';
-                const winner = [...players, ...aiPlayers].find(p => p.alive);
+                const winner = [...players, ...aiPlayers].find(p => p.lives > 0);
                 ctx.fillText(
                     winner ? `${winner.color} WINS!` : 'DRAW!',
                     canvas.width/2,
@@ -589,4 +647,3 @@
     </script>
 </body>
 </html>
-
