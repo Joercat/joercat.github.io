@@ -2,17 +2,20 @@
 <html>
 <head>
     <title>Chess vs Stockfish AI</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         .container {max-width: 1200px;margin: 0 auto;padding: 20px;display: flex;flex-wrap: wrap;justify-content: center;}
         .game-info {text-align: center;width: 100%;margin-bottom: 20px;}
         .board-container {display: flex;gap: 20px;}
-        #board {width: 600px;}
+        #board {width: 400px;}
         .side-panel {width: 200px;padding: 20px;background: #f5f5f5;border-radius: 8px;}
         .captured-pieces {margin: 10px 0;min-height: 50px;}
         .captured-pieces img {width: 30px;height: 30px;}
         #moveHistory {height: 300px;overflow-y: auto;border: 1px solid #ddd;padding: 10px;margin-top: 10px;}
-        button {padding: 10px;margin: 10px;font-size: 16px;}
+        button {padding: 10px;margin: 10px;font-size: 16px;cursor: pointer;}
         #status {font-size: 18px;font-weight: bold;margin-top: 10px;}
         .move-row {display: flex;margin: 5px 0;}
         .move-number {width: 30px;}
@@ -21,6 +24,7 @@
         .selected-square {box-shadow: inset 0 0 3px 3px blue;}
         #aiSettings {margin: 20px 0;text-align: center;}
         #eloRating {width: 100px;padding: 5px;}
+        select, input {padding: 5px;margin: 5px;}
     </style>
 </head>
 <body>
@@ -35,8 +39,8 @@
                     <option value="white">White</option>
                     <option value="black">Black</option>
                 </select>
+                <button id="newGame">New Game</button>
             </div>
-            <button id="newGame">New Game</button>
             <p id="status"></p>
             <p id="thinking" style="display:none">AI is thinking...</p>
         </div>
@@ -54,12 +58,10 @@
             </div>
         </div>
     </div>
+
     <audio id="moveSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAADAAAGhgBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAAoZxhxX2AAAAAAAAAAAAAAAAAAAA//tQxAAACVDlIgQwYgEjmWc/PCAAAFBHAAAAAAA0kBIAAAEkAAAAACEkBIAAAEkAAAAACQAAP/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/+xDE1gPAAAGkAAAAIAAANIAAAASqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg==" preload="auto"></audio>
     <audio id="captureSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAADAAAGhgBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAAoZxhxX2AAAAAAAAAAAAAAAAAAAA//tQxAAACZjpQgQwYgEvnSn/PCAAAPgnAAAAAAAA0kAIAAAEkAAAAABpIAQAAAJIAAAAABIAAH/6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EMTWg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js"></script>
+
     <script>
         let board = null;
         let game = new Chess();
@@ -68,9 +70,33 @@
         let selectedSquare = null;
         let isPlayerTurn = true;
         let playerColor = 'white';
-        let stockfish = new Worker('https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js');
+        let stockfish = new Worker('https://stockfish.js.org/stockfish.js');
+
+        function onDragStart(source, piece, position, orientation) {
+            if (!isPlayerTurn || game.game_over()) return false;
+            if ((playerColor === 'white' && piece.search(/^b/) !== -1) ||
+                (playerColor === 'black' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+            return true;
+        }
+
+        function onDrop(source, target) {
+            const move = makeMove(source, target);
+            if (move === null) return 'snapback';
+            
+            if (!game.game_over()) {
+                setTimeout(makeAIMove, 250);
+            }
+        }
+
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
 
         stockfish.onmessage = function(event) {
+            if (typeof event.data !== 'string') return;
+            
             const message = event.data;
             if (message.startsWith('bestmove')) {
                 const move = message.split(' ')[1];
@@ -111,46 +137,6 @@
             sound.play();
         }
 
-        function highlightLegalMoves(square) {
-            $('.square-55d63').removeClass('highlight-square');
-            if (selectedSquare === null) {
-                const moves = game.moves({ square: square, verbose: true });
-                moves.forEach(move => {
-                    $(`[data-square="${move.to}"]`).addClass('highlight-square');
-                });
-            }
-        }
-
-        function showPromotionDialog(color, callback) {
-            const pieces = ['q', 'r', 'n', 'b'];
-            const $modal = $('<div>').css({
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                background: 'white',
-                padding: '20px',
-                border: '2px solid black',
-                zIndex: 1000
-            }).appendTo('body');
-
-            pieces.forEach(piece => {
-                const img = $('<img>')
-                    .attr('src', `https://chessboardjs.com/img/chesspieces/wikipedia/${color}${piece.toUpperCase()}.png`)
-                    .css({
-                        width: '60px',
-                        height: '60px',
-                        cursor: 'pointer',
-                        margin: '5px'
-                    })
-                    .click(function() {
-                        $modal.remove();
-                        callback(piece);
-                    });
-                $modal.append(img);
-            });
-        }
-
         function updateCapturedPieces() {
             const positions = game.board();
             const currentPieces = { w: {}, b: {} };
@@ -160,11 +146,13 @@
             });
 
             positions.forEach(row => {
-                row.forEach(piece => {
-                    if (piece) {
-                        currentPieces[piece.color][piece.type]++;
-                    }
-                });
+                if (row) {
+                    row.forEach(piece => {
+                        if (piece) {
+                            currentPieces[piece.color][piece.type]++;
+                        }
+                    });
+                }
             });
 
             const initialCounts = { p: 8, r: 2, n: 2, b: 2, q: 1, k: 1 };
@@ -172,7 +160,7 @@
 
             ['w', 'b'].forEach(color => {
                 Object.entries(initialCounts).forEach(([piece, count]) => {
-                    const captured = count - currentPieces[color][piece];
+                    const captured = count - (currentPieces[color][piece] || 0);
                     for (let i = 0; i < captured; i++) {
                         capturedPieces[color].push(piece);
                     }
@@ -203,73 +191,21 @@
         }
 
         function makeMove(from, to) {
-            const piece = game.get(from);
-            const isPawnPromotion = piece && piece.type === 'p' &&
-                ((piece.color === 'w' && to[1] === '8') ||
-                 (piece.color === 'b' && to[1] === '1'));
-
-            if (isPawnPromotion) {
-                showPromotionDialog(piece.color, function(promotionPiece) {
-                    const move = game.move({
-                        from: from,
-                        to: to,
-                        promotion: promotionPiece
-                    });
-                    if (move) {
-                        board.position(game.fen());
-                        const isCapture = move.captured !== undefined;
-                        playSound(isCapture ? 'capture' : 'move');
-                        updateStatus();
-                        updateCapturedPieces();
-                        updateMoveHistory(game.history()[game.history().length - 1]);
-                        
-                        if (!game.game_over()) {
-                            setTimeout(makeAIMove, 500);
-                        }
-                    }
-                });
-                return null;
-            }
-
             const move = game.move({
                 from: from,
-                to: to
+                to: to,
+                promotion: 'q'
             });
-            if (move) {
-                board.position(game.fen());
-            }
-            return move;
-        }
 
-        function handleSquareClick(event) {
-            if (!isPlayerTurn) return;
-            
-            const square = $(event.currentTarget).data('square');
-            const piece = game.get(square);
-            
-            if (selectedSquare === null) {
-                if (piece && piece.color === (playerColor === 'white' ? 'w' : 'b')) {
-                    selectedSquare = square;
-                    highlightLegalMoves(square);
-                    $(event.currentTarget).addClass('selected-square');
-                }
-            } else {
-                const move = makeMove(selectedSquare, square);
-                $('.square-55d63').removeClass('selected-square highlight-square');
-                selectedSquare = null;
-                
-                if (move) {
-                    const isCapture = move.captured !== undefined;
-                    playSound(isCapture ? 'capture' : 'move');
-                    updateStatus();
-                    updateCapturedPieces();
-                    updateMoveHistory(game.history()[game.history().length - 1]);
-                    
-                    if (!game.game_over()) {
-                        setTimeout(makeAIMove, 500);
-                    }
-                }
+            if (move) {
+                const isCapture = move.captured !== undefined;
+                playSound(isCapture ? 'capture' : 'move');
+                updateStatus();
+                updateCapturedPieces();
+                updateMoveHistory(game.history()[game.history().length - 1]);
             }
+
+            return move;
         }
 
         function updateStatus() {
@@ -291,26 +227,34 @@
             game = new Chess();
             moveHistory = [];
             capturedPieces = { w: [], b: [] };
-            selectedSquare = null;
             playerColor = $('#playerColor').val();
             isPlayerTurn = playerColor === 'white';
-            
-            board = Chessboard('board', {
-                position: 'start',
-                draggable: false,
-                orientation: playerColor,
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-            });
-            
-            $('.square-55d63').off('click').on('click', handleSquareClick);
-            updateStatus();
-            updateCapturedPieces();
-            $('#moveHistory').empty();
 
-            // Initialize Stockfish
+            const config = {
+                draggable: true,
+                position: 'start',
+                orientation: playerColor,
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            };
+
+            if (board) {
+                board.destroy();
+            }
+            
+            board = Chessboard('board', config);
+            $(window).resize(() => board.resize());
+
             stockfish.postMessage('ucinewgame');
             setSkillLevel(parseInt($('#eloRating').val()));
             
+            updateStatus();
+            updateCapturedPieces();
+            $('#moveHistory').empty();
+            $('#thinking').hide();
+
             if (!isPlayerTurn) {
                 setTimeout(makeAIMove, 500);
             }
@@ -319,6 +263,7 @@
         $(document).ready(function() {
             initGame();
             $('#newGame').click(initGame);
+            $('#playerColor').change(initGame);
         });
     </script>
 </body>
