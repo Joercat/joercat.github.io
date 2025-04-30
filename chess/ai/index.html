@@ -4,53 +4,76 @@
     <title>Chess vs Stockfish AI</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://stockfishjs.web.app/stockfish.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <style>
-        .container {max-width: 1200px;margin: 0 auto;padding: 20px;display: flex;flex-wrap: wrap;justify-content: center;}
-        .game-info {text-align: center;width: 100%;margin-bottom: 20px;}
-        .board-container {display: flex;gap: 20px;}
-        #board {width: 600px;}
-        .side-panel {width: 200px;padding: 20px;background: #f5f5f5;border-radius: 8px;}
-        .captured-pieces {margin: 10px 0;min-height: 50px;}
-        .captured-pieces img {width: 30px;height: 30px;}
-        #moveHistory {height: 300px;overflow-y: auto;border: 1px solid #ddd;padding: 10px;margin-top: 10px;}
-        button {padding: 10px;margin: 10px;font-size: 16px;}
-        #status {font-size: 18px;font-weight: bold;margin-top: 10px;}
-        .move-row {display: flex;margin: 5px 0;}
-        .move-number {width: 30px;}
-        .move {flex: 1;padding: 0 5px;}
-        .highlight-square {box-shadow: inset 0 0 3px 3px yellow;}
-        .selected-square {box-shadow: inset 0 0 3px 3px blue;}
-        #aiSettings {margin: 20px 0;text-align: center;}
-        #eloRating {width: 100px;padding: 5px;}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .board-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        #board {
+            width: 600px;
+        }
+        .side-panel {
+            width: 200px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .captured-pieces {
+            margin: 10px 0;
+            min-height: 50px;
+        }
+        #moveHistory {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .highlight-square {
+            background: rgba(255, 255, 0, 0.4) !important;
+        }
+        .selected-square {
+            background: rgba(0, 0, 255, 0.4) !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="game-info">
+        <div style="width: 100%; text-align: center; margin-bottom: 20px;">
             <h1>Chess vs Stockfish AI</h1>
-            <div id="aiSettings">
-                <label for="eloRating">AI ELO Rating (500-3500):</label>
-                <input type="number" id="eloRating" min="500" max="3500" step="100" value="1500">
-                <label for="playerColor">Play as:</label>
+            <div>
+                <label for="eloRating">AI Strength (500-3000):</label>
+                <input type="number" id="eloRating" min="500" max="3000" value="1500">
                 <select id="playerColor">
-                    <option value="white">White</option>
-                    <option value="black">Black</option>
+                    <option value="white">Play as White</option>
+                    <option value="black">Play as Black</option>
                 </select>
+                <button id="startGame">New Game</button>
             </div>
-            <button id="newGame">New Game</button>
             <p id="status"></p>
-            <p id="thinking" style="display:none">AI is thinking...</p>
+            <p id="thinking" style="display: none;">AI is thinking...</p>
         </div>
+        
         <div class="board-container">
             <div class="side-panel">
                 <h3>Captured White Pieces</h3>
                 <div id="capturedBlack" class="captured-pieces"></div>
-                <h3>Move History</h3>
                 <div id="moveHistory"></div>
             </div>
+            
             <div id="board"></div>
+            
             <div class="side-panel">
                 <h3>Captured Black Pieces</h3>
                 <div id="capturedWhite" class="captured-pieces"></div>
@@ -58,231 +81,71 @@
         </div>
     </div>
 
-    <audio id="moveSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAADAAAGhgBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAAoZxhxX2AAAAAAAAAAAAAAAAAAAA//tQxAAACVDlIgQwYgEjmWc/PCAAAFBHAAAAAAA0kBIAAAEkAAAAACEkBIAAAEkAAAAACQAAP/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/+xDE1gPAAAGkAAAAIAAANIAAAASqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg==" preload="auto"></audio>
-    <audio id="captureSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAADAAAGhgBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAAoZxhxX2AAAAAAAAAAAAAAAAAAAA//tQxAAACZjpQgQwYgEvnSn/PCAAAPgnAAAAAAAA0kAIAAAEkAAAAABpIAQAAAJIAAAAABIAAH/6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv/7EMTWg8AAAaQAAAAgAAA0gAAABKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
-
     <script>
         let board = null;
         let game = new Chess();
-        let moveHistory = [];
-        let capturedPieces = { w: [], b: [] };
-        let selectedSquare = null;
-        let isPlayerTurn = true;
-        let playerColor = 'white';
         let stockfish = new Worker('https://stockfishjs.web.app/stockfish.js');
+        let playerColor = 'white';
+        let isPlayerTurn = true;
+        let selectedSquare = null;
+
+        function onDragStart(source, piece) {
+            return isPlayerTurn && piece.search(playerColor === 'white' ? /^w/ : /^b/) !== -1;
+        }
+
+        function makeMove(from, to) {
+            const move = game.move({
+                from: from,
+                to: to,
+                promotion: 'q'
+            });
+
+            if (move) {
+                board.position(game.fen());
+                updateStatus();
+                
+                if (!game.game_over()) {
+                    isPlayerTurn = false;
+                    $('#thinking').show();
+                    makeAIMove();
+                }
+            }
+            
+            return move;
+        }
+
+        function onDrop(source, target) {
+            const move = makeMove(source, target);
+            if (move === null) return 'snapback';
+        }
+
+        function makeAIMove() {
+            stockfish.postMessage('position fen ' + game.fen());
+            stockfish.postMessage('go depth 15');
+        }
 
         stockfish.onmessage = function(event) {
             const message = event.data;
             if (message.startsWith('bestmove')) {
                 const move = message.split(' ')[1];
                 if (move) {
-                    const result = game.move(move, { sloppy: true });
-                    if (result) {
-                        board.position(game.fen());
-                        const isCapture = result.captured !== undefined;
-                        playSound(isCapture ? 'capture' : 'move');
-                        updateStatus();
-                        updateCapturedPieces();
-                        updateMoveHistory(game.history()[game.history().length - 1]);
-                        isPlayerTurn = true;
-                    }
+                    makeMove(move.slice(0, 2), move.slice(2, 4));
+                    isPlayerTurn = true;
+                    $('#thinking').hide();
                 }
-                $('#thinking').hide();
             }
         };
-
-        function setSkillLevel(elo) {
-            const minElo = 500;
-            const maxElo = 3500;
-            const skill = Math.round(((elo - minElo) / (maxElo - minElo)) * 20);
-            stockfish.postMessage('setoption name Skill Level value ' + skill);
-        }
-
-        function makeAIMove() {
-            $('#thinking').show();
-            isPlayerTurn = false;
-            setSkillLevel(parseInt($('#eloRating').val()));
-            stockfish.postMessage('position fen ' + game.fen());
-            stockfish.postMessage('go movetime 1000');
-        }
-
-        function playSound(type) {
-            const sound = document.getElementById(type === 'capture' ? 'captureSound' : 'moveSound');
-            sound.currentTime = 0;
-            sound.play();
-        }
-
-        function highlightLegalMoves(square) {
-            $('.square-55d63').removeClass('highlight-square');
-            if (selectedSquare === null) {
-                const moves = game.moves({ square: square, verbose: true });
-                moves.forEach(move => {
-                    $(`[data-square="${move.to}"]`).addClass('highlight-square');
-                });
-            }
-        }
-
-        function showPromotionDialog(color, callback) {
-            const pieces = ['q', 'r', 'n', 'b'];
-            const $modal = $('<div>').css({
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                background: 'white',
-                padding: '20px',
-                border: '2px solid black',
-                zIndex: 1000
-            }).appendTo('body');
-
-            pieces.forEach(piece => {
-                const img = $('<img>')
-                    .attr('src', `https://chessboardjs.com/img/chesspieces/wikipedia/${color}${piece.toUpperCase()}.png`)
-                    .css({
-                        width: '60px',
-                        height: '60px',
-                        cursor: 'pointer',
-                        margin: '5px'
-                    })
-                    .click(function() {
-                        $modal.remove();
-                        callback(piece);
-                    });
-                $modal.append(img);
-            });
-        }
-
-        function updateCapturedPieces() {
-            const positions = game.board();
-            const currentPieces = { w: {}, b: {} };
-            'prnbqk'.split('').forEach(piece => {
-                currentPieces.w[piece] = 0;
-                currentPieces.b[piece] = 0;
-            });
-
-            positions.forEach(row => {
-                row.forEach(piece => {
-                    if (piece) {
-                        currentPieces[piece.color][piece.type]++;
-                    }
-                });
-            });
-
-            const initialCounts = { p: 8, r: 2, n: 2, b: 2, q: 1, k: 1 };
-            capturedPieces = { w: [], b: [] };
-
-            ['w', 'b'].forEach(color => {
-                Object.entries(initialCounts).forEach(([piece, count]) => {
-                    const captured = count - currentPieces[color][piece];
-                    for (let i = 0; i < captured; i++) {
-                        capturedPieces[color].push(piece);
-                    }
-                });
-            });
-
-            $('#capturedWhite').html(capturedPieces.w.map(p =>
-                `<img src="https://chessboardjs.com/img/chesspieces/wikipedia/w${p.toUpperCase()}.png" width="30" height="30">`
-            ).join(''));
-            $('#capturedBlack').html(capturedPieces.b.map(p =>
-                `<img src="https://chessboardjs.com/img/chesspieces/wikipedia/b${p.toUpperCase()}.png" width="30" height="30">`
-            ).join(''));
-        }
-
-        function updateMoveHistory(move) {
-            moveHistory.push(move);
-            const moveHistoryDiv = $('#moveHistory');
-            let html = '';
-            for (let i = 0; i < moveHistory.length; i += 2) {
-                html += `<div class="move-row">
-                    <span class="move-number">${Math.floor(i/2) + 1}.</span>
-                    <span class="move">${moveHistory[i]}</span>
-                    <span class="move">${moveHistory[i+1] || ''}</span>
-                </div>`;
-            }
-            moveHistoryDiv.html(html);
-            moveHistoryDiv.scrollTop(moveHistoryDiv[0].scrollHeight);
-        }
-
-        function makeMove(from, to) {
-            const piece = game.get(from);
-            const isPawnPromotion = piece && piece.type === 'p' &&
-                ((piece.color === 'w' && to[1] === '8') ||
-                 (piece.color === 'b' && to[1] === '1'));
-
-            if (isPawnPromotion) {
-                showPromotionDialog(piece.color, function(promotionPiece) {
-                    const move = game.move({
-                        from: from,
-                        to: to,
-                        promotion: promotionPiece
-                    });
-                    if (move) {
-                        board.position(game.fen());
-                        const isCapture = move.captured !== undefined;
-                        playSound(isCapture ? 'capture' : 'move');
-                        updateStatus();
-                        updateCapturedPieces();
-                        updateMoveHistory(game.history()[game.history().length - 1]);
-                        
-                        if (!game.game_over()) {
-                            setTimeout(makeAIMove, 500);
-                        }
-                    }
-                });
-                return null;
-            }
-
-            const move = game.move({
-                from: from,
-                to: to
-            });
-            if (move) {
-                board.position(game.fen());
-            }
-            return move;
-        }
-
-        function handleSquareClick(event) {
-            if (!isPlayerTurn) return;
-            
-            const square = $(event.currentTarget).data('square');
-            const piece = game.get(square);
-            
-            if (selectedSquare === null) {
-                if (piece && piece.color === (playerColor === 'white' ? 'w' : 'b')) {
-                    selectedSquare = square;
-                    highlightLegalMoves(square);
-                    $(event.currentTarget).addClass('selected-square');
-                }
-            } else {
-                const move = makeMove(selectedSquare, square);
-                $('.square-55d63').removeClass('selected-square highlight-square');
-                selectedSquare = null;
-                
-                if (move) {
-                    const isCapture = move.captured !== undefined;
-                    playSound(isCapture ? 'capture' : 'move');
-                    updateStatus();
-                    updateCapturedPieces();
-                    updateMoveHistory(game.history()[game.history().length - 1]);
-                    
-                    if (!game.game_over()) {
-                        setTimeout(makeAIMove, 500);
-                    }
-                }
-            }
-        }
 
         function updateStatus() {
             let status = '';
             if (game.in_checkmate()) {
-                status = game.turn() === 'w' ? 'Game Over - Black Wins!' : 'Game Over - White Wins!';
+                status = 'Game over - ' + (game.turn() === 'w' ? 'Black' : 'White') + ' wins!';
             } else if (game.in_draw()) {
-                status = 'Game Over - Draw!';
+                status = 'Game over - Draw';
             } else {
-                status = game.turn() === 'w' ? 'White to move' : 'Black to move';
+                status = (game.turn() === 'w' ? 'White' : 'Black') + ' to move';
                 if (game.in_check()) {
-                    status += ' - CHECK!';
+                    status += ' (CHECK)';
                 }
             }
             $('#status').text(status);
@@ -290,40 +153,29 @@
 
         function initGame() {
             game = new Chess();
-            moveHistory = [];
-            capturedPieces = { w: [], b: [] };
-            selectedSquare = null;
             playerColor = $('#playerColor').val();
             isPlayerTurn = playerColor === 'white';
             
             board = Chessboard('board', {
                 position: 'start',
-                draggable: false,
+                draggable: true,
                 orientation: playerColor,
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+                onDragStart: onDragStart,
+                onDrop: onDrop
             });
-            
-            $('.square-55d63').off('click').on('click', handleSquareClick);
-            updateStatus();
-            updateCapturedPieces();
-            $('#moveHistory').empty();
 
-            // Initialize Stockfish
             stockfish.postMessage('ucinewgame');
-            setSkillLevel(parseInt($('#eloRating').val()));
-            
+            updateStatus();
+
             if (!isPlayerTurn) {
-                setTimeout(makeAIMove, 500);
+                makeAIMove();
             }
         }
 
         $(document).ready(function() {
-            setTimeout(() => {
-                initGame();
-                $('#newGame').click(initGame);
-            }, 100);
+            $('#startGame').on('click', initGame);
+            initGame();
         });
     </script>
 </body>
 </html>
-
