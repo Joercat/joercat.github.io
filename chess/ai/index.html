@@ -1,210 +1,834 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html lang="en">
 <head>
-    <title>Chess vs Stockfish AI</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess vs AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-</head>
-
-        :root[data-theme="light"] {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --panel-bg: #f0f0f0;
-            --border-color: #dddddd;
-            --highlight: #007bff;
-        }
-
-        :root[data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --panel-bg: #2d2d2d;
-            --border-color: #404040;
-            --highlight: #0056b3;
-        }
-
+    <style>
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
             margin: 0;
-            padding: 0;
-            transition: all 0.3s ease;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--panel-bg);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .board-container {
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
         .controls {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-
-        .board-container {
-            display: grid;
-            grid-template-columns: 250px auto 250px;
-            gap: 30px;
-            align-items: start;
-        }
-
-        #board {
-            width: 600px !important;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-
-        .side-panel {
-            background: var(--panel-bg);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-switch {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        button {
-            background: var(--highlight);
+        .controls button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .controls button:hover {
+            background-color: #45a049;
         }
-
-        select, input {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
+        .controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-
-        #moveHistory {
-            height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
+        .controls select {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .game-status {
             margin-top: 20px;
-        }
-
-        .move-row {
-            display: flex;
-            padding: 5px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .captured-pieces img {
-            width: 30px;
-            height: 30px;
-            margin: 2px;
-        }
-
-        #status {
-            font-size: 1.2em;
-            margin: 15px 0;
             padding: 10px;
-            border-radius: 5px;
-            background: var(--panel-bg);
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            text-align: center;
+            min-height: 20px;
         }
-
-        #thinking {
-            color: var(--highlight);
+        .move-history {
+            margin-top: 20px;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .move-history h3 {
+            margin-top: 0;
+        }
+        .move-list {
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 5px 10px;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+        }
+        .loading.active {
+            display: block;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        .highlight-square {
+            box-shadow: inset 0 0 3px 3px yellow;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .promotion-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .promotion-options {
+            display: flex;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            gap: 10px;
+        }
+        .promotion-option {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 40px;
+        }
+        .promotion-option:hover {
+            background-color: #f0f0f0;
+        }
+        .difficulty-options {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .difficulty-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .difficulty-btn.active {
+            background-color: #2E8B57;
             font-weight: bold;
+        }
+        .square-highlight {
+            background-color: rgba(255, 255, 0, 0.4) !important;
+        }
+        .square-selected {
+            background-color: rgba(173, 216, 230, 0.5) !important;
         }
     </style>
 </head>
 <body>
-    <button class="theme-switch" onclick="toggleTheme()">Toggle Theme</button>
     <div class="container">
         <div class="header">
-            <h1>Chess vs Stockfish AI</h1>
-            <div class="controls">
-                <select id="playerColor">
-                    <option value="white">Play as White</option>
-                    <option value="black">Play as Black</option>
-                </select>
-                <input type="number" id="eloRating" min="500" max="3000" value="1500" placeholder="AI Strength">
-                <button id="startGame">New Game</button>
-            </div>
-            <div id="status"></div>
-            <div id="thinking" style="display: none;">AI is thinking...</div>
+            <h1>Chess vs AI</h1>
         </div>
-
-        <div class="board-container">
-            <div class="side-panel">
-                <h3>Captured White Pieces</h3>
-                <div id="capturedBlack" class="captured-pieces"></div>
-                <div id="moveHistory"></div>
+        
+        <div class="difficulty-options">
+            <p>Select AI difficulty:</p>
+            <button id="easy" class="difficulty-btn active">Beginner (1000 ELO)</button>
+            <button id="medium" class="difficulty-btn">Intermediate (1500 ELO)</button>
+            <button id="hard" class="difficulty-btn">Advanced (2000 ELO)</button>
+        </div>
+        
+        <div class="game-container">
+            <div class="board-container">
+                <div id="board"></div>
             </div>
             
-            <div id="board"></div>
+            <div class="controls">
+                <button id="startBtn">Start New Game</button>
+                <button id="undoBtn" disabled>Undo Move</button>
+                <select id="colorSelect">
+                    <option value="w">Play as White</option>
+                    <option value="b">Play as Black</option>
+                </select>
+            </div>
             
-            <div class="side-panel">
-                <h3>Captured Black Pieces</h3>
-                <div id="capturedWhite" class="captured-pieces"></div>
+            <div class="loading">
+                <span class="spinner"></span>AI is thinking...
+            </div>
+            
+            <div class="game-status" id="status">Select difficulty and press "Start New Game" to begin.</div>
+            
+            <div class="move-history">
+                <h3>Move History</h3>
+                <div class="move-list" id="moveHistory"></div>
             </div>
         </div>
     </div>
+    
+    <div class="promotion-modal" id="promotionModal">
+        <div class="promotion-options">
+            <div class="promotion-option" data-piece="q">♛</div>
+            <div class="promotion-option" data-piece="r">♜</div>
+            <div class="promotion-option" data-piece="b">♝</div>
+            <div class="promotion-option" data-piece="n">♞</div>
+        </div>
+    </div>
 
+    <!-- External libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
     <script>
-        // Previous JavaScript remains the same, add this new function:
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // Add this to your document ready function:
-        $(document).ready(function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the game
+            let board = null;
+            let game = new Chess();
+            let moveHistory = [];
+            let playerColor = 'w';
+            let currentDifficulty = 'easy'; // Default to easy
+            let isAIThinking = false;
+            let pendingPromotion = null;
+            let selectedSquare = null;
             
-            // Initialize the board with specific size
-            board = Chessboard('board', {
-                position: 'start',
-                draggable: true,
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-                orientation: playerColor,
-                onDragStart: onDragStart,
-                onDrop: onDrop
+            // DOM elements
+            const $board = $('#board');
+            const $startBtn = $('#startBtn');
+            const $undoBtn = $('#undoBtn');
+            const $colorSelect = $('#colorSelect');
+            const $status = $('#status');
+            const $moveHistory = $('#moveHistory');
+            const $loading = $('.loading');
+            const $promotionModal = $('#promotionModal');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            
+            // Set up difficulty buttons
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    if (this.id === 'easy') currentDifficulty = 'easy';
+                    else if (this.id === 'medium') currentDifficulty = 'medium';
+                    else if (this.id === 'hard') currentDifficulty = 'hard';
+                });
             });
-
-            // Ensure board is visible
-            $(window).resize(function() {
-                board.resize();
+            
+            // Make AI move
+            function makeAIMove() {
+                if (game.game_over()) return;
+                
+                // Check if it's AI's turn
+                if ((game.turn() === 'w' && playerColor === 'w') ||
+                    (game.turn() === 'b' && playerColor === 'b')) {
+                    return;
+                }
+                
+                isAIThinking = true;
+                $loading.addClass('active');
+                
+                // Use setTimeout to give UI time to update
+                setTimeout(function() {
+                    const move = getBestMove();
+                    
+                    if (move) {
+                        const aiMove = game.move(move);
+                        moveHistory.push(aiMove);
+                        updateMoveHistory();
+                        board.position(game.fen());
+                        
+                        // Enable undo if move history exists
+                        if (moveHistory.length > 0) {
+                            $undoBtn.prop('disabled', false);
+                        }
+                        
+                        updateStatus();
+                    }
+                    
+                    isAIThinking = false;
+                    $loading.removeClass('active');
+                }, 500);
+            }
+            
+            // Initialize the board
+            function initializeBoard() {
+                const config = {
+                    position: 'start',
+                    draggable: false, // Disable dragging for click-to-move only
+                    pieceTheme: 'https://lichess1.org/assets/piece/cburnett/{piece}.svg'
+                };
+                
+                board = Chessboard('board', config);
+                
+                // Add click event for squares
+                bindBoardEvents();
+                
+                // Resize the board to fit the container
+                $(window).resize(board.resize);
+            }
+            
+            // Bind click events to board squares
+            function bindBoardEvents() {
+                $('#board .square-55d63').off('click'); // Remove any existing handlers
+                $('#board .square-55d63').on('click', function() {
+                    const square = $(this).attr('data-square');
+                    handleSquareClick(square);
+                });
+            }
+            
+            // Start a new game
+            function startNewGame() {
+                game = new Chess();
+                moveHistory = [];
+                updateMoveHistory();
+                $status.text('Game started. ' + (playerColor === 'w' ? 'You play as White.' : 'You play as Black.'));
+                $undoBtn.prop('disabled', true);
+                selectedSquare = null;
+                removeHighlights();
+                
+                board.position('start');
+                
+                // Reset click handlers
+                bindBoardEvents();
+                
+                if (playerColor === 'b') {
+                    setTimeout(makeAIMove, 500);
+                }
+            }
+            
+            // Update the game status
+            function updateStatus() {
+                let status = '';
+                
+                if (game.in_checkmate()) {
+                    status = 'Game over, ' + (game.turn() === 'w' ? 'black' : 'white') + ' wins by checkmate.';
+                } else if (game.in_draw()) {
+                    status = 'Game over, drawn position.';
+                    if (game.in_stalemate()) {
+                        status = 'Game over, drawn by stalemate.';
+                    } else if (game.in_threefold_repetition()) {
+                        status = 'Game over, drawn by threefold repetition.';
+                    } else if (game.insufficient_material()) {
+                        status = 'Game over, drawn due to insufficient material.';
+                    }
+                } else {
+                    status = (game.turn() === 'w' ? 'White' : 'Black') + ' to move.';
+                    
+                    if (game.in_check()) {
+                        status += ' ' + (game.turn() === 'w' ? 'White' : 'Black') + ' is in check.';
+                    }
+                }
+                
+                $status.text(status);
+            }
+            
+            // Check if pawn promotion
+            function isPawnPromotion(source, target) {
+                const piece = game.get(source);
+                return piece &&
+                    piece.type === 'p' &&
+                    ((target.charAt(1) === '8' && piece.color === 'w') ||
+                     (target.charAt(1) === '1' && piece.color === 'b'));
+            }
+            
+            // Show promotion modal
+            function showPromotionModal(source, target) {
+                pendingPromotion = { source, target };
+                $promotionModal.css('display', 'flex');
+            }
+            
+            // Handle promotion selection
+            function handlePromotion(promotionPiece) {
+                if (!pendingPromotion) return;
+                
+                const { source, target } = pendingPromotion;
+                const move = game.move({
+                    from: source,
+                    to: target,
+                    promotion: promotionPiece
+                });
+                
+                pendingPromotion = null;
+                $promotionModal.css('display', 'none');
+                
+                // Update the board
+                board.position(game.fen());
+                
+                // Update move history
+                moveHistory.push(move);
+                updateMoveHistory();
+                
+                // Enable undo if move history exists
+                if (moveHistory.length > 0) {
+                    $undoBtn.prop('disabled', false);
+                }
+                
+                // Update status
+                updateStatus();
+                
+                // Let AI respond
+                setTimeout(makeAIMove, 500);
+            }
+            
+            // Update move history display
+            function updateMoveHistory() {
+                $moveHistory.empty();
+                
+                for (let i = 0; i < moveHistory.length; i++) {
+                    const moveNumber = Math.floor(i / 2) + 1;
+                    const move = moveHistory[i];
+                    
+                    if (i % 2 === 0) {
+                        // White's move
+                        $moveHistory.append(`<div>${moveNumber}. ${move.san}</div>`);
+                    } else {
+                        // Black's move
+                        $moveHistory.append(`<div>${move.san}</div>`);
+                    }
+                }
+                
+                // Scroll to bottom
+                const historyContainer = document.querySelector('.move-history');
+                historyContainer.scrollTop = historyContainer.scrollHeight;
+            }
+            
+            // Undo the last two moves (player and AI)
+            function undoMove() {
+                if (moveHistory.length < 1) return;
+                
+                game.undo(); // Undo player's move
+                moveHistory.pop();
+                
+                if (moveHistory.length > 0) {
+                    game.undo(); // Undo AI's move
+                    moveHistory.pop();
+                }
+                
+                board.position(game.fen());
+                updateMoveHistory();
+                updateStatus();
+                
+                if (moveHistory.length === 0) {
+                    $undoBtn.prop('disabled', true);
+                }
+                
+                selectedSquare = null;
+                removeHighlights();
+            }
+            
+            // Handle square click for click-to-move functionality
+            function handleSquareClick(square) {
+                removeHighlights();
+                
+                // Don't allow moves during AI's turn or if the game is over
+                if (game.game_over() || isAIThinking ||
+                   (game.turn() === 'w' && playerColor === 'b') ||
+                   (game.turn() === 'b' && playerColor === 'w')) {
+                    selectedSquare = null;
+                    return;
+                }
+                
+                const piece = game.get(square);
+                
+                // If no square is selected yet
+                if (selectedSquare === null) {
+                    // Check if the clicked square contains a player's piece
+                    if (piece && 
+                        ((piece.color === 'w' && playerColor === 'w') || 
+                         (piece.color === 'b' && playerColor === 'b'))) {
+                        selectedSquare = square;
+                        highlightSquare(square);
+                        highlightLegalMoves(square);
+                    }
+                    return;
+                } 
+                
+                // If a square is already selected
+                if (selectedSquare === square) {
+                    // Clicking the same square deselects it
+                    selectedSquare = null;
+                    return;
+                }
+                
+                // Check if clicked square is one of the legal moves
+                const moves = game.moves({
+                    square: selectedSquare,
+                    verbose: true
+                });
+                
+                const targetMove = moves.find(move => move.to === square);
+                
+                if (!targetMove) {
+                    // If clicking on another own piece, select that piece instead
+                    if (piece && 
+                        ((piece.color === 'w' && playerColor === 'w') || 
+                         (piece.color === 'b' && playerColor === 'b'))) {
+                        selectedSquare = square;
+                        highlightSquare(square);
+                        highlightLegalMoves(square);
+                    } else {
+                        // Invalid move, deselect
+                        selectedSquare = null;
+                    }
+                    return;
+                }
+                
+                // Handle pawn promotion
+                if (isPawnPromotion(selectedSquare, square)) {
+                    showPromotionModal(selectedSquare, square);
+                    return;
+                }
+                
+                // Make the move
+                const move = game.move({
+                    from: selectedSquare,
+                    to: square,
+                    promotion: 'q' // Default to queen for simplicity
+                });
+                
+                // If move is valid
+                if (move) {
+                    board.position(game.fen());
+                    
+                    // Update move history
+                    moveHistory.push(move);
+                    updateMoveHistory();
+                    
+                    // Enable undo if move history exists
+                    if (moveHistory.length > 0) {
+                        $undoBtn.prop('disabled', false);
+                    }
+                    
+                    // Update status
+                    updateStatus();
+                    
+                    // Reset selection
+                    selectedSquare = null;
+                    
+                    // Let AI respond
+                    setTimeout(makeAIMove, 500);
+                }
+            }
+            
+            // Highlight the selected square
+            function highlightSquare(square) {
+                $('.square-' + square).addClass('square-selected');
+            }
+            
+            // Highlight legal moves
+            function highlightLegalMoves(square) {
+                // Get list of possible moves for this square
+                const moves = game.moves({
+                    square: square,
+                    verbose: true
+                });
+                
+                // Exit if there are no moves available for this square
+                if (moves.length === 0) return;
+                
+                // Highlight the possible squares for this piece
+                for (let i = 0; i < moves.length; i++) {
+                    $('.square-' + moves[i].to).addClass('square-highlight');
+                }
+            }
+            
+            // Remove all highlights
+            function removeHighlights() {
+                $('.square-55d63').removeClass('square-highlight square-selected');
+            }
+            
+            // AI LOGIC
+            
+            // Evaluate the board position
+            function evaluateBoard() {
+                // Material value calculation
+                const pieceValues = {
+                    'p': 100,
+                    'n': 320,
+                    'b': 330,
+                    'r': 500,
+                    'q': 900,
+                    'k': 20000
+                };
+                
+                let totalEvaluation = 0;
+                
+                // Iterate through the board and evaluate each piece
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        const square = String.fromCharCode(97 + j) + (8 - i);
+                        const piece = game.get(square);
+                        
+                        if (!piece) continue;
+                        
+                        const value = pieceValues[piece.type];
+                        
+                        // Positional bonuses (simple version)
+                        let positionalBonus = 0;
+                        
+                        // Center control bonus for pawns and knights
+                        if (piece.type === 'p' || piece.type === 'n') {
+                            // Center squares
+                            if ((j >= 2 && j <= 5) && (i >= 2 && i <= 5)) {
+                                positionalBonus += 10;
+                                
+                                // Inner center bonus
+                                if ((j >= 3 && j <= 4) && (i >= 3 && i <= 4)) {
+                                    positionalBonus += 10;
+                                }
+                            }
+                        }
+                        
+                        // Pawn structure bonuses
+                        if (piece.type === 'p') {
+                            // Advancement bonus (the further the better)
+                            if (piece.color === 'w') {
+                                positionalBonus += (7 - i) * 5; // White pawns want to advance toward row 0
+                            } else {
+                                positionalBonus += i * 5; // Black pawns want to advance toward row 7
+                            }
+                        }
+                        
+                        // Development bonus for minor pieces
+                        if ((piece.type === 'n' || piece.type === 'b') && 
+                            ((piece.color === 'w' && i !== 7) || (piece.color === 'b' && i !== 0))) {
+                            positionalBonus += 15;
+                        }
+                        
+                        // Rook on open file bonus
+                        if (piece.type === 'r') {
+                            let hasOwnPawn = false;
+                            for (let k = 0; k < 8; k++) {
+                                const checkSquare = String.fromCharCode(97 + j) + (8 - k);
+                                const checkPiece = game.get(checkSquare);
+                                if (checkPiece && checkPiece.type === 'p' && checkPiece.color === piece.color) {
+                                    hasOwnPawn = true;
+                                    break;
+                                }
+                            }
+                            if (!hasOwnPawn) {
+                                positionalBonus += 20;
+                            }
+                        }
+                        
+                        // King safety
+                        if (piece.type === 'k') {
+                            // Penalize king in center during middlegame
+                            if (!isEndgame() && (j >= 2 && j <= 5) && (i >= 2 && i <= 5)) {
+                                positionalBonus -= 30;
+                            }
+                            
+                            // Bonus for king near corner during opening/middlegame
+                            if (!isEndgame() && ((j <= 1 || j >= 6) && (i <= 1 || i >= 6))) {
+                                positionalBonus += 20;
+                            }
+                            
+                            // Encourage king activity in endgame
+                            if (isEndgame()) {
+                                // Central king is good in endgame
+                                if ((j >= 2 && j <= 5) && (i >= 2 && i <= 5)) {
+                                    positionalBonus += 20;
+                                }
+                            }
+                        }
+                        
+                        // Apply the total evaluation
+                        if (piece.color === 'w') {
+                            totalEvaluation += value + positionalBonus;
+                        } else {
+                            totalEvaluation -= value + positionalBonus;
+                        }
+                    }
+                }
+                
+                // Add a small random factor to prevent repetitive play
+                totalEvaluation += (Math.random() * 10) - 5;
+                
+                return totalEvaluation;
+            }
+            
+            // Check if we're in endgame (simplified)
+            function isEndgame() {
+                const pieces = game.board().flat().filter(p => p !== null);
+                const pieceCount = pieces.length;
+                
+                // Count major pieces (queen, rook)
+                const majorPieces = pieces.filter(p => p.type === 'q' || p.type === 'r').length;
+                
+                return pieceCount <= 12 || majorPieces <= 4;
+            }
+            
+            // Minimax algorithm with alpha-beta pruning
+            function minimax(depth, alpha, beta, isMaximizingPlayer) {
+                // Base case: reach depth limit or game over
+                if (depth === 0 || game.game_over()) {
+                    return evaluateBoard();
+                }
+                
+                const possibleMoves = game.moves();
+                
+                // Sort moves to improve alpha-beta pruning
+                possibleMoves.sort(() => Math.random() - 0.5);
+                
+                if (isMaximizingPlayer) {
+                    let maxEval = -Infinity;
+                    
+                    for (let i = 0; i < possibleMoves.length; i++) {
+                        game.move(possibleMoves[i]);
+                        const evaluation = minimax(depth - 1, alpha, beta, false);
+                        game.undo();
+                        
+                        maxEval = Math.max(maxEval, evaluation);
+                        alpha = Math.max(alpha, evaluation);
+                        
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                    
+                    return maxEval;
+                } else {
+                    let minEval = Infinity;
+                    
+                    for (let i = 0; i < possibleMoves.length; i++) {
+                        game.move(possibleMoves[i]);
+                        const evaluation = minimax(depth - 1, alpha, beta, true);
+                        game.undo();
+                        
+                        minEval = Math.min(minEval, evaluation);
+                        beta = Math.min(beta, evaluation);
+                        
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                    
+                    return minEval;
+                }
+            }
+            
+            // Make the best move for AI based on difficulty
+            function getBestMove() {
+                let depth = 2; // Default depth
+                
+                // Set depth based on difficulty
+                if (currentDifficulty === 'medium') {
+                    depth = 3;
+                } else if (currentDifficulty === 'hard') {
+                    depth = 4;
+                }
+                
+                const possibleMoves = game.moves();
+                let bestMove = null;
+                let bestEvaluation = game.turn() === 'w' ? -Infinity : Infinity;
+                const isMaximizing = game.turn() === 'w';
+                
+                // Introduce mistakes based on difficulty
+                let makeRandomMove = false;
+                const randomFactor = Math.random();
+                
+                if (currentDifficulty === 'easy' && randomFactor < 0.2) {
+                    makeRandomMove = true;
+                } else if (currentDifficulty === 'medium' && randomFactor < 0.1) {
+                    makeRandomMove = true;
+                } else if (currentDifficulty === 'hard' && randomFactor < 0.05) {
+                    makeRandomMove = true;
+                }
+                
+                if (makeRandomMove) {
+                    // Make a random legal move to simulate mistake
+                    return possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                }
+                
+                // Sort moves to improve alpha-beta pruning
+                possibleMoves.sort(() => Math.random() - 0.5);
+                
+                for (let i = 0; i < possibleMoves.length; i++) {
+                    game.move(possibleMoves[i]);
+                    const evaluation = minimax(depth - 1, -Infinity, Infinity, !isMaximizing);
+                    game.undo();
+                    
+                    if (isMaximizing && evaluation > bestEvaluation) {
+                        bestEvaluation = evaluation;
+                        bestMove = possibleMoves[i];
+                    } else if (!isMaximizing && evaluation < bestEvaluation) {
+                        bestEvaluation = evaluation;
+                        bestMove = possibleMoves[i];
+                    }
+                }
+                
+                return bestMove;
+            }
+            
+            // SETUP EVENT LISTENERS
+            
+            // Start new game
+            $startBtn.on('click', startNewGame);
+            
+            // Undo move
+            $undoBtn.on('click', undoMove);
+            
+            // Change player color
+            $colorSelect.on('change', function() {
+                playerColor = $(this).val();
             });
-
-            $('#startGame').on('click', initGame);
-            initGame();
+            
+            // Promotion piece selection
+            document.querySelectorAll('.promotion-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const piece = this.getAttribute('data-piece');
+                    handlePromotion(piece);
+                });
+            });
+            
+            // Initialize the game
+            initializeBoard();
+            startNewGame();
         });
     </script>
 </body>
