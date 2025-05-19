@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCos 1.3.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --main-color: #39FF14;
+            --bg-dark: #000000;
+            --window-bg: #1a1a1a;
+            --text-color: var(--main-color);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s;
+        }
+
+        .logo-text {
+            font-size: 48px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        
+.spinning-o {
+    display: inline-block;
+    animation: spin 1s ease-in-out infinite;
+    color: #39FF14;
+    font-weight: bold;
+    text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.5); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 20px;
+            border: 2px solid var(--main-color);
+            margin: 20px 0;
+        }
+
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background: var(--main-color);
+            transition: width 0.1s;
+        }
+
+        .boot-messages {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        /* Desktop */
+        #desktop {
+            height: calc(100vh - 40px);
+            padding: 20px;
+        }
+
+        .desktop-icons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 80px);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .icon {
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .icon:hover {
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        .icon span {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            background: var(--window-bg);
+            border: 1px solid var(--main-color);
+            min-width: 400px;
+            min-height: 300px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .window.maximized {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: calc(100vh - 40px) !important;
+            transform: none !important;
+        }
+
+        .window-header {
+            background: var(--main-color);
+            color: var(--bg-dark);
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .window-control {
+            padding: 2px 8px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .window-content {
+            height: calc(100% - 35px);
+            overflow: auto;
+            padding: 10px;
+        }
+
+        /* Terminal */
+        .terminal-content {
+            height: 100%;
+            background: #000;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-y: auto;
+            color: var(--main-color);
+        }
+
+        .terminal-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+        }
+
+        .terminal-prompt {
+            color: var(--main-color);
+            margin-right: 5px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: var(--main-color);
+            font-family: 'Courier New', monospace;
+            width: calc(100% - 20px);
+            outline: none;
+        }
+
+        /* Browser */
+        .browser-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .browser-toolbar {
+            display: flex;
+            padding: 5px;
+            gap: 5px;
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        .browser-toolbar input {
+            flex-grow: 1;
+            background: #333;
+            border: 1px solid var(--main-color);
+            color: var(--main-color);
+            padding: 5px;
+            outline: none;
+        }
+
+        .browser-toolbar button {
+            background: #333;
+            color: var(--main-color);
+            border: 1px solid var(--main-color);
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .browser-content iframe {
+            width: 100%;
+            height: 500%;
+            border: none;
+            margin: 5px;
+            background: white;
+        }
+
+        /* Calendar */
+        .calendar-app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        .calendar-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: rgba(57, 255, 20, 0.1);
+            padding: 10px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--window-bg);
+        }
+
+        .calendar-day:hover {
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        .calendar-day.today {
+            background: var(--main-color);
+            color: var(--bg-dark);
+        }
+
+        .calendar-header {
+            background: rgba(57, 255, 20, 0.2);
+            font-weight: bold;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            height: 40px;
+            background: rgba(26, 26, 26, 0.95);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-top: 1px solid var(--main-color);
+        }
+
+        .running-apps {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-item {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            background: rgba(57, 255, 20, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .task-item:hover {
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        /* Files */
+        .files-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .files-toolbar {
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .files-path {
+            background: #333;
+            color: var(--main-color);
+            border: 1px solid var(--main-color);
+            padding: 5px;
+            flex-grow: 1;
+        }
+
+        .files-list {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 3px;
+        }
+
+        .file-item:hover {
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        /* Notepad */
+        .notepad-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notepad-toolbar {
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .notepad-editor {
+            flex: 1;
+            background: var(--window-bg);
+            color: var(--main-color);
+            border: none;
+            padding: 10px;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+
+        /* Settings */
+        .settings-content {
+            padding: 20px;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-group h4 {
+            margin-bottom: 10px;
+        }
+
+        select, button {
+            background: #333;
+            color: var(--main-color);
+            border: 1px solid var(--main-color);
+            padding: 5px 10px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:hover, button:hover {
+            background: var(--main-color);
+            color: var(--bg-dark);
+        }
+
+        /* Themes */
+        .themes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .theme-preview {
+            height: 80px;
+            cursor: pointer;
+            border: 1px solid var(--main-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* Matrix theme */
+        .matrix-1 {
+            --main-color: #39FF14;
+            --bg-dark: #000000;
+            --window-bg: #1a1a1a;
+            --text-color: var(--main-color);
+        }
+
+        /* Blue theme */
+        .blue-sky {
+            --main-color: #00AAFF;
+            --bg-dark: #001933;
+            --window-bg: #002B4D;
+            --text-color: var(--main-color);
+        }
+
+        /* Purple theme */
+        .midnight-purple {
+            --main-color: #CC66FF;
+            --bg-dark: #1A0033;
+            --window-bg: #330066;
+            --text-color: var(--main-color);
+        }
+
+        /* Amber theme */
+        .amber-tech {
+            --main-color: #FF0000;
+            --bg-dark: #330000;
+            --window-bg: #4D0000;
+            --text-color: var(--main-color);
+        }
+
+        /* About */
+        .about-content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .about-logo {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #39FF14;
+        }
+
+        .about-info {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-screen">
+        <div class="logo-text">SC<span class="spinning-o">o</span>s</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        <div class="boot-messages"></div>
+    </div>
+
+    <div id="desktop">
+        <div class="desktop-icons">
+            <div class="icon" data-app="files">
+                <i class="fas fa-folder fa-2x"></i>
+                <span>Files</span>
+            </div>
+            <div class="icon" data-app="terminal">
+                <i class="fas fa-terminal fa-2x"></i>
+                <span>Terminal</span>
+            </div>
+            <div class="icon" data-app="notepad">
+                <i class="fas fa-edit fa-2x"></i>
+                <span>Notepad</span>
+            </div>
+            <div class="icon" data-app="browser">
+                <i class="fas fa-globe fa-2x"></i>
+                <span>Browser</span>
+            </div>
+            <div class="icon" data-app="calendar">
+                <i class="fas fa-calendar fa-2x"></i>
+                <span>Calendar</span>
+            </div>
+            <div class="icon" data-app="settings">
+                <i class="fas fa-cog fa-2x"></i>
+                <span>Settings</span>
+            </div>
+            <div class="icon" data-app="about">
+                <i class="fas fa-info-circle fa-2x"></i>
+                <span>About</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="taskbar">
+active apps:
+        <div class="running-apps"></div>
+        <div class="system-tray">
+            <span id="system-time"></span>
+        </div>
+    </div>
+
+    <script>
+const System = {
+    currentTheme: 'matrix-1',
+    currentDate: new Date(),
+    bootComplete: false,
+    taskbarApps: {},
+
+    async init() {
+        await this.startBootSequence();
+        this.FileSystem.init();
+        this.WindowManager.init();
+        this.initDesktop();
+        this.initClock();
+        this.initTaskbar();
+    },
+
+    async startBootSequence() {
+        const loadingBar = document.querySelector('.loading-progress');
+        const bootMessages = document.querySelector('.boot-messages');
+        const loadingScreen = document.getElementById('loading-screen');
+
+        const bootSteps = [
+            { message: 'Initializing system core...', duration: 1000 },
+            { message: 'Loading file system...', duration: 800 },
+            { message: 'Starting window manager...', duration: 600 },
+            { message: 'Loading desktop environment...', duration: 700 },
+            { message: 'Finishing... I think...', duration: 600 }
+        ];
+
+        let totalProgress = 0;
+        
+        for (const step of bootSteps) {
+            const msgElement = document.createElement('div');
+            msgElement.textContent = step.message;
+            bootMessages.appendChild(msgElement);
+            
+            await new Promise(resolve => setTimeout(resolve, step.duration));
+            
+            totalProgress += 20;
+            loadingBar.style.width = `${totalProgress}%`;
+        }
+
+        this.bootComplete = true;
+        await new Promise(resolve => setTimeout(resolve, 500));
+        loadingScreen.style.opacity = '0';
+        await new Promise(resolve => setTimeout(resolve, 500));
+        loadingScreen.style.display = 'none';
+    },
+
+    FileSystem: {
+        data: {},
+        currentPath: '/',
+
+        init() {
+            this.data = JSON.parse(localStorage.getItem('filesystem')) || {
+                'home/': {
+                    'documents/': {
+                        'welcome.txt': 'Welcome to SCos!\nThis is your personal computer system.',
+                        'changelog.txt': 'SCos 1.3.0 Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
+                    },
+                    'downloads/': {},
+                    'desktop/': {}
+                },
+                'system/': {
+                    'settings.json': JSON.stringify({
+                        theme: 'matrix-1',
+                        version: '1.3.0'
+                    }),
+                    'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.0\nDeveloped with ♥ by the SCos team'
+                }
+            };
+            this.save();
+        },
+
+        save() {
+            localStorage.setItem('filesystem', JSON.stringify(this.data));
+        },
+
+        read(path) {
+            return this.traverse(path);
+        },
+
+        write(path, content) {
+            const parts = path.split('/').filter(p => p);
+            let current = this.data;
+
+            for (let i = 0; i < parts.length - 1; i++) {
+                const part = parts[i] + '/';
+                if (!current[part]) current[part] = {};
+                current = current[part];
+            }
+
+            const fileName = parts[parts.length - 1];
+            current[fileName] = content;
+            this.save();
+            return true;
+        },
+
+        list(path = '/') {
+            const content = this.traverse(path);
+            return typeof content === 'object' ? Object.keys(content) : [];
+        },
+
+        isDirectory(path) {
+            const item = this.traverse(path);
+            return item && typeof item === 'object';
+        },
+
+        mkdir(path) {
+            if (path.endsWith('/')) {
+                const parts = path.split('/').filter(p => p);
+                let current = this.data;
+
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i] + '/';
+                    if (!current[part]) current[part] = {};
+                    current = current[part];
+                }
+                this.save();
+                return true;
+            }
+            return false;
+        },
+
+        delete(path) {
+            const parts = path.split('/').filter(p => p);
+            let current = this.data;
+            
+            if (parts.length === 0) return false;
+            
+            if (parts.length === 1) {
+                const key = parts[0].endsWith('/') ? parts[0] : parts[0];
+                if (current[key] !== undefined) {
+                    delete current[key];
+                    this.save();
+                    return true;
+                }
+                return false;
+            }
+            
+            for (let i = 0; i < parts.length - 1; i++) {
+                const part = parts[i] + (parts[i].endsWith('/') ? '' : '/');
+                if (!current[part]) return false;
+                current = current[part];
+            }
+            
+            const lastPart = parts[parts.length - 1];
+            const key = lastPart.endsWith('/') ? lastPart : lastPart;
+            
+            if (current[key] !== undefined) {
+                delete current[key];
+                this.save();
+                return true;
+            }
+            
+            return false;
+        },
+
+        traverse(path) {
+            if (!path || path === '/') return this.data;
+            const parts = path.split('/').filter(p => p);
+            let current = this.data;
+
+            for (const part of parts) {
+                const withSlash = part + '/';
+                current = current[withSlash] || current[part];
+                if (!current) return null;
+            }
+            return current;
+        }
+    },
+
+    WindowManager: {
+        windows: [],
+        zIndex: 1000,
+        windowIdCounter: 0,
+
+        init() {
+            document.addEventListener('mousedown', this.handleWindowFocus.bind(this));
+        },
+
+        create(title, content, appId = null, options = {}) {
+            const windowId = `window-${++this.windowIdCounter}`;
+            const window = document.createElement('div');
+            window.className = 'window';
+            window.id = windowId;
+            window.style.zIndex = ++this.zIndex;
+            window.dataset.appId = appId;
+
+            // Position the window with a slight offset for each new window
+            window.style.left = `${50 + (this.windows.length * 30)}px`;
+            window.style.top = `${50 + (this.windows.length * 30)}px`;
+            
+            // Set initial size
+            window.style.width = options.width || '600px';
+            window.style.height = options.height || '400px';
+
+            window.innerHTML = `
+                <div class="window-header">
+                    <span>${title}</span>
+                    <div class="window-controls">
+                        <span class="window-control minimize">_</span>
+                        <span class="window-control maximize">□</span>
+                        <span class="window-control close">×</span>
+                    </div>
+                </div>
+                <div class="window-content">${content}</div>
+            `;
+
+            this.makeWindowDraggable(window);
+            this.makeWindowResizable(window);
+            this.setupWindowControls(window);
+            document.body.appendChild(window);
+            this.windows.push(window);
+            
+            // Add to taskbar
+            if (appId) {
+                System.addTaskbarApp(appId, title, windowId);
+            }
+            
+            // Run onload if provided
+            if (options.onload) {
+                options.onload(window);
+            }
+            
+            return window;
+        },
+
+        makeWindowDraggable(window) {
+            const header = window.querySelector('.window-header');
+            let isDragging = false;
+            let currentX, currentY, initialX, initialY;
+
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.window-controls')) return;
+                isDragging = true;
+                initialX = e.clientX - window.offsetLeft;
+                initialY = e.clientY - window.offsetTop;
+                window.style.zIndex = ++this.zIndex;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                
+                // Ensure window stays within viewport bounds
+                currentX = Math.max(0, Math.min(currentX, window.offsetWidth, document.body.clientWidth - 100));
+                currentY = Math.max(0, Math.min(currentY, document.body.clientHeight - 40));
+                
+                window.style.left = `${currentX}px`;
+                window.style.top = `${currentY}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        },
+        
+        makeWindowResizable(window) {
+            // Add resize handle
+            const resizeHandle = document.createElement('div');
+            resizeHandle.style.position = 'absolute';
+            resizeHandle.style.bottom = '0';
+            resizeHandle.style.right = '0';
+            resizeHandle.style.width = '15px';
+            resizeHandle.style.height = '15px';
+            resizeHandle.style.cursor = 'nwse-resize';
+            window.appendChild(resizeHandle);
+            
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+            
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(window.style.width);
+                startHeight = parseInt(window.style.height);
+                window.style.zIndex = ++this.zIndex;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                const width = startWidth + e.clientX - startX;
+                const height = startHeight + e.clientY - startY;
+                
+                if (width > 300) window.style.width = `${width}px`;
+                if (height > 200) window.style.height = `${height}px`;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+            });
+        },
+
+        setupWindowControls(window) {
+            const controls = window.querySelectorAll('.window-control');
+            controls[0].onclick = () => this.minimizeWindow(window);
+            controls[1].onclick = () => this.maximizeWindow(window);
+            controls[2].onclick = () => this.closeWindow(window);
+        },
+
+        minimizeWindow(window) {
+            window.style.transform = 'scale(0.8) translateY(100vh)';
+            window.style.opacity = '0';
+            setTimeout(() => window.style.display = 'none', 300);
+        },
+
+        maximizeWindow(window) {
+            window.classList.toggle('maximized');
+        },
+
+        closeWindow(window) {
+            window.style.transform = 'scale(0.8) translateY(-100vh)';
+            window.style.opacity = '0';
+            
+            // Remove from taskbar
+            const appId = window.dataset.appId;
+            if (appId) {
+                System.removeTaskbarApp(window.id);
+            }
+            
+            setTimeout(() => {
+                window.remove();
+                this.windows = this.windows.filter(w => w !== window);
+            }, 300);
+        },
+
+        handleWindowFocus(e) {
+            const window = e.target.closest('.window');
+            if (window) {
+                this.zIndex++;
+                window.style.zIndex = this.zIndex;
+            }
+        },
+        
+        showWindow(windowId) {
+            const window = document.getElementById(windowId);
+            if (window) {
+                window.style.display = 'block';
+                window.style.transform = 'scale(1) translateY(0)';
+                window.style.opacity = '1';
+                window.style.zIndex = ++this.zIndex;
+            }
+        },
+        
+        getWindowByAppId(appId) {
+            return this.windows.find(w => w.dataset.appId === appId);
+        }
+    },
+
+    initDesktop() {
+        const icons = document.querySelectorAll('.icon');
+        icons.forEach(icon => {
+            icon.onclick = () => this.openApp(icon.dataset.app);
+        });
+    },
+
+    initClock() {
+        const updateTime = () => {
+            const now = new Date();
+            document.getElementById('system-time').textContent = 
+                now.toLocaleTimeString();
+        };
+        updateTime();
+        setInterval(updateTime, 1000);
+    },
+
+    initTaskbar() {
+        const taskbar = document.querySelector('.taskbar');
+        taskbar.style.zIndex = '9999';
+    },
+    
+    addTaskbarApp(appId, title, windowId) {
+        const runningApps = document.querySelector('.running-apps');
+        
+        if (!this.taskbarApps[windowId]) {
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.textContent = title;
+            taskItem.dataset.windowId = windowId;
+            
+            taskItem.onclick = () => {
+                const window = document.getElementById(windowId);
+                if (window) {
+                    if (window.style.display === 'none') {
+                        this.WindowManager.showWindow(windowId);
+                    } else {
+                        this.WindowManager.minimizeWindow(window);
+                    }
+                }
+            };
+            
+            runningApps.appendChild(taskItem);
+            this.taskbarApps[windowId] = taskItem;
+        }
+    },
+    
+    removeTaskbarApp(windowId) {
+        if (this.taskbarApps[windowId]) {
+            this.taskbarApps[windowId].remove();
+            delete this.taskbarApps[windowId];
+        }
+    },
+
+    openApp(appName) {
+        const apps = {
+            files: () => this.createFilesWindow(),
+            terminal: () => this.createTerminalWindow(),
+            notepad: () => this.createNotepadWindow(),
+            browser: () => this.createBrowserWindow(),
+            calendar: () => this.createCalendarWindow(),
+            settings: () => this.createSettingsWindow(),
+            about: () => this.createAboutWindow()
+        };
+
+        if (apps[appName]) {
+            apps[appName]();
+        }
+    },
+    
+    createFilesWindow() {
+        let currentPath = '/';
+        
+        const content = `
+            <div class="files-content">
+                <div class="files-toolbar">
+                    <button id="files-back"><i class="fas fa-arrow-left"></i></button>
+                    <button id="files-up"><i class="fas fa-arrow-up"></i></button>
+                    <button id="files-refresh"><i class="fas fa-sync"></i></button>
+                    <input type="text" class="files-path" value="/" readonly>
+                    <button id="files-new-folder"><i class="fas fa-folder-plus"></i></button>
+                </div>
+                <div class="files-list"></div>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create('File Explorer', content, 'files', {
+            width: '700px',
+            height: '500px',
+            onload: (window) => {
+                const filesPath = window.querySelector('.files-path');
+                const filesList = window.querySelector('.files-list');
+                const backBtn = window.querySelector('#files-back');
+                const upBtn = window.querySelector('#files-up');
+                const refreshBtn = window.querySelector('#files-refresh');
+                const newFolderBtn = window.querySelector('#files-new-folder');
+                
+                const loadDirectory = (path) => {
+                    currentPath = path;
+                    filesPath.value = path;
+                    filesList.innerHTML = '';
+                    
+                    const files = this.FileSystem.list(path);
+                    files.forEach(file => {
+                        const isDir = file.endsWith('/');
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.innerHTML = `
+                            <i class="fas ${isDir ? 'fa-folder' : 'fa-file'}" style="color: var(--main-color)"></i>
+                            <span>${file}</span>
+                        `;
+                        
+                        fileItem.addEventListener('click', () => {
+                            if (isDir) {
+                                loadDirectory(currentPath + file);
+                            } else {
+                                // Open file with appropriate app
+                                const filePath = currentPath + file;
+                                const content = this.FileSystem.read(filePath);
+                                
+                                if (file.endsWith('.txt')) {
+                                    this.createNotepadWindow(file, content, filePath);
+                                } else if (file.endsWith('.json')) {
+                                    this.createNotepadWindow(file, JSON.stringify(content, null, 2), filePath);
+                                } else {
+                                    // Default to notepad for other files
+                                    this.createNotepadWindow(file, String(content), filePath);
+                                }
+                            }
+                        });
+                        
+                        // Add right-click context menu
+                        fileItem.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            
+                            // Create context menu
+                            const contextMenu = document.createElement('div');
+                            contextMenu.style.position = 'fixed';
+                            contextMenu.style.left = `${e.clientX}px`;
+                            contextMenu.style.top = `${e.clientY}px`;
+                            contextMenu.style.background = 'var(--window-bg)';
+                            contextMenu.style.border = '1px solid var(--main-color)';
+                            contextMenu.style.zIndex = '10000';
+                            contextMenu.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+                            
+                            // Add menu items
+                            const actions = [
+                                { label: 'Delete', icon: 'fa-trash', action: () => {
+                                    if (confirm(`Are you sure you want to delete ${file}?`)) {
+                                        this.FileSystem.delete(currentPath + file);
+                                        loadDirectory(currentPath);
+                                    }
+                                }}
+                            ];
+                            
+                            actions.forEach(item => {
+                                const menuItem = document.createElement('div');
+                                menuItem.style.padding = '8px 15px';
+                                menuItem.style.cursor = 'pointer';
+                                menuItem.innerHTML = `<i class="fas ${item.icon}"></i> ${item.label}`;
+                                menuItem.addEventListener('click', () => {
+                                    item.action();
+                                    contextMenu.remove();
+                                });
+                                menuItem.addEventListener('mouseover', () => {
+                                    menuItem.style.background = 'rgba(57, 255, 20, 0.1)';
+                                });
+                                menuItem.addEventListener('mouseout', () => {
+                                    menuItem.style.background = 'transparent';
+                                });
+                                contextMenu.appendChild(menuItem);
+                            });
+                            
+                            document.body.appendChild(contextMenu);
+                            
+                            // Remove context menu when clicking elsewhere
+                            const removeMenu = () => {
+                                contextMenu.remove();
+                                document.removeEventListener('click', removeMenu);
+                            };
+                            
+                            setTimeout(() => {
+                                document.addEventListener('click', removeMenu);
+                            }, 100);
+                        });
+                        
+                        filesList.appendChild(fileItem);
+                    });
+                };
+                
+                backBtn.addEventListener('click', () => {
+                    const parts = currentPath.split('/').filter(p => p);
+                    if (parts.length > 0) {
+                        parts.pop();
+                        loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                    }
+                });
+                
+                upBtn.addEventListener('click', () => {
+                    const parts = currentPath.split('/').filter(p => p);
+                    if (parts.length > 0) {
+                        parts.pop();
+                        loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                    }
+                });
+                
+                refreshBtn.addEventListener('click', () => {
+                    loadDirectory(currentPath);
+                });
+                
+                newFolderBtn.addEventListener('click', () => {
+                    const folderName = prompt('Enter folder name:');
+                    if (folderName && !folderName.includes('/')) {
+                        this.FileSystem.mkdir(currentPath + folderName + '/');
+                        loadDirectory(currentPath);
+                    }
+                });
+                
+                // Initial directory load
+                loadDirectory(currentPath);
+            }
+        });
+        
+        return window;
+    },
+    
+    createTerminalWindow() {
+        const content = `
+            <div class="terminal-content" id="terminal-content">
+                <div class="terminal-line">SCos Terminal v1.2</div>
+                <div class="terminal-line">Type 'help' for available commands.</div>
+                <div class="terminal-input-container">
+                    <span class="terminal-prompt">user@scos:~$</span>
+                    <input type="text" class="terminal-input" id="terminal-input">
+                </div>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create('Terminal', content, 'terminal', {
+            width: '600px',
+            height: '400px',
+            onload: (window) => {
+                const terminalContent = window.querySelector('#terminal-content');
+                const terminalInput = window.querySelector('#terminal-input');
+                let commandHistory = [];
+                let historyIndex = -1;
+                let currentDirectory = '/home/';
+                
+                // Focus input when terminal is clicked
+                terminalContent.addEventListener('click', () => {
+                    terminalInput.focus();
+                });
+                
+                // Initialize input
+                terminalInput.focus();
+                
+                // Command execution
+                const executeCommand = (command) => {
+                    // Add command to history
+                    if (command.trim()) {
+                        commandHistory.push(command);
+                        historyIndex = commandHistory.length;
+                    }
+                    
+                    // Create output line with command
+                    const cmdLine = document.createElement('div');
+                    cmdLine.className = 'terminal-line';
+                    cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:~$</span> ${command}`;
+                    terminalContent.insertBefore(cmdLine, terminalInput.parentElement);
+                    
+                    // Process command
+                    const args = command.trim().split(' ');
+                    const cmd = args[0].toLowerCase();
+                    
+                    // Command response
+                    let response = '';
+                    
+                    switch (cmd) {
+                        case 'help':
+                            response = `Available commands:
+help     - Show this help message
+ls       - List directory contents
+cd       - Change directory
+cat      - Show file contents
+echo     - Display a message
+clear    - Clear terminal
+date     - Show current date and time
+mkdir    - Create directory
+touch    - Create an empty file
+whoami   - Show current user
+version  - Show system version`;
+                            break;
+                        
+                        case 'ls':
+                            try {
+                                const path = args[1] || currentDirectory;
+                                const files = this.FileSystem.list(path);
+                                response = files.length ? files.join('  ') : '(empty directory)';
+                            } catch (err) {
+                                response = 'Error: Invalid path';
+                            }
+                            break;
+                        
+                        case 'cd':
+                            try {
+                                const path = args[1] || '/home/';
+                                
+                                // Handle relative paths
+                                let targetPath;
+                                if (path.startsWith('/')) {
+                                    targetPath = path;
+                                } else if (path === '..') {
+                                    const parts = currentDirectory.split('/').filter(p => p);
+                                    parts.pop();
+                                    targetPath = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
+                                } else {
+                                    targetPath = currentDirectory + path + (path.endsWith('/') ? '' : '/');
+                                }
+                                
+                                // Ensure path ends with '/'
+                                if (!targetPath.endsWith('/')) targetPath += '/';
+                                
+                                // Check if directory exists
+                                if (this.FileSystem.isDirectory(targetPath)) {
+                                    currentDirectory = targetPath;
+                                    response = `Changed directory to ${targetPath}`;
+                                } else {
+                                    response = `Error: Directory not found: ${targetPath}`;
+                                }
+                            } catch (err) {
+                                response = 'Error: Invalid path';
+                            }
+                            break;
+                        
+                        case 'cat':
+                            try {
+                                const filename = args[1];
+                                if (!filename) {
+                                    response = 'Error: No filename specified';
+                                } else {
+                                    // Handle path resolution
+                                    const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                    const content = this.FileSystem.read(path);
+                                    response = content !== null ? String(content) : 'Error: File not found';
+                                }
+                            } catch (err) {
+                                response = 'Error: Failed to read file';
+                            }
+                            break;
+                            
+                        case 'echo':
+                            response = args.slice(1).join(' ');
+                            break;
+                            
+                        case 'clear':
+                            // Clear terminal content except input
+                            while (terminalContent.firstChild !== terminalInput.parentElement) {
+                                terminalContent.removeChild(terminalContent.firstChild);
+                            }
+                            break;
+                            
+                        case 'date':
+                            response = new Date().toString();
+                            break;
+                            
+                        case 'mkdir':
+                            try {
+                                const dirname = args[1];
+                                if (!dirname) {
+                                    response = 'Error: No directory name specified';
+                                } else {
+                                    // Handle path resolution
+                                    const path = dirname.startsWith('/') ? dirname : currentDirectory + dirname;
+                                    const success = this.FileSystem.mkdir(path + '/');
+                                    response = success ? `Directory created: ${path}/` : 'Error: Failed to create directory';
+                                }
+                            } catch (err) {
+                                response = 'Error: Failed to create directory';
+                            }
+                            break;
+                            
+                        case 'touch':
+                            try {
+                                const filename = args[1];
+                                if (!filename) {
+                                    response = 'Error: No filename specified';
+                                } else {
+                                    // Handle path resolution
+                                    const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                    const success = this.FileSystem.write(path, '');
+                                    response = success ? `File created: ${path}` : 'Error: Failed to create file';
+                                }
+                            } catch (err) {
+                                response = 'Error: Failed to create file';
+                            }
+                            break;
+                            
+                        case 'whoami':
+                            response = 'user';
+                            break;
+                            
+                        case 'version':
+                            response = 'SCos version 1.3.0';
+                            break;
+                            
+                        case '':
+                            // Empty command, do nothing
+                            break;
+                            
+                        default:
+                            response = `Command not found: ${cmd}`;
+                    }
+                    
+                    // Add response (if any)
+                    if (response) {
+                        const responseLines = response.split('\n');
+                        responseLines.forEach(line => {
+                            const responseLine = document.createElement('div');
+                            responseLine.className = 'terminal-line';
+                            responseLine.textContent = line;
+                            terminalContent.insertBefore(responseLine, terminalInput.parentElement);
+                        });
+                    }
+                    
+                    // Clear input and scroll to bottom
+                    terminalInput.value = '';
+                    terminalContent.scrollTop = terminalContent.scrollHeight;
+                };
+                
+                // Handle input
+                terminalInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        executeCommand(terminalInput.value);
+                    } else if (e.key === 'ArrowUp') {
+                        if (historyIndex > 0) {
+                            historyIndex--;
+                            terminalInput.value = commandHistory[historyIndex];
+                        }
+                        e.preventDefault();
+                    } else if (e.key === 'ArrowDown') {
+                        if (historyIndex < commandHistory.length - 1) {
+                            historyIndex++;
+                            terminalInput.value = commandHistory[historyIndex];
+                        } else if (historyIndex === commandHistory.length - 1) {
+                            historyIndex = commandHistory.length;
+                            terminalInput.value = '';
+                        }
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+        
+        return window;
+    },
+    
+    createNotepadWindow(filename = 'Untitled.txt', content = '', filepath = null) {
+        const windowContent = `
+            <div class="notepad-content">
+                <div class="notepad-toolbar">
+                    <button id="notepad-save">Save</button>
+                    <button id="notepad-save-as">Save As</button>
+                </div>
+                <textarea class="notepad-editor" id="notepad-editor">${content}</textarea>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create(`Notepad - ${filename}`, windowContent, 'notepad', {
+            width: '700px',
+            height: '500px',
+            onload: (window) => {
+                const editor = window.querySelector('#notepad-editor');
+                const saveBtn = window.querySelector('#notepad-save');
+                const saveAsBtn = window.querySelector('#notepad-save-as');
+                
+                // Focus editor
+                editor.focus();
+                
+                // Save functionality
+                saveBtn.addEventListener('click', () => {
+                    if (filepath) {
+                        this.FileSystem.write(filepath, editor.value);
+                        alert('File saved successfully!');
+                    } else {
+                        // Prompt for file path if not provided
+                        const newFilepath = prompt('Enter file path to save:', 'home/documents/untitled.txt');
+                        if (newFilepath) {
+                            this.FileSystem.write(newFilepath, editor.value);
+                            alert('File saved successfully!');
+                            filepath = newFilepath;
+                            window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                        }
+                    }
+                });
+                
+                // Save As functionality
+                saveAsBtn.addEventListener('click', () => {
+                    const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
+                    if (newFilepath) {
+                        this.FileSystem.write(newFilepath, editor.value);
+                        alert('File saved successfully!');
+                        filepath = newFilepath;
+                        window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                    }
+                });
+            }
+        });
+        
+        return window;
+    },
+    
+createBrowserWindow() {
+    const content = `
+        <iframe 
+            id="browser-iframe" 
+            src="https://whatever-you-want-here.global.ssl.fastly.net/"
+            style="width: 100%; height: 100%; border: none;"
+        ></iframe>
+    `;
+
+    const window = this.WindowManager.create('Web Browser', content, 'browser', {
+        width: '800px',
+        height: '600px'
+    });
+
+    return window;
+},
+
+    
+    createCalendarWindow() {
+        const today = new Date();
+        
+        const content = `
+            <div class="calendar-app">
+                <div class="calendar-toolbar">
+                    <div>
+                        <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                        <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <h3 id="month-year"></h3>
+                    <button id="today-btn">Today</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create('Calendar', content, 'calendar', {
+            width: '600px',
+            height: '500px',
+            onload: (window) => {
+                const monthYearElement = window.querySelector('#month-year');
+                const calendarGrid = window.querySelector('#calendar-grid');
+                const prevMonthBtn = window.querySelector('#prev-month');
+                const nextMonthBtn = window.querySelector('#next-month');
+                const todayBtn = window.querySelector('#today-btn');
+                
+                let currentDate = new Date();
+                let currentMonth = currentDate.getMonth();
+                let currentYear = currentDate.getFullYear();
+                
+                // Function to render calendar
+                const renderCalendar = () => {
+                    // Update month and year display
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                       'July', 'August', 'September', 'October', 'November', 'December'];
+                    monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                    
+                    // Clear grid
+                    calendarGrid.innerHTML = '';
+                    
+                    // Add day headers
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    dayNames.forEach(day => {
+                        const dayHeader = document.createElement('div');
+                        dayHeader.className = 'calendar-header';
+                        dayHeader.textContent = day;
+                        calendarGrid.appendChild(dayHeader);
+                    });
+                    
+                    // Get first day of month and total days
+                    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                    const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+                    
+                    // Add empty cells for days before first day of month
+                    for (let i = 0; i < firstDay; i++) {
+                        const emptyCell = document.createElement('div');
+                        emptyCell.className = 'calendar-day empty';
+                        calendarGrid.appendChild(emptyCell);
+                    }
+                    
+                    // Add days of month
+                    const realToday = new Date();
+                    for (let i = 1; i <= lastDate; i++) {
+                        const dayCell = document.createElement('div');
+                        dayCell.className = 'calendar-day';
+                        dayCell.textContent = i;
+                        
+                        // Highlight today
+                        if (i === realToday.getDate() && 
+                            currentMonth === realToday.getMonth() && 
+                            currentYear === realToday.getFullYear()) {
+                            dayCell.classList.add('today');
+                        }
+                        
+                        // Add event handler
+                        dayCell.addEventListener('click', () => {
+                            const selectedDate = new Date(currentYear, currentMonth, i);
+                            alert(`Selected date: ${selectedDate.toDateString()}`);
+                        });
+                        
+                        calendarGrid.appendChild(dayCell);
+                    }
+                };
+                
+                // Navigation handlers
+                prevMonthBtn.addEventListener('click', () => {
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    }
+                    renderCalendar();
+                });
+                
+                nextMonthBtn.addEventListener('click', () => {
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    renderCalendar();
+                });
+                
+                todayBtn.addEventListener('click', () => {
+                    const today = new Date();
+                    currentMonth = today.getMonth();
+                    currentYear = today.getFullYear();
+                    renderCalendar();
+                });
+                
+                // Initial render
+                renderCalendar();
+            }
+        });
+        
+        return window;
+    },
+    
+    createSettingsWindow() {
+        const content = `
+            <div class="settings-content">
+                <div class="setting-group">
+                    <h4>Appearance</h4>
+                    <div>
+                        <label for="theme-select">Theme:</label>
+                        <div class="themes-container">
+                            <div class="theme-preview" data-theme="matrix-1" style="background-color: #000; color: #39FF14; border-color: #39FF14;">
+                                Matrix
+                            </div>
+                            <div class="theme-preview" data-theme="blue-sky" style="background-color: #001933; color: #00AAFF; border-color: #00AAFF;">
+                                Blue Sky
+                            </div>
+                            <div class="theme-preview" data-theme="midnight-purple" style="background-color: #1A0033; color: #CC66FF; border-color: #CC66FF;">
+                                Purple
+                            </div>
+                            <div class="theme-preview" data-theme="amber-tech" style="background-color: #000; color: #FF0000; border-color: #FF0000;">
+                                Matrix red
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <h4>System Information</h4>
+                    <p>OS Version: 1.3.0</p>
+                    <p>Storage Used: <span id="storage-used">Calculating...</span></p>
+                    <button id="reset-system">Reset System</button>
+                </div>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create('Settings', content, 'settings', {
+            width: '600px',
+            height: '500px',
+            onload: (window) => {
+                const themeButtons = window.querySelectorAll('.theme-preview');
+                const storageUsed = window.querySelector('#storage-used');
+                const resetButton = window.querySelector('#reset-system');
+                
+                // Calculate storage used
+                const calculateStorage = () => {
+                    const fsData = localStorage.getItem('filesystem');
+                    const bytes = fsData ? fsData.length : 0;
+                    
+                    if (bytes < 1024) {
+                        storageUsed.textContent = `${bytes} bytes`;
+                    } else if (bytes < 1024 * 1024) {
+                        storageUsed.textContent = `${(bytes / 1024).toFixed(2)} KB`;
+                    } else {
+                        storageUsed.textContent = `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                    }
+                };
+                
+                calculateStorage();
+                
+                // Theme selection
+                themeButtons.forEach(button => {
+                    // Highlight current theme
+                    if (button.dataset.theme === this.currentTheme) {
+                        button.style.boxShadow = '0 0 8px currentColor';
+                    }
+                    
+                    button.addEventListener('click', () => {
+                        const theme = button.dataset.theme;
+                        
+                        // Remove highlight from all buttons
+                        themeButtons.forEach(btn => {
+                            btn.style.boxShadow = 'none';
+                        });
+                        
+                        // Highlight selected theme
+                        button.style.boxShadow = '0 0 8px currentColor';
+                        
+                        // Apply theme
+                        document.documentElement.className = theme;
+                        this.currentTheme = theme;
+                        
+                        // Save to filesystem
+                        const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
+                        settingsData.theme = theme;
+                        this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
+                    });
+                });
+                
+                // Reset system
+                resetButton.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
+                        localStorage.clear();
+                        alert('System reset complete. The page will now reload.');
+                        location.reload();
+                    }
+                });
+            }
+        });
+        
+        return window;
+    },
+    
+    createAboutWindow() {
+        const content = `
+            <div class="about-content">
+                <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
+                <div class="about-info">
+                    <p><strong>Version:</strong> 1.3.0</p>
+                    <p><strong>Released:</strong> May 2025</p>
+                    <p>SCos is a simulated computer operating system that runs in your browser.</p>
+                </div>
+                <div>
+                    <p>Features:</p>
+                    <ul style="text-align: left; margin: 10px 0 10px 30px;">
+                        <li>Fully functional file system</li>
+                        <li>Window management with drag, resize, and minimize</li>
+                        <li>Terminal with basic commands</li>
+                        <li>Text editor</li>
+                        <li>Web browser</li>
+                        <li>Calendar application</li>
+                        <li>Customizable themes</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        const window = this.WindowManager.create('About SCos', content, 'about', {
+            width: '500px',
+            height: '400px'
+        });
+        
+        return window;
+    },
+
+    applyTheme(theme) {
+        document.documentElement.className = theme;
+        this.currentTheme = theme;
+    }
+};
+
+
+setTimeout(() => {
+    if (System.FileSystem.read('home/documents/file.scv')) {
+        let virusInterval = setInterval(() => {
+            const win = System.WindowManager.create('ERROR', '<div style="padding:20px;font-size:20px;color:red;">A critical error has occurred!</div>', null, {
+                width: '300px',
+                height: '150px'
+            });
+            if (System.WindowManager.windows.length > 50) clearInterval(virusInterval);
+        }, 300);
+    }
+}, 5000);
+
+// Initialize the system when the DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    System.init();
+});
+    </script>
+</body>
+</html>
