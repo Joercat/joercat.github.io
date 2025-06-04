@@ -1,6 +1,9 @@
 const data = [  // search element names
     { name: "To search, type: song title, music type, singers gender, new and all (to get every song)", artist: "help", category: ":help" }, // if :help is typed
 
+    { name: "Electric Heart", artist: "DJJR", category: "new", audio: "Electric Heart.mp3" },
+    { name: "Electric Heart", artist: "DJJR", category: "electric heart", audio: "Electric Heart.mp3" },
+    
     { name: "Hold Me Through the Night", artist: "DJJR", category: "dance", audio: "Hold Me Through the Night.mp3" },
     { name: "Hold Me Through the Night", artist: "DJJR", category: "sad", audio: "Hold Me Through the Night.mp3" },
     { name: "Hold Me Through the Night", artist: "DJJR", category: "Hold Me Through the Night", audio: "Hold Me Through the Night.mp3" },
