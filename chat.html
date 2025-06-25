@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeAI Chat - Your AI Coding Assistant</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .model-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .model-selector option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.ai {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai .message-content {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 5px;
+        }
+
+        .model-badge {
+            font-size: 0.7rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-connecting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #856404;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+        }
+
+        .status-connected {
+            background: rgba(40, 167, 69, 0.2);
+            color: #155724;
+            border: 1px solid rgba(40, 167, 69, 0.5);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #721c24;
+            border: 1px solid rgba(220, 53, 69, 0.5);
+        }
+
+        .input-container {
+            padding: 20px;
+            background: rgba(248, 249, 250, 0.9);
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .clear-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .connecting {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 95vh;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .model-selector, .clear-btn, .connection-status {
+                position: static;
+                margin: 5px;
+            }
+            
+            .message-content {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="connection-status status-connecting connecting" id="connectionStatus">
+                🔄 Connecting...
+            </div>
+            <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+            <select class="model-selector" id="modelSelect">
+                <option value="claude-4-opus">Claude 4 Opus (Most Capable)</option>
+                <option value="claude-4-sonnet" selected>Claude 4 Sonnet (Balanced)</option>
+                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                <option value="claude-3-opus">Claude 3 Opus</option>
+                <option value="claude-3-haiku">Claude 3 Haiku (Fast)</option>
+            </select>
+            <h1>🤖 CodeAI Chat</h1>
+            <p>Your intelligent coding assistant powered by Claude AI</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messagesContainer">
+                <div class="message ai">
+                    <div class="message-content">
+                        <div class="model-badge" id="welcomeModelBadge">claude-4-sonnet</div>
+                        Hello! I'm your AI coding assistant powered by Claude 4. I can help you with:
+                        <br>• Writing and debugging code in any language
+                        <br>• Explaining complex programming concepts
+                        <br>• Code reviews and optimization suggestions
+                        <br>• Algorithm design and data structures
+                        <br>• Architecture patterns and best practices
+                        <br>• API integration and database design
+                        <br><br>🔄 Initializing connection to Puter.ai...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-group">
+                    <textarea 
+                        class="input-field" 
+                        id="messageInput" 
+                        placeholder="Ask me anything about coding..."
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+        let puterInitialized = false;
+        let connectionAttempts = 0;
+        const maxConnectionAttempts = 3;
+        
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const modelSelect = document.getElementById('modelSelect');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        // Update connection status UI
+        function updateConnectionStatus(status, message) {
+            connectionStatus.className = `connection-status status-${status}`;
+            connectionStatus.innerHTML = message;
+            
+            if (status === 'connecting') {
+                connectionStatus.classList.add('connecting');
+            } else {
+                connectionStatus.classList.remove('connecting');
+            }
+        }
+
+        // Enhanced Puter initialization with better error handling
+        async function initializePuter() {
+            connectionAttempts++;
+            updateConnectionStatus('connecting', `🔄 Connecting... (${connectionAttempts}/${maxConnectionAttempts})`);
+            
+            try {
+                // Wait for Puter SDK to be fully loaded
+                if (typeof puter === 'undefined') {
+                    throw new Error('Puter SDK not loaded - please ensure you are running this on puter.com');
+                }
+                
+                // Check if we're in the right environment
+                const hostname = window.location.hostname;
+                if (!hostname.includes('puter.com') && hostname !== 'localhost') {
+                    console.warn('Not running on puter.com - some features may not work');
+                }
+                
+                // Initialize puter with proper error handling
+                if (puter.init && typeof puter.init === 'function') {
+                    await puter.init({
+                        timeout: 10000 // 10 second timeout
+                    });
+                }
+                
+                // Test the AI functionality
+                console.log('Testing Puter AI connection...');
+                
+                // Simple test to verify AI is working
+                try {
+                    const testResponse = await puter.ai.chat('Hello', {
+                        model: 'claude-4-sonnet',
+                        max_tokens: 50
+                    });
+                    console.log('AI test successful:', testResponse);
+                } catch (aiError) {
+                    console.warn('AI test failed, but continuing:', aiError);
+                }
+                
+                puterInitialized = true;
+                updateConnectionStatus('connected', '✅ Connected');
+                
+                // Enable UI
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.placeholder = "Ask me anything about coding...";
+                
+                // Update welcome message
+                addMessage('✅ Connected to Puter.ai with Claude 4! Ready to help with your coding questions.', false, 'system');
+                
+                // Focus input
+                setTimeout(() => messageInput.focus(), 500);
+                
+            } catch (error) {
+                console.error(`Connection attempt ${connectionAttempts} failed:`, error);
+                
+                if (connectionAttempts < maxConnectionAttempts) {
+                    updateConnectionStatus('connecting', `🔄 Retrying... (${connectionAttempts + 1}/${maxConnectionAttempts})`);
+                    setTimeout(() => initializePuter(), 2000 * connectionAttempts); // Exponential backoff
+                } else {
+                    updateConnectionStatus('error', '❌ Connection Failed');
+                    
+                    let errorMessage = '❌ Failed to connect to Puter.ai after multiple attempts.\n\n';
+                    
+                    if (error.message.includes('SDK not loaded')) {
+                        errorMessage += '• Make sure you are running this app on puter.com\n';
+                        errorMessage += '• Try refreshing the page\n';
+                        errorMessage += '• Check your internet connection';
+                    } else if (error.message.includes('timeout')) {
+                        errorMessage += '• Connection timeout - please check your internet\n';
+                        errorMessage += '• Try refreshing the page';
+                    } else {
+                        errorMessage += `• Error: ${error.message}\n`;
+                        errorMessage += '• Try refreshing the page\n';
+                        errorMessage += '• Make sure you have proper API access';
+                    }
+                    
+                    addMessage(errorMessage, false, 'system', true);
+                    
+                    // Still enable UI in case user wants to try manual connection
+                    messageInput.disabled = false;
+                    sendBtn.disabled = false;
+                    messageInput.placeholder = "Connection failed - try sending a message anyway...";
+                }
+            }
+        }
+
+        // Model selector change handler
+        modelSelect.addEventListener('change', function() {
+            const welcomeBadge = document.getElementById('welcomeModelBadge');
+            if (welcomeBadge) {
+                welcomeBadge.textContent = this.value;
+            }
+            
+            // Show model change message
+            if (puterInitialized) {
+                addMessage(`Switched to ${this.value}`, false, 'system');
+            }
+        });
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Send message on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function addMessage(content, isUser = false, model = null, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `message-content ${isError ? 'error' : ''}`;
+            
+            if (!isUser && model) {
+                const badge = document.createElement('div');
+                badge.className = 'model-badge';
+                badge.textContent = model;
+                contentDiv.appendChild(badge);
+            }
+            
+            // Format code blocks and other content
+            const formattedContent = formatCodeBlocks(content);
+            contentDiv.innerHTML += formattedContent;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageDiv;
+        }
+
+        function formatCodeBlocks(text) {
+            return text
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, '<div class="code-block">$2</div>')
+                .replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function showLoadingMessage() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message ai loading-message';
+            loadingDiv.innerHTML = `
+                <div class="message-content loading">
+                    <div class="spinner"></div>
+                    Claude is thinking...
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return loadingDiv;
+        }
+
+        function removeLoadingMessage() {
+            const loadingMsg = document.querySelector('.loading-message');
+            if (loadingMsg) {
+                loadingMsg.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+
+            const selectedModel = modelSelect.value;
+            
+            // Add user message
+            addMessage(message, true);
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Show loading
+            isLoading = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '⏳';
+            const loadingMsg = showLoadingMessage();
+            
+            try {
+                console.log('Sending message:', message, 'Model:', selectedModel);
+                
+                // Check if Puter is available (try to initialize if not)
+                if (!puterInitialized && typeof puter !== 'undefined') {
+                    console.log('Attempting late initialization...');
+                    await initializePuter();
+                }
+                
+                if (typeof puter === 'undefined') {
+                    throw new Error('Puter SDK not available. Please run this app on puter.com');
+                }
+                
+                // Make the API call with enhanced error handling
+                const response = await Promise.race([
+                    puter.ai.chat(message, {
+                        model: selectedModel,
+                        max_tokens: 4000,
+                        temperature: 0.7
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+                    )
+                ]);
+                
+                console.log('Received response:', response);
+                
+                removeLoadingMessage();
+                
+                // Handle different response formats from Puter.ai
+                let responseText = '';
+                
+                if (typeof response === 'string') {
+                    responseText = response;
+                } else if (response?.message?.content?.[0]?.text) {
+                    responseText = response.message.content[0].text;
+                } else if (response?.message) {
+                    responseText = typeof response.message === 'string' ? response.message : JSON.stringify(response.message);
+                } else if (response?.content) {
+                    responseText = response.content;
+                } else if (response?.text) {
+                    responseText = response.text;
+                } else {
+                    console.log('Unexpected response format:', response);
+                    responseText = 'I received a response but couldn\'t parse it properly. Please try again.';
+                }
+                
+                if (responseText && responseText.trim()) {
+                    addMessage(responseText, false, selectedModel);
+                } else {
+                    throw new Error('Empty or invalid response received from AI');
+                }
+                
+            } catch (error) {
+                console.error('Detailed error:', error);
+                removeLoadingMessage();
+                
+                let errorMessage = 'I encountered an error. ';
+                
+                if (error.message.includes('timeout')) {
+                    errorMessage += 'The request timed out. Please try again with a shorter message.';
+                } else if (error.message.includes('SDK not available')) {
+                    errorMessage += 'Please make sure you\'re running this app on puter.com and refresh the page.';
+                } else if (error.status === 401 || error.message.includes('auth')) {
+                    errorMessage += 'Authentication error. Please refresh the page and try again.';
+                } else if (error.status === 429) {
+                    errorMessage += 'Rate limit exceeded. Please wait a moment and try again.';
+                } else if (error.status >= 500) {
+                    errorMessage += 'Server error. Please try again in a moment.';
+                } else {
+                    errorMessage += error.message || 'Unknown error occurred.';
+                }
+                
+                addMessage(errorMessage, false, selectedModel, true);
+            } finally {
+                isLoading = false;
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '➤';
+                messageInput.focus();
+            }
+        }
+
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                messagesContainer.innerHTML = `
+                    <div class="message ai">
+                        <div class="message-content">
+                            <div class="model-badge" id="welcomeModelBadge">${modelSelect.value}</div>
+                            Chat cleared! How can I help you with your coding today?
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initializePuter, 1000);
+        });
+        
+        // Initialize immediately if DOM is already loaded
+        if (document.readyState === 'complete') {
+            setTimeout(initializePuter, 1000);
+        }
+        
+        // Add example suggestions after successful connection
+        setTimeout(() => {
+            if (puterInitialized) {
+                const examples = [
+                    "Write a Python function to implement binary search",
+                    "Explain React hooks with practical examples", 
+                    "How do I optimize database queries?",
+                    "Create a REST API with proper error handling"
+                ];
+                
+                const exampleDiv = document.createElement('div');
+                exampleDiv.className = 'message ai';
+                exampleDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="model-badge">suggestions</div>
+                        Here are some things you can ask me:
+                        <br>• "${examples[0]}"
+                        <br>• "${examples[1]}"
+                        <br>• "${examples[2]}"
+                        <br>• "${examples[3]}"
+                        <br><br>Or ask me anything else about programming!
+                    </div>
+                `;
+                messagesContainer.appendChild(exampleDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
