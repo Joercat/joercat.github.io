@@ -94,13 +94,11 @@
         flex-grow: 1;
         padding: 40px;
         max-width: 1000px;
-        margin: 0 auto;
+        margin: 40px auto;
         background-color: black;
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        margin-left: calc(250px + 20px);
-        margin-top: 40px;
-        margin-bottom: 40px;
         border-radius: 8px;
+        box-sizing: border-box;
       }
 
       .welcome-section {
@@ -147,26 +145,27 @@
       }
 
       .action-section button {
-        background-color: white;
-        color: black;
+        background-color: blue; /* Changed from white */
+        color: white; /* Changed from black */
         border: none;
         padding: 12px 25px;
         font-size: 18px;
         font-family: 'Raleway', sans-serif;
         border-radius: 4px;
         cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.2s ease;
+        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; /* Added color transition */
         margin: 10px;
         font-weight: 600;
       }
 
       .action-section button:hover {
-        background-color: #e6e6e6;
+        background-color: #E74C3C; /* A slightly darker red for hover, or simply red */
         transform: translateY(-2px);
+        color: white; /* Ensure text remains white on hover */
       }
 
       .action-section button a {
-        color: inherit;
+        color: inherit; /* Inherit color from the button, which is now white */
         text-decoration: none;
       }
 
@@ -182,6 +181,14 @@
 
       .note-text strong {
         font-weight: 700;
+      }
+
+      @media (min-width: 769px) {
+          .main-content {
+              margin-left: calc(250px + 40px);
+              margin-right: 40px;
+              max-width: calc(100% - 250px - 80px);
+          }
       }
 
       @media (max-width: 768px) {
@@ -209,56 +216,60 @@
           width: auto;
           margin: 5px;
           padding: 8px 12px;
-          font-size: 14px; /* Slightly smaller font for mobile links */
+          font-size: 14px;
         }
         .main-content {
-          margin-left: 0; /* Remove left margin */
+          margin-left: 0;
+          margin-right: 0;
+          width: 100%;
+          max-width: 100%;
+          padding: 20px 15px;
+          border-radius: 0;
           margin-top: 20px;
-          padding: 20px 15px; /* Reduced horizontal padding for main content */
-          border-radius: 0; /* Remove rounded corners on full-width mobile */
-          margin-bottom: 0; /* Remove bottom margin to maximize space */
+          margin-bottom: 0;
+          box-sizing: border-box;
         }
         .welcome-section {
           flex-direction: column;
           text-align: center;
-          margin-bottom: 20px; /* Reduced margin */
+          margin-bottom: 20px;
+          margin-top: 20px;
         }
         .main-logo {
           margin-right: 0;
-          margin-bottom: 15px; /* Reduced margin */
-          width: 100px; /* Smaller logo for mobile */
+          margin-bottom: 15px;
+          width: 100px;
           height: 100px;
         }
         .welcome-text {
-          font-size: 32px; /* Smaller welcome text */
+          font-size: 32px;
         }
         .caveat-text {
-          font-size: 18px; /* Smaller caveat text */
+          font-size: 18px;
         }
         .download-text {
-          font-size: 22px; /* Smaller download text */
-          margin-top: 30px; /* Adjusted margin */
+          font-size: 22px;
+          margin-top: 30px;
         }
         .action-section {
-          padding: 20px; /* Reduced padding for action section */
-          border-radius: 0; /* Remove rounded corners */
-          margin-top: 30px; /* Adjusted margin */
+          padding: 20px;
+          border-radius: 0;
+          margin-top: 30px;
         }
         .action-section button {
-          font-size: 14px; /* Smaller button font */
-          padding: 10px 15px; /* Smaller button padding */
-          margin: 8px; /* Adjusted button margin */
+          font-size: 14px;
+          padding: 10px 15px;
+          margin: 8px;
         }
         .note-text {
-          font-size: 20px; /* Smaller note text */
-          margin-top: 20px; /* Adjusted margin */
+          font-size: 20px;
+          margin-top: 20px;
         }
       }
 
-      /* Very small screens (e.g., old smartphones) */
       @media (max-width: 480px) {
         .sidebar-nav a {
-          font-size: 13px; /* Even smaller font for very small screens */
+          font-size: 13px;
           padding: 6px 10px;
         }
         .welcome-text {
@@ -273,9 +284,9 @@
         .action-section button {
           font-size: 13px;
           padding: 8px 12px;
-          display: block; /* Stack buttons if they don't fit side by side */
-          width: calc(100% - 20px); /* Full width minus margin */
-          margin: 5px auto; /* Center individual buttons */
+          display: block;
+          width: calc(100% - 20px);
+          margin: 5px auto;
         }
         .note-text {
           font-size: 18px;
