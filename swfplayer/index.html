@@ -95,11 +95,22 @@
         transition: background-color 0.2s ease, transform 0.2s ease;
         margin: 20px 0;
         font-weight: 600;
+        width: 100%;
+        max-width: 300px;
       }
 
       #file-input:hover {
         background-color: #E74C3C;
         transform: translateY(-2px);
+      }
+
+      #file-input::file-selector-button {
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        cursor: pointer;
       }
 
       #swf-container {
@@ -111,10 +122,11 @@
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         border: 2px solid rgba(255, 255, 255, 0.1);
         min-height: 100px;
+        display: none;
       }
 
-      #swf-container:empty {
-        display: none;
+      #swf-container:not(:empty) {
+        display: block;
       }
 
       .download-section {
@@ -321,30 +333,46 @@
     // Handle file input
     document.getElementById('file-input').addEventListener('change', function(event) {
         const file = event.target.files[0];
-        if (file && file.type === "application/x-shockwave-flash") {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
+        if (file) {
+            // Check file extension (more reliable than MIME type)
+            const fileName = file.name.toLowerCase();
+            const isSwfFile = fileName.endsWith('.swf') || file.type === "application/x-shockwave-flash";
+            
+            if (isSwfFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
 
-                // Create a blob from the array buffer
-                const blob = new Blob([arrayBuffer], { type: "application/x-shockwave-flash" });
+                    // Create a blob from the array buffer
+                    const blob = new Blob([arrayBuffer], { type: "application/x-shockwave-flash" });
 
-                // Create a URL for the blob
-                const objectURL = URL.createObjectURL(blob);
+                    // Create a URL for the blob
+                    const objectURL = URL.createObjectURL(blob);
 
-                // Clear previous content
-                ruffleContainer.innerHTML = '';
+                    // Clear previous content
+                    ruffleContainer.innerHTML = '';
+                    
+                    // Show the container
+                    ruffleContainer.style.display = 'block';
 
-                // Create and configure the Ruffle player instance
-                const rufflePlayer = ruffle.createPlayer();
-                ruffleContainer.appendChild(rufflePlayer);
+                    // Create and configure the Ruffle player instance
+                    const rufflePlayer = ruffle.createPlayer();
+                    rufflePlayer.style.width = '100%';
+                    rufflePlayer.style.height = '600px';
+                    ruffleContainer.appendChild(rufflePlayer);
 
-                // Load the SWF file
-                rufflePlayer.load(objectURL);
-            };
-            reader.readAsArrayBuffer(file);
-        } else {
-            alert("Please select a valid swf file.");
+                    // Load the SWF file
+                    rufflePlayer.load(objectURL);
+                    
+                    console.log('SWF file loaded successfully:', fileName);
+                };
+                reader.onerror = function() {
+                    alert("Error reading the file. Please try again.");
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert("Please select a valid .swf file. Selected file: " + fileName);
+            }
         }
     });
   </script>
