@@ -1,4 +1,199 @@
-<title>Subscribe</title>
-<h1>haha, you really fell for my trick, you thought you had to pay for full access.</h1>
-<br>
-<a href="https://joercat.github.io">Go back to home page</a>
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="img/theunblockedcatfavicon.png">
+    <title>Subscribe</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:200,300,400,700">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Caveat">
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Raleway', sans-serif;
+        background-color: black;
+        color: white;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      a {
+        text-decoration: none;
+        color: blue;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: #4169E1;
+      }
+
+      h1 {
+        font-family: 'Caveat', cursive;
+        font-size: 48px;
+        font-weight: 700;
+        color: #00ff00;
+        text-align: center;
+        margin-bottom: 40px;
+        line-height: 1.2;
+        max-width: 800px;
+      }
+
+      .back-link {
+        background-color: blue;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        display: inline-block;
+        margin-top: 20px;
+      }
+
+      .back-link:hover {
+        background-color: #E74C3C;
+        transform: translateY(-2px);
+        color: white;
+      }
+
+      .content-wrapper {
+        max-width: 1000px;
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 60px 40px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .trick-image {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 30px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .subtitle {
+        font-family: 'Raleway', sans-serif;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 30px;
+        font-weight: 300;
+        opacity: 0.9;
+      }
+
+      /* Tablet styles */
+      @media (max-width: 1024px) {
+        .content-wrapper {
+          padding: 40px 30px;
+          margin: 20px;
+        }
+        
+        h1 {
+          font-size: 36px;
+        }
+        
+        .subtitle {
+          font-size: 20px;
+        }
+        
+        .back-link {
+          font-size: 16px;
+          padding: 12px 25px;
+        }
+      }
+
+      /* Mobile styles */
+      @media (max-width: 768px) {
+        body {
+          padding: 20px 15px;
+        }
+        
+        .content-wrapper {
+          padding: 30px 20px;
+          margin: 0;
+          border-radius: 8px;
+        }
+        
+        h1 {
+          font-size: 28px;
+          margin-bottom: 30px;
+        }
+        
+        .subtitle {
+          font-size: 18px;
+          margin-bottom: 25px;
+        }
+        
+        .back-link {
+          font-size: 15px;
+          padding: 10px 20px;
+        }
+        
+        .trick-image {
+          width: 80px;
+          height: 80px;
+          margin-bottom: 20px;
+        }
+      }
+
+      /* Small mobile styles */
+      @media (max-width: 480px) {
+        .content-wrapper {
+          padding: 25px 15px;
+        }
+        
+        h1 {
+          font-size: 24px;
+        }
+        
+        .subtitle {
+          font-size: 16px;
+        }
+        
+        .back-link {
+          font-size: 14px;
+          padding: 8px 16px;
+          display: block;
+          width: 100%;
+          margin-top: 15px;
+        }
+        
+        .trick-image {
+          width: 60px;
+          height: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content-wrapper">
+      <img src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" class="trick-image">
+      <h1>haha, you really fell for my trick, you thought you had to pay for full access.</h1>
+      <p class="subtitle">All games are completely free - no subscription needed!</p>
+      <a href="https://joercat.github.io" class="back-link">Go back to home page</a>
+    </div>
+  </body>
+</html>
