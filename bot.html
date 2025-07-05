@@ -459,7 +459,7 @@
             .main-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .three-column {
                 grid-template-columns: 1fr;
             }
@@ -469,11 +469,11 @@
             .nav-tabs {
                 flex-wrap: wrap;
             }
-            
+
             .header h1 {
                 font-size: 2rem;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -489,22 +489,20 @@
 
         <div class="api-url-input">
             <label for="apiUrl">🔗 Chatbot API URL:</label>
-            <input type="text" id="apiUrl" placeholder="https://your-chatbot-api.render.com" value="http://localhost:3000">
+            <input type="text" id="apiUrl" placeholder="e.g., https://your-chatbot-api.onrender.com">
             <button class="btn" onclick="testConnection()" style="margin-top: 10px;">Test Connection</button>
         </div>
 
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('training')">📚 Training</button>
-            <button class="nav-tab" onclick="showTab('files')">📁 Files</button>
-            <button class="nav-tab" onclick="showTab('analytics')">📊 Analytics</button>
-            <button class="nav-tab" onclick="showTab('chat')">💬 Chat</button>
+            <button class="nav-tab active" onclick="showTab('training', event)">📚 Training</button>
+            <button class="nav-tab" onclick="showTab('files', event)">📁 Files</button>
+            <button class="nav-tab" onclick="showTab('analytics', event)">📊 Analytics</button>
+            <button class="nav-tab" onclick="showTab('chat', event)">💬 Chat</button>
         </div>
 
         <div class="stats-grid" id="statsGrid">
-            <!-- Stats will be populated here -->
         </div>
 
-        <!-- Training Tab -->
         <div id="training" class="tab-content active">
             <div class="main-content">
                 <div class="card">
@@ -524,7 +522,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" style="display: none;">
                             <label for="customCategory">Custom Category (if selected):</label>
                             <input type="text" id="customCategory" placeholder="Enter custom category">
                         </div>
@@ -560,6 +558,7 @@
                             <option value="question">Question</option>
                             <option value="thanks">Thanks</option>
                             <option value="goodbye">Goodbye</option>
+                            <option value="custom">Custom</option>
                         </select>
                         <button onclick="loadPatterns()" class="btn btn-small" style="margin-left: 10px;">Refresh</button>
                     </div>
@@ -581,7 +580,6 @@
             </div>
         </div>
 
-        <!-- Files Tab -->
         <div id="files" class="tab-content">
             <div class="main-content">
                 <div class="card">
@@ -599,13 +597,11 @@
                     <h2>📂 Uploaded Files</h2>
                     <button onclick="loadFiles()" class="btn btn-small" style="margin-bottom: 15px;">Refresh</button>
                     <div id="filesList" class="file-list">
-                        <!-- Files will be populated here -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Analytics Tab -->
         <div id="analytics" class="tab-content">
             <div class="analytics-grid">
                 <div class="analytics-card">
@@ -631,7 +627,6 @@
             </div>
         </div>
 
-        <!-- Chat Tab -->
         <div id="chat" class="tab-content">
             <div class="chat-interface">
                 <h2>💬 Test Chat</h2>
@@ -655,52 +650,51 @@
         let sessionId = 'training-session-' + Date.now();
         let currentTab = 'training';
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             const savedApiUrl = localStorage.getItem('chatbotApiUrl');
             if (savedApiUrl) {
                 document.getElementById('apiUrl').value = savedApiUrl;
                 apiUrl = savedApiUrl;
+            } else {
+                document.getElementById('apiUrl').value = apiUrl;
             }
-            
+
             loadStats();
             loadPatterns();
             setupFileUpload();
-            
-            // Handle Enter key in chat
+
             document.getElementById('chatInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendMessage();
                 }
             });
 
-            // Handle file import
             document.getElementById('importFile').addEventListener('change', function(e) {
                 if (e.target.files.length > 0) {
                     importTrainingData(e.target.files[0]);
+                    e.target.value = '';
                 }
             });
         });
 
-        // Tab management
-        function showTab(tabName) {
-            // Hide all tabs
+        function showTab(tabName, event) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
-            // Remove active class from all nav tabs
+
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
-            // Show selected tab
+
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            
+            if (event && event.target) {
+                 event.target.classList.add('active');
+            } else {
+                document.querySelector(`.nav-tab[onclick*="${tabName}"]`).classList.add('active');
+            }
+
             currentTab = tabName;
-            
-            // Load tab-specific data
+
             if (tabName === 'files') {
                 loadFiles();
             } else if (tabName === 'analytics') {
@@ -708,90 +702,99 @@
             }
         }
 
-        // API URL management
         document.getElementById('apiUrl').addEventListener('change', function() {
-            apiUrl = this.value;
+            apiUrl = this.value.trim();
             localStorage.setItem('chatbotApiUrl', apiUrl);
         });
 
-        // Show/hide custom category input
-        document.getElementById('category').addEventListener('change', function() {
-            const customCategoryDiv = document.getElementById('customCategory').parentElement;
-            customCategoryDiv.style.display = this.value === 'custom' ? 'block' : 'none';
-        });
-
-        // Test API connection
         async function testConnection() {
+            if (!apiUrl) {
+                showStatus('❌ Please enter an API URL.', 'error');
+                return;
+            }
             showLoading(true);
             try {
                 const response = await fetch(`${apiUrl}/health`);
                 const data = await response.json();
-                
-                if (response.ok) {
+
+                if (response.ok && data.status === 'ok') {
                     showStatus('✅ Connection successful! API is running.', 'success');
                     loadStats();
                 } else {
-                    showStatus('❌ Connection failed. Check your API URL.', 'error');
+                    showStatus('❌ Connection failed. Check your API URL: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
-                showStatus('❌ Connection failed: ' + error.message, 'error');
+                showStatus('❌ Connection failed (Network error or CORS issue): ' + error.message, 'error');
             }
             showLoading(false);
         }
 
-        // Load statistics
         async function loadStats() {
             try {
+                if (!apiUrl) return;
+
                 const response = await fetch(`${apiUrl}/stats`);
                 const data = await response.json();
-                
+
                 const statsGrid = document.getElementById('statsGrid');
-                statsGrid.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-number">${data.training_patterns || 0}</div>
-                        <div class="stat-label">Training Patterns</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${data.conversation_messages || 0}</div>
-                        <div class="stat-label">Conversations</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${data.registered_users || 0}</div>
-                        <div class="stat-label">Users</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${data.learned_patterns || 0}</div>
-                        <div class="stat-label">Learned Patterns</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${data.uploaded_files || 0}</div>
-                        <div class="stat-label">Uploaded Files</div>
-                    </div>
-                `;
+                if (response.ok) {
+                    statsGrid.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-number">${data.training_patterns || 0}</div>
+                            <div class="stat-label">Training Patterns</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.conversation_messages || 0}</div>
+                            <div class="stat-label">Conversations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.registered_users || 0}</div>
+                            <div class="stat-label">Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.learned_patterns || 0}</div>
+                            <div class="stat-label">Learned Patterns</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.uploaded_files || 0}</div>
+                            <div class="stat-label">Uploaded Files</div>
+                        </div>
+                    `;
+                } else {
+                    statsGrid.innerHTML = `<p style="text-align: center; color: #dc3545;">Could not load stats: ${data.error || 'Server error'}</p>`;
+                }
             } catch (error) {
-                console.error('Error loading stats:', error);
+                document.getElementById('statsGrid').innerHTML = `<p style="text-align: center; color: #dc3545;">Failed to connect to API for stats.</p>`;
             }
         }
 
-        // Training form submission
         document.getElementById('trainingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const category = document.getElementById('category').value;
-            const customCategory = document.getElementById('customCategory').value;
-            const inputPattern = document.getElementById('inputPattern').value;
-            const response = document.getElementById('response').value;
-            const confidence = parseFloat(document.getElementById('confidence').value);
-            
-            const finalCategory = category === 'custom' ? customCategory : category;
-            
-            if (!finalCategory) {
-                showStatus('❌ Please select or enter a category', 'error');
+
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
                 return;
             }
-            
+
+            const category = document.getElementById('category').value;
+            const customCategory = document.getElementById('customCategory').value.trim();
+            const inputPattern = document.getElementById('inputPattern').value.trim();
+            const responseText = document.getElementById('response').value.trim();
+            const confidence = parseFloat(document.getElementById('confidence').value);
+
+            const finalCategory = category === 'custom' ? customCategory : category;
+
+            if (!finalCategory) {
+                showStatus('❌ Please select or enter a category.', 'error');
+                return;
+            }
+            if (!inputPattern || !responseText) {
+                showStatus('❌ Input pattern and response are required.', 'error');
+                return;
+            }
+
             showLoading(true);
-            
+
             try {
                 const apiResponse = await fetch(`${apiUrl}/train`, {
                     method: 'POST',
@@ -801,73 +804,80 @@
                     body: JSON.stringify({
                         category: finalCategory,
                         input_pattern: inputPattern,
-                        response: response,
+                        response: responseText,
                         confidence: confidence
                     })
                 });
-                
+
                 const data = await apiResponse.json();
-                
+
                 if (apiResponse.ok) {
                     showStatus('✅ Training pattern added successfully!', 'success');
                     this.reset();
                     document.getElementById('confidence').value = '1.0';
+                    document.getElementById('customCategory').parentElement.style.display = 'none';
                     loadPatterns();
                     loadStats();
                 } else {
-                    showStatus('❌ Error: ' + data.error, 'error');
+                    showStatus('❌ Error: ' + (data.error || 'Failed to add pattern.'), 'error');
                 }
             } catch (error) {
                 showStatus('❌ Network error: ' + error.message, 'error');
             }
-            
+
             showLoading(false);
         });
 
-        // Load training patterns
         async function loadPatterns() {
+            if (!apiUrl) {
+                document.getElementById('patternsList').innerHTML = '<p style="text-align: center; color: #666;">Please set the API URL.</p>';
+                return;
+            }
+
             const filterCategory = document.getElementById('filterCategory').value;
             showLoading(true);
-            
+
             try {
                 let url = `${apiUrl}/training`;
                 if (filterCategory) {
-                    url += `?category=${filterCategory}`;
+                    url += `?category=${encodeURIComponent(filterCategory)}`;
                 }
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 const patternsList = document.getElementById('patternsList');
                 patternsList.innerHTML = '';
-                
-                if (data.patterns && data.patterns.length > 0) {
+
+                if (response.ok && data.patterns && data.patterns.length > 0) {
                     data.patterns.forEach(pattern => {
                         const patternElement = document.createElement('div');
                         patternElement.className = 'pattern-item';
                         patternElement.innerHTML = `
-                            <div class="pattern-category">${pattern.category}</div>
-                            <div class="pattern-input"><strong>Input:</strong> ${pattern.input_pattern}</div>
-                            <div class="pattern-response"><strong>Response:</strong> ${pattern.response}</div>
+                            <div class="pattern-category">${escapeHTML(pattern.category)}</div>
+                            <div class="pattern-input"><strong>Input:</strong> ${escapeHTML(pattern.input_pattern)}</div>
+                            <div class="pattern-response"><strong>Response:</strong> ${escapeHTML(pattern.response)}</div>
                             <div class="pattern-stats">
-                                <span>Confidence: ${pattern.confidence}</span>
+                                <span>Confidence: ${pattern.confidence.toFixed(1)}</span>
                                 <span>Used: ${pattern.usage_count} times</span>
                                 <span>Added: ${new Date(pattern.created_at).toLocaleDateString()}</span>
                             </div>
                         `;
                         patternsList.appendChild(patternElement);
                     });
+                } else if (response.ok) {
+                    patternsList.innerHTML = '<p style="text-align: center; color: #666;">No training patterns found for this filter.</p>';
                 } else {
-                    patternsList.innerHTML = '<p style="text-align: center; color: #666;">No training patterns found.</p>';
+                     patternsList.innerHTML = `<p style="text-align: center; color: #dc3545;">Error loading patterns: ${data.error || 'Server error'}</p>`;
                 }
             } catch (error) {
                 showStatus('❌ Error loading patterns: ' + error.message, 'error');
+                document.getElementById('patternsList').innerHTML = '<p style="text-align: center; color: #dc3545;">Failed to connect to API for patterns.</p>';
             }
-            
+
             showLoading(false);
         }
 
-        // File upload functionality
         function setupFileUpload() {
             const fileUploadArea = document.getElementById('fileUploadArea');
             const fileInput = document.getElementById('fileInput');
@@ -894,13 +904,30 @@
 
             fileInput.addEventListener('change', (e) => {
                 handleFileUpload(e.target.files);
+                e.target.value = '';
             });
         }
 
         async function handleFileUpload(files) {
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
+                return;
+            }
+
+            if (files.length === 0) return;
+
+            showLoading(true);
+            let anyError = false;
+
             for (let file of files) {
                 if (file.type !== 'application/json') {
-                    showStatus('❌ Please upload only JSON files', 'error');
+                    showStatus(`❌ "${file.name}" - Only JSON files are allowed.`, 'error');
+                    anyError = true;
+                    continue;
+                }
+                if (file.size > 0.5 * 1024 * 1024) {
+                    showStatus(`❌ "${file.name}" - File size exceeds 0.5MB limit.`, 'error');
+                    anyError = true;
                     continue;
                 }
 
@@ -908,7 +935,6 @@
                 formData.append('file', file);
 
                 try {
-                    showLoading(true);
                     const response = await fetch(`${apiUrl}/upload`, {
                         method: 'POST',
                         body: formData
@@ -918,20 +944,28 @@
 
                     if (response.ok) {
                         showStatus(`✅ File "${file.name}" uploaded successfully!`, 'success');
-                        loadFiles();
-                        loadStats();
                     } else {
-                        showStatus(`❌ Error uploading "${file.name}": ${data.error}`, 'error');
+                        showStatus(`❌ Error uploading "${file.name}": ${data.error || 'Server error'}`, 'error');
+                        anyError = true;
                     }
                 } catch (error) {
                     showStatus(`❌ Network error uploading "${file.name}": ${error.message}`, 'error');
+                    anyError = true;
                 }
             }
             showLoading(false);
+            if (!anyError) {
+                loadFiles();
+                loadStats();
+            }
         }
 
-        // Load uploaded files
         async function loadFiles() {
+            if (!apiUrl) {
+                document.getElementById('filesList').innerHTML = '<p style="text-align: center; color: #666;">Please set the API URL.</p>';
+                return;
+            }
+            showLoading(true);
             try {
                 const response = await fetch(`${apiUrl}/uploads`);
                 const data = await response.json();
@@ -939,13 +973,13 @@
                 const filesList = document.getElementById('filesList');
                 filesList.innerHTML = '';
 
-                if (data.files && data.files.length > 0) {
+                if (response.ok && data.files && data.files.length > 0) {
                     data.files.forEach(file => {
                         const fileElement = document.createElement('div');
                         fileElement.className = 'file-item';
                         fileElement.innerHTML = `
                             <div class="file-info">
-                                <div class="file-name">${file.filename}</div>
+                                <div class="file-name">${escapeHTML(file.filename)}</div>
                                 <div class="file-size">${formatFileSize(file.size)} • ${new Date(file.uploaded_at).toLocaleDateString()}</div>
                             </div>
                             <div class="file-actions">
@@ -955,51 +989,69 @@
                         `;
                         filesList.appendChild(fileElement);
                     });
-                } else {
+                } else if (response.ok) {
                     filesList.innerHTML = '<p style="text-align: center; color: #666;">No files uploaded yet.</p>';
+                } else {
+                    filesList.innerHTML = `<p style="text-align: center; color: #dc3545;">Error loading files: ${data.error || 'Server error'}</p>`;
                 }
             } catch (error) {
                 showStatus('❌ Error loading files: ' + error.message, 'error');
+                document.getElementById('filesList').innerHTML = '<p style="text-align: center; color: #dc3545;">Failed to connect to API for files.</p>';
             }
+            showLoading(false);
         }
 
-        // View file content
         async function viewFile(fileId) {
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
+                return;
+            }
+            showLoading(true);
             try {
                 const response = await fetch(`${apiUrl}/uploads/${fileId}`);
                 const data = await response.json();
 
                 if (response.ok) {
                     const popup = window.open('', '_blank');
-                    popup.document.write(`
-                        <html>
-                            <head>
-                                <title>File Content</title>
-                                <style>
-                                    body { font-family: monospace; padding: 20px; }
-                                    pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto; }
-                                </style>
-                            </head>
-                            <body>
-                                <h2>File: ${data.filename}</h2>
-                                <pre>${JSON.stringify(data.content, null, 2)}</pre>
-                            </body>
-                        </html>
-                    `);
+                    if (popup) {
+                        popup.document.write(`
+                            <html>
+                                <head>
+                                    <title>File Content: ${escapeHTML(data.filename)}</title>
+                                    <style>
+                                        body { font-family: monospace; padding: 20px; }
+                                        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto; white-space: pre-wrap; word-break: break-all;}
+                                    </style>
+                                </head>
+                                <body>
+                                    <h2>File: ${escapeHTML(data.filename)}</h2>
+                                    <pre>${escapeHTML(JSON.stringify(data.content, null, 2))}</pre>
+                                </body>
+                            </html>
+                        `);
+                        popup.document.close();
+                    } else {
+                        alert('Please allow pop-ups for this site to view file content.');
+                    }
                 } else {
-                    showStatus('❌ Error viewing file: ' + data.error, 'error');
+                    showStatus('❌ Error viewing file: ' + (data.error || 'Server error'), 'error');
                 }
             } catch (error) {
-                showStatus('❌ Network error: ' + error.message, 'error');
+                showStatus('❌ Network error viewing file: ' + error.message, 'error');
             }
+            showLoading(false);
         }
 
-        // Delete file
         async function deleteFile(fileId) {
-            if (!confirm('Are you sure you want to delete this file?')) {
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
+                return;
+            }
+            if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
                 return;
             }
 
+            showLoading(true);
             try {
                 const response = await fetch(`${apiUrl}/uploads/${fileId}`, {
                     method: 'DELETE'
@@ -1012,19 +1064,23 @@
                     loadFiles();
                     loadStats();
                 } else {
-                    showStatus('❌ Error deleting file: ' + data.error, 'error');
+                    showStatus('❌ Error deleting file: ' + (data.error || 'Server error'), 'error');
                 }
             } catch (error) {
-                showStatus('❌ Network error: ' + error.message, 'error');
+                showStatus('❌ Network error deleting file: ' + error.message, 'error');
             }
+            showLoading(false);
         }
 
-        // Export training data
         async function exportTrainingData() {
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
+                return;
+            }
+            showLoading(true);
             try {
-                showLoading(true);
                 const response = await fetch(`${apiUrl}/export-training`);
-                
+
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
@@ -1038,21 +1094,30 @@
                     showStatus('✅ Training data exported successfully!', 'success');
                 } else {
                     const data = await response.json();
-                    showStatus('❌ Error exporting data: ' + data.error, 'error');
+                    showStatus('❌ Error exporting data: ' + (data.error || 'Server error'), 'error');
                 }
             } catch (error) {
-                showStatus('❌ Network error: ' + error.message, 'error');
+                showStatus('❌ Network error exporting data: ' + error.message, 'error');
             }
             showLoading(false);
         }
 
-        // Import training data
         async function importTrainingData(file) {
+            if (!apiUrl) {
+                showStatus('❌ Please set the Chatbot API URL first.', 'error');
+                return;
+            }
+
+            if (file.type !== 'application/json') {
+                showStatus(`❌ "${file.name}" - Only JSON files can be imported as training data.`, 'error');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('file', file);
 
+            showLoading(true);
             try {
-                showLoading(true);
                 const response = await fetch(`${apiUrl}/import-training`, {
                     method: 'POST',
                     body: formData
@@ -1060,45 +1125,48 @@
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    showStatus(`✅ Training data imported successfully! Added ${data.imported_count} patterns.`, 'success');
+                if (response.ok || response.status === 206) {
+                    showStatus(`✅ Training data imported successfully! Added ${data.imported_count} patterns. ${data.failed_count ? data.failed_count + ' failed.' : ''}`, 'success');
                     loadPatterns();
                     loadStats();
                 } else {
-                    showStatus('❌ Error importing data: ' + data.error, 'error');
+                    showStatus('❌ Error importing data: ' + (data.error || 'Server error'), 'error');
                 }
             } catch (error) {
-                showStatus('❌ Network error: ' + error.message, 'error');
+                showStatus('❌ Network error importing data: ' + error.message, 'error');
             }
             showLoading(false);
         }
 
-        // Load analytics data
         async function loadAnalytics() {
-            await Promise.all([
+            document.getElementById('compressionStats').innerHTML = '<div class="loading">Loading compression data...</div>';
+            document.getElementById('feedbackAnalysis').innerHTML = '<div class="loading">Loading feedback data...</div>';
+            document.getElementById('patternPerformance').innerHTML = '<div class="loading">Loading pattern performance...</div>';
+
+            await Promise.allSettled([
                 loadCompressionStats(),
                 loadFeedbackAnalysis(),
                 loadPatternPerformance()
             ]);
         }
 
-        // Load compression statistics
         async function loadCompressionStats() {
             try {
                 const response = await fetch(`${apiUrl}/compression-stats`);
                 const data = await response.json();
 
                 const compressionStats = document.getElementById('compressionStats');
-                
+
                 if (response.ok) {
+                    const compressionRatio = parseFloat(data.compression_ratio || 0);
                     compressionStats.innerHTML = `
                         <div style="margin-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>Compression Ratio:</span>
-                                <span><strong>${data.compression_ratio || 0}%</strong></span>
+                                <span><strong>${compressionRatio}%</strong></span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${data.compression_ratio || 0}%"></div>
+                                <div class="progress-fill" style="width: ${compressionRatio}%"></div>
                             </div>
                         </div>
                         <div style="margin-bottom: 15px;">
@@ -1117,116 +1185,128 @@
                         </div>
                     `;
                 } else {
-                    compressionStats.innerHTML = '<p style="color: #666;">No compression data available.</p>';
+                    compressionStats.innerHTML = `<p style="color: #dc3545;">Error: ${data.error || 'Server error'}</p>`;
                 }
             } catch (error) {
-                document.getElementById('compressionStats').innerHTML = '<p style="color: #dc3545;">Error loading compression stats.</p>';
+                document.getElementById('compressionStats').innerHTML = '<p style="color: #dc3545;">Failed to load compression stats.</p>';
             }
         }
 
-        // Load feedback analysis
         async function loadFeedbackAnalysis() {
             try {
                 const response = await fetch(`${apiUrl}/feedback`);
                 const data = await response.json();
 
                 const feedbackAnalysis = document.getElementById('feedbackAnalysis');
-                
+
                 if (response.ok && data.feedback && data.feedback.length > 0) {
                     const positive = data.feedback.filter(f => f.rating >= 4).length;
                     const negative = data.feedback.filter(f => f.rating <= 2).length;
                     const neutral = data.feedback.length - positive - negative;
                     const total = data.feedback.length;
 
+                    const positivePercent = total > 0 ? Math.round((positive / total) * 100) : 0;
+                    const neutralPercent = total > 0 ? Math.round((neutral / total) * 100) : 0;
+                    const negativePercent = total > 0 ? Math.round((negative / total) * 100) : 0;
+
+
                     feedbackAnalysis.innerHTML = `
                         <div style="margin-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>😊 Positive:</span>
-                                <span><strong>${positive} (${Math.round(positive/total*100)}%)</strong></span>
+                                <span><strong>${positive} (${positivePercent}%)</strong></span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${positive/total*100}%; background: #28a745;"></div>
+                                <div class="progress-fill" style="width: ${positivePercent}%; background: #28a745;"></div>
                             </div>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>😐 Neutral:</span>
-                                <span><strong>${neutral} (${Math.round(neutral/total*100)}%)</strong></span>
+                                <span><strong>${neutral} (${neutralPercent}%)</strong></span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${neutral/total*100}%; background: #ffc107;"></div>
+                                <div class="progress-fill" style="width: ${neutralPercent}%; background: #ffc107;"></div>
                             </div>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>😞 Negative:</span>
-                                <span><strong>${negative} (${Math.round(negative/total*100)}%)</strong></span>
+                                <span><strong>${negative} (${negativePercent}%)</strong></span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${negative/total*100}%; background: #dc3545;"></div>
+                                <div class="progress-fill" style="width: ${negativePercent}%; background: #dc3545;"></div>
                             </div>
                         </div>
                         <div style="text-align: center; margin-top: 20px;">
                             <strong>Total Feedback: ${total}</strong>
                         </div>
                     `;
-                } else {
+                } else if (response.ok) {
                     feedbackAnalysis.innerHTML = '<p style="color: #666;">No feedback data available.</p>';
+                } else {
+                    feedbackAnalysis.innerHTML = `<p style="color: #dc3545;">Error: ${data.error || 'Server error'}</p>`;
                 }
             } catch (error) {
-                document.getElementById('feedbackAnalysis').innerHTML = '<p style="color: #dc3545;">Error loading feedback data.</p>';
+                document.getElementById('feedbackAnalysis').innerHTML = '<p style="color: #dc3545;">Failed to load feedback data.</p>';
             }
         }
 
-        // Load pattern performance
         async function loadPatternPerformance() {
             try {
                 const response = await fetch(`${apiUrl}/training`);
                 const data = await response.json();
 
                 const patternPerformance = document.getElementById('patternPerformance');
-                
+
                 if (response.ok && data.patterns && data.patterns.length > 0) {
                     const sortedPatterns = data.patterns.sort((a, b) => b.usage_count - a.usage_count).slice(0, 5);
-                    const maxUsage = sortedPatterns[0].usage_count;
+                    const maxUsage = sortedPatterns.length > 0 ? sortedPatterns[0].usage_count : 0;
 
                     let html = '<div style="margin-bottom: 15px;"><strong>Top 5 Most Used Patterns:</strong></div>';
-                    
-                    sortedPatterns.forEach(pattern => {
-                        const percentage = maxUsage > 0 ? (pattern.usage_count / maxUsage) * 100 : 0;
-                        html += `
-                            <div style="margin-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span style="font-size: 14px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${pattern.input_pattern}</span>
-                                    <span><strong>${pattern.usage_count}</strong></span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${percentage}%"></div>
-                                </div>
-                            </div>
-                        `;
-                    });
 
+                    if (sortedPatterns.length === 0) {
+                        html += '<p style="text-align: center; color: #666;">No patterns found or used yet.</p>';
+                    } else {
+                        sortedPatterns.forEach(pattern => {
+                            const percentage = maxUsage > 0 ? (pattern.usage_count / maxUsage) * 100 : 0;
+                            html += `
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span style="font-size: 14px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(pattern.input_pattern)}</span>
+                                        <span><strong>${pattern.usage_count}</strong></span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
                     patternPerformance.innerHTML = html;
+                } else if (response.ok) {
+                    patternPerformance.innerHTML = '<p style="color: #666;">No patterns to analyze yet.</p>';
                 } else {
-                    patternPerformance.innerHTML = '<p style="color: #666;">No pattern performance data available.</p>';
+                    patternPerformance.innerHTML = `<p style="color: #dc3545;">Error: ${data.error || 'Server error'}</p>`;
                 }
             } catch (error) {
-                document.getElementById('patternPerformance').innerHTML = '<p style="color: #dc3545;">Error loading pattern performance.</p>';
+                document.getElementById('patternPerformance').innerHTML = '<p style="color: #dc3545;">Failed to load pattern performance.</p>';
             }
         }
 
-        // Chat functionality
         async function sendMessage() {
+            if (!apiUrl) {
+                addMessageToChat('bot', 'Error: Please set the Chatbot API URL first.');
+                return;
+            }
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
-            
+
             if (!message) return;
-            
-            // Add user message to chat
+
             addMessageToChat('user', message);
             input.value = '';
-            
+
             try {
                 const response = await fetch(`${apiUrl}/chat`, {
                     method: 'POST',
@@ -1238,13 +1318,13 @@
                         sessionId: sessionId
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     addMessageToChat('bot', data.response);
                 } else {
-                    addMessageToChat('bot', 'Error: ' + data.error);
+                    addMessageToChat('bot', 'Error: ' + (data.error || 'Failed to get response.'));
                 }
             } catch (error) {
                 addMessageToChat('bot', 'Network error: ' + error.message);
@@ -1265,7 +1345,6 @@
             sessionId = 'training-session-' + Date.now();
         }
 
-        // Utility functions
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1279,34 +1358,49 @@
         }
 
         function showStatus(message, type) {
-            // Remove existing status messages
             const existingStatus = document.querySelector('.status');
             if (existingStatus) {
                 existingStatus.remove();
             }
-            
+
             const statusDiv = document.createElement('div');
             statusDiv.className = `status ${type}`;
             statusDiv.textContent = message;
-            
+
             document.querySelector('.container').insertBefore(statusDiv, document.querySelector('.nav-tabs'));
-            
+
             setTimeout(() => {
                 statusDiv.remove();
             }, 5000);
         }
 
-        // Auto-refresh stats every 30 seconds
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        document.getElementById('category').addEventListener('change', function() {
+            const customCategoryDiv = document.getElementById('customCategory').parentElement;
+            customCategoryDiv.style.display = this.value === 'custom' ? 'block' : 'none';
+            if (this.value !== 'custom') {
+                document.getElementById('customCategory').value = '';
+            }
+        });
+
         setInterval(loadStats, 30000);
-        
-        // Auto-refresh current tab data every 60 seconds
+
         setInterval(() => {
-            if (currentTab === 'files') {
-                loadFiles();
-            } else if (currentTab === 'analytics') {
-                loadAnalytics();
+            if (!document.getElementById('loading').style.display || document.getElementById('loading').style.display === 'none') {
+                if (currentTab === 'files') {
+                    loadFiles();
+                } else if (currentTab === 'analytics') {
+                    loadAnalytics();
+                }
             }
         }, 60000);
+
+        showTab('training', null);
     </script>
 </body>
 </html>
