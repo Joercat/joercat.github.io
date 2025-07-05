@@ -209,35 +209,76 @@
           width: auto;
           margin: 5px;
           padding: 8px 12px;
+          font-size: 14px; /* Slightly smaller font for mobile links */
         }
         .main-content {
-          margin-left: 0;
+          margin-left: 0; /* Remove left margin */
           margin-top: 20px;
-          padding: 20px;
+          padding: 20px 15px; /* Reduced horizontal padding for main content */
+          border-radius: 0; /* Remove rounded corners on full-width mobile */
+          margin-bottom: 0; /* Remove bottom margin to maximize space */
         }
         .welcome-section {
           flex-direction: column;
           text-align: center;
+          margin-bottom: 20px; /* Reduced margin */
         }
         .main-logo {
           margin-right: 0;
-          margin-bottom: 20px;
+          margin-bottom: 15px; /* Reduced margin */
+          width: 100px; /* Smaller logo for mobile */
+          height: 100px;
         }
         .welcome-text {
-          font-size: 36px;
+          font-size: 32px; /* Smaller welcome text */
         }
         .caveat-text {
-          font-size: 20px;
+          font-size: 18px; /* Smaller caveat text */
         }
         .download-text {
-          font-size: 24px;
+          font-size: 22px; /* Smaller download text */
+          margin-top: 30px; /* Adjusted margin */
+        }
+        .action-section {
+          padding: 20px; /* Reduced padding for action section */
+          border-radius: 0; /* Remove rounded corners */
+          margin-top: 30px; /* Adjusted margin */
         }
         .action-section button {
-          font-size: 16px;
-          padding: 10px 20px;
+          font-size: 14px; /* Smaller button font */
+          padding: 10px 15px; /* Smaller button padding */
+          margin: 8px; /* Adjusted button margin */
         }
         .note-text {
-          font-size: 24px;
+          font-size: 20px; /* Smaller note text */
+          margin-top: 20px; /* Adjusted margin */
+        }
+      }
+
+      /* Very small screens (e.g., old smartphones) */
+      @media (max-width: 480px) {
+        .sidebar-nav a {
+          font-size: 13px; /* Even smaller font for very small screens */
+          padding: 6px 10px;
+        }
+        .welcome-text {
+          font-size: 28px;
+        }
+        .caveat-text {
+          font-size: 16px;
+        }
+        .download-text {
+          font-size: 18px;
+        }
+        .action-section button {
+          font-size: 13px;
+          padding: 8px 12px;
+          display: block; /* Stack buttons if they don't fit side by side */
+          width: calc(100% - 20px); /* Full width minus margin */
+          margin: 5px auto; /* Center individual buttons */
+        }
+        .note-text {
+          font-size: 18px;
         }
       }
     </style>
