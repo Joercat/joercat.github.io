@@ -4,71 +4,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/theunblockedcatfavicon.png">
     <title>swf File Player</title>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
- 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:200,300,400,700">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Caveat">
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Raleway', sans-serif;
+        background-color: black;
+        color: white;
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      a {
+        text-decoration: none;
+        color: blue;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: #4169E1;
+      }
+
+      h3 {
+        font-family: 'Caveat', cursive;
+        font-size: 28px;
+        font-weight: 400;
+        color: white;
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+
+      .header-section {
+        max-width: 800px;
+        margin: 0 auto 40px auto;
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 20px;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .file-input-section {
+        max-width: 600px;
+        margin: 0 auto 40px auto;
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      #file-input {
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: 'Raleway', sans-serif;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        margin: 20px 0;
+        font-weight: 600;
+      }
+
+      #file-input:hover {
+        background-color: #E74C3C;
+        transform: translateY(-2px);
+      }
+
+      #swf-container {
+        max-width: 100%;
+        margin: 30px auto;
+        background-color: rgba(0, 0, 0, 0.8);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        min-height: 100px;
+      }
+
+      #swf-container:empty {
+        display: none;
+      }
+
+      .download-section {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .download-button {
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-family: 'Raleway', sans-serif;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        margin: 10px;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .download-button:hover {
+        background-color: #E74C3C;
+        transform: translateY(-2px);
+      }
+
+      .download-button a {
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+      }
+
+      .download-button a h3 {
+        margin: 0;
+        font-size: 18px;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+      }
+
+      .back-link {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 400;
+        transition: background-color 0.2s ease;
+        display: inline-block;
+        margin-top: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .back-link:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      /* Tablet styles */
+      @media (max-width: 1024px) {
+        body {
+          padding: 30px 15px;
+        }
+        
+        .header-section,
+        .file-input-section,
+        .download-section {
+          padding: 25px;
+          margin-bottom: 30px;
+        }
+        
+        h3 {
+          font-size: 24px;
+        }
+        
+        .logo {
+          width: 70px;
+          height: 70px;
+        }
+        
+        #file-input,
+        .download-button {
+          font-size: 16px;
+          padding: 12px 25px;
+        }
+      }
+
+      /* Mobile styles */
+      @media (max-width: 768px) {
+        body {
+          padding: 20px 10px;
+        }
+        
+        .header-section,
+        .file-input-section,
+        .download-section {
+          padding: 20px;
+          margin-bottom: 25px;
+          border-radius: 8px;
+        }
+        
+        h3 {
+          font-size: 20px;
+          margin-bottom: 15px;
+        }
+        
+        .logo {
+          width: 60px;
+          height: 60px;
+          margin-bottom: 15px;
+        }
+        
+        #file-input,
+        .download-button {
+          font-size: 14px;
+          padding: 10px 20px;
+          margin: 15px 0;
+        }
+        
+        .download-button a h3 {
+          font-size: 14px;
+        }
+        
+        .back-link {
+          font-size: 14px;
+          padding: 8px 16px;
+        }
+      }
+
+      /* Small mobile styles */
+      @media (max-width: 480px) {
+        .header-section,
+        .file-input-section,
+        .download-section {
+          padding: 15px;
+          margin-bottom: 20px;
+        }
+        
+        h3 {
+          font-size: 18px;
+        }
+        
+        .logo {
+          width: 50px;
+          height: 50px;
+        }
+        
+        #file-input,
+        .download-button {
+          font-size: 13px;
+          padding: 8px 16px;
+          display: block;
+          width: 100%;
+          margin: 10px 0;
+        }
+        
+        .download-button a h3 {
+          font-size: 13px;
+        }
+        
+        .back-link {
+          font-size: 13px;
+          padding: 8px 14px;
+          display: block;
+          width: 100%;
+        }
+      }
+    </style>
 </head>
-  <center>
-<style>
-  .download {
-background-color: white;
-    color: black;
-    text-decoration: none;
-  }
-</style>
-    <body>
 
+<body>
+  <div class="header-section">
+    <img src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" class="logo">
     <h3>To use this website you choose an .swf file from your computer.</h3>
-  <h3>And then your .swf file will be run and you can play it.</h3>
-<br>
-      
+    <h3>And then your .swf file will be run and you can play it.</h3>
+  </div>
+
+  <div class="file-input-section">
     <input type="file" id="file-input" accept=".swf">
-    <div id="swf-container"></div>
+  </div>
 
-    <script>
-        // Initialize Ruffle
-        const ruffle = window.RufflePlayer.newest();
-        const ruffleContainer = document.getElementById('swf-container');
+  <div id="swf-container"></div>
 
-        // Handle file input
-        document.getElementById('file-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file && file.type === "application/x-shockwave-flash") {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const arrayBuffer = e.target.result;
+  <div class="download-section">
+    <button class="download-button">
+      <a href="https://github.com/Joercat/swfarchive.git">
+        <h3>Click here if you need an swf file.</h3>
+      </a>
+    </button>
+    <br>
+    <a href="https://joercat.github.io" class="back-link">← Back to Home</a>
+  </div>
 
-                    // Create a blob from the array buffer
-                    const blob = new Blob([arrayBuffer], { type: "application/x-shockwave-flash" });
+  <script>
+    // Initialize Ruffle
+    const ruffle = window.RufflePlayer.newest();
+    const ruffleContainer = document.getElementById('swf-container');
 
-                    // Create a URL for the blob
-                    const objectURL = URL.createObjectURL(blob);
+    // Handle file input
+    document.getElementById('file-input').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file && file.type === "application/x-shockwave-flash") {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
 
-                    // Clear previous content
-                    ruffleContainer.innerHTML = '';
+                // Create a blob from the array buffer
+                const blob = new Blob([arrayBuffer], { type: "application/x-shockwave-flash" });
 
-                    // Create and configure the Ruffle player instance
-                    const rufflePlayer = ruffle.createPlayer();
-                    ruffleContainer.appendChild(rufflePlayer);
+                // Create a URL for the blob
+                const objectURL = URL.createObjectURL(blob);
 
-                    // Load the SWF file
-                    rufflePlayer.load(objectURL);
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                alert("Please select a valid swf file.");
-            }
-        });
-    </script>
-      <br>
-      <br>
-        <br>
-          <br>
-            <br>
-              <br>
-  <button>
-    <a class="download" href="https://github.com/Joercat/swfarchive.git"><h3>Click here if you need an swf file.</h3></a>
-  </button>
-  </center>
+                // Clear previous content
+                ruffleContainer.innerHTML = '';
+
+                // Create and configure the Ruffle player instance
+                const rufflePlayer = ruffle.createPlayer();
+                ruffleContainer.appendChild(rufflePlayer);
+
+                // Load the SWF file
+                rufflePlayer.load(objectURL);
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            alert("Please select a valid swf file.");
+        }
+    });
+  </script>
 </body>
 </html>
