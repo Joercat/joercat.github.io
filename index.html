@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:200,300,400,700">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Caveat">
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         font-family: 'Raleway', sans-serif;
@@ -36,6 +40,12 @@
         flex-direction: column;
         align-items: center;
         flex-shrink: 0;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        left: 0;
+        top: 0;
+        z-index: 1000;
       }
 
       .sidebar-header {
@@ -44,7 +54,6 @@
         padding: 0 20px 20px 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         width: 100%;
-        box-sizing: border-box;
         margin-bottom: 20px;
       }
 
@@ -92,13 +101,21 @@
       
       .main-content {
         flex-grow: 1;
+        margin-left: 250px;
         padding: 40px;
-        max-width: 1000px;
-        margin: 40px auto;
+        width: calc(100% - 250px);
+        max-width: none;
         background-color: black;
+        min-height: 100vh;
+      }
+
+      .content-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: black;
+        padding: 40px;
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
         border-radius: 8px;
-        box-sizing: border-box;
       }
 
       .welcome-section {
@@ -145,27 +162,27 @@
       }
 
       .action-section button {
-        background-color: blue; /* Changed from white */
-        color: white; /* Changed from black */
+        background-color: blue;
+        color: white;
         border: none;
         padding: 12px 25px;
         font-size: 18px;
         font-family: 'Raleway', sans-serif;
         border-radius: 4px;
         cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; /* Added color transition */
+        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
         margin: 10px;
         font-weight: 600;
       }
 
       .action-section button:hover {
-        background-color: #E74C3C; /* A slightly darker red for hover, or simply red */
+        background-color: #E74C3C;
         transform: translateY(-2px);
-        color: white; /* Ensure text remains white on hover */
+        color: white;
       }
 
       .action-section button a {
-        color: inherit; /* Inherit color from the button, which is now white */
+        color: inherit;
         text-decoration: none;
       }
 
@@ -183,104 +200,142 @@
         font-weight: 700;
       }
 
-      @media (min-width: 769px) {
-          .main-content {
-              margin-left: calc(250px + 40px);
-              margin-right: 40px;
-              max-width: calc(100% - 250px - 80px);
-          }
+      /* Tablet styles */
+      @media (max-width: 1024px) {
+        .content-wrapper {
+          padding: 30px;
+          margin: 20px;
+        }
+        
+        .main-content {
+          padding: 20px;
+        }
+        
+        .welcome-text {
+          font-size: 36px;
+        }
+        
+        .caveat-text {
+          font-size: 20px;
+        }
+        
+        .download-text {
+          font-size: 24px;
+        }
       }
 
+      /* Mobile styles */
       @media (max-width: 768px) {
         body {
           flex-direction: column;
         }
+        
         .left-sidebar {
           width: 100%;
           height: auto;
+          position: static;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
           padding-bottom: 10px;
         }
+        
         .sidebar-header {
           border-bottom: none;
           margin-bottom: 10px;
           justify-content: center;
           padding-bottom: 10px;
         }
+        
         .sidebar-nav {
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
         }
+        
         .sidebar-nav a {
           width: auto;
           margin: 5px;
           padding: 8px 12px;
           font-size: 14px;
         }
+        
         .main-content {
           margin-left: 0;
-          margin-right: 0;
           width: 100%;
-          max-width: 100%;
           padding: 20px 15px;
-          border-radius: 0;
-          margin-top: 20px;
-          margin-bottom: 0;
-          box-sizing: border-box;
+          min-height: auto;
         }
+        
+        .content-wrapper {
+          margin: 0;
+          padding: 20px;
+          border-radius: 0;
+          box-shadow: none;
+        }
+        
         .welcome-section {
           flex-direction: column;
           text-align: center;
           margin-bottom: 20px;
           margin-top: 20px;
         }
+        
         .main-logo {
           margin-right: 0;
           margin-bottom: 15px;
           width: 100px;
           height: 100px;
         }
+        
         .welcome-text {
           font-size: 32px;
         }
+        
         .caveat-text {
           font-size: 18px;
         }
+        
         .download-text {
           font-size: 22px;
           margin-top: 30px;
         }
+        
         .action-section {
           padding: 20px;
           border-radius: 0;
           margin-top: 30px;
         }
+        
         .action-section button {
           font-size: 14px;
           padding: 10px 15px;
           margin: 8px;
         }
+        
         .note-text {
           font-size: 20px;
           margin-top: 20px;
         }
       }
 
+      /* Small mobile styles */
       @media (max-width: 480px) {
         .sidebar-nav a {
           font-size: 13px;
           padding: 6px 10px;
         }
+        
         .welcome-text {
           font-size: 28px;
         }
+        
         .caveat-text {
           font-size: 16px;
         }
+        
         .download-text {
           font-size: 18px;
         }
+        
         .action-section button {
           font-size: 13px;
           padding: 8px 12px;
@@ -288,8 +343,13 @@
           width: calc(100% - 20px);
           margin: 5px auto;
         }
+        
         .note-text {
           font-size: 18px;
+        }
+        
+        .content-wrapper {
+          padding: 15px;
         }
       }
     </style>
@@ -329,23 +389,25 @@
     </div>
 
     <div class="main-content">
-      <div class="welcome-section">
-        <img class="main-logo" src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" width="134" height="134">
-        <h3 class="welcome-text">Welcome to The Unblocked Cat</h3>
-      </div>
-      <div id="a"></div> 
-      <script src="index/greet.js"></script>
+      <div class="content-wrapper">
+        <div class="welcome-section">
+          <img class="main-logo" src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" width="134" height="134">
+          <h3 class="welcome-text">Welcome to The Unblocked Cat</h3>
+        </div>
+        <div id="a"></div> 
+        <script src="index/greet.js"></script>
 
-      <p class="caveat-text">This website is recommended for HP Chromebooks; some styling may be messy. Sorry for the inconvenience.</p>
-      <p class="caveat-text">Some games may take some time to load, and Flash games can be used fullscreen.</p>
+        <p class="caveat-text">This website is recommended for HP Chromebooks; some styling may be messy. Sorry for the inconvenience.</p>
+        <p class="caveat-text">Some games may take some time to load, and Flash games can be used fullscreen.</p>
 
-      <h1 class="download-text">Download The Unblocked Cat app on Chromebook.</h1>
+        <h1 class="download-text">Download The Unblocked Cat app on Chromebook.</h1>
 
-      <div class="action-section">
-        <button><a href="https://sites.google.com/east-haven.k12.ct.us/space-cats/home">SC official website</a></button>
-        <button><a href="https://github.com/Joercat/joercat.github.io/issues/new">Any issues? Click here</a></button>
-        <button><a href="https://joercat.github.io/subscribe">Click here to subscribe to "The Unblocked Cat" and gain access to all games</a></button>
-        <a href="secret-page" class="note-text"><strong>This site is not complete. Expect more games.</strong></a>
+        <div class="action-section">
+          <button><a href="https://sites.google.com/east-haven.k12.ct.us/space-cats/home">SC official website</a></button>
+          <button><a href="https://github.com/Joercat/joercat.github.io/issues/new">Any issues? Click here</a></button>
+          <button><a href="https://joercat.github.io/subscribe">Click here to subscribe to "The Unblocked Cat" and gain access to all games</a></button>
+          <a href="secret-page" class="note-text"><strong>This site is not complete. Expect more games.</strong></a>
+        </div>
       </div>
     </div>
 
