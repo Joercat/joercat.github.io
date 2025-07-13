@@ -8,7 +8,7 @@
     <style>
         :root {
             --main-color: #39FF14;
-            --bg-dark: #000000;
+            --bg-image: url('green.jpg') no-repeat center center / cover;
             --window-bg: #1a1a1a;
             --text-color: var(--main-color);
         }
@@ -21,7 +21,8 @@
         }
 
         body {
-            background: var(--bg-dark);
+            background-color: black;        
+            background: var(--bg-image);
             color: var(--text-color);
             overflow: hidden;
             height: 100vh;
@@ -435,7 +436,7 @@
         /* Matrix theme */
         .matrix-1 {
             --main-color: #39FF14;
-            --bg-dark: #000000;
+            --bg-image: url('green.jpg') no-repeat center center / cover;
             --window-bg: #1a1a1a;
             --text-color: var(--main-color);
         }
@@ -443,7 +444,7 @@
         /* Blue theme */
         .blue-sky {
             --main-color: #00AAFF;
-            --bg-dark: #001933;
+            --bg-image: url('blue.jpg') no-repeat center center / cover;
             --window-bg: #002B4D;
             --text-color: var(--main-color);
         }
@@ -451,15 +452,14 @@
         /* Purple theme */
         .midnight-purple {
             --main-color: #CC66FF;
-            --bg-dark: #1A0033;
+            --bg-image: url('purple.jpg') no-repeat center center / cover;
             --window-bg: #330066;
             --text-color: var(--main-color);
         }
 
-        /* Amber theme */
         .amber-tech {
             --main-color: #FF0000;
-            --bg-dark: #330000;
+            --bg-image: url('red.jpg') no-repeat center center / cover;
             --window-bg: #4D0000;
             --text-color: var(--main-color);
         }
