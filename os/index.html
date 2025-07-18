@@ -29,7 +29,6 @@
             height: 100vh;
         }
 
-        /* Loading Screen */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -91,7 +90,6 @@
             text-align: left;
         }
 
-        /* Desktop */
         #desktop {
             height: calc(100vh - 40px);
             padding: 20px;
@@ -122,7 +120,6 @@
             font-size: 12px;
         }
 
-        /* Windows */
         .window {
             position: absolute;
             background: var(--window-bg);
@@ -170,7 +167,6 @@
             padding: 10px;
         }
 
-        /* Terminal */
         .terminal-content {
             height: 100%;
             background: #000;
@@ -178,6 +174,7 @@
             font-family: 'Courier New', monospace;
             overflow-y: auto;
             color: var(--main-color);
+            white-space: pre-wrap; /* Important for preserving line breaks */
         }
 
         .terminal-line {
@@ -199,7 +196,15 @@
             outline: none;
         }
 
-        /* Browser */
+        .blink-cursor {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to { border-right-color: transparent }
+            50% { border-right-color: var(--main-color); }
+        }
+
         .browser-content {
             height: 100%;
             display: flex;
@@ -238,7 +243,6 @@
             background: white;
         }
 
-        /* Calendar */
         .calendar-app {
             height: 100%;
             display: flex;
@@ -287,7 +291,6 @@
             padding: 5px 0;
         }
 
-        /* Taskbar */
         .taskbar {
             height: 40px;
             background: rgba(26, 26, 26, 0.95);
@@ -322,7 +325,6 @@
             background: rgba(57, 255, 20, 0.2);
         }
 
-        /* Files */
         .files-content {
             height: 100%;
             display: flex;
@@ -364,7 +366,6 @@
             background: rgba(57, 255, 20, 0.1);
         }
 
-        /* Notepad */
         .notepad-content {
             height: 100%;
             display: flex;
@@ -389,7 +390,6 @@
             outline: none;
         }
 
-        /* Settings */
         .settings-content {
             padding: 20px;
         }
@@ -416,7 +416,6 @@
             color: var(--bg-dark);
         }
 
-        /* Themes */
         .themes-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -435,7 +434,6 @@
             padding: 10px;
         }
 
-        /* Matrix theme */
         .matrix-1 {
             --main-color: #39FF14;
             --bg-image: url('green.jpg') no-repeat center center / cover;
@@ -443,7 +441,6 @@
             --text-color: var(--main-color);
         }
 
-        /* Blue theme */
         .blue-sky {
             --main-color: #00AAFF;
             --bg-image: url('blue.jpg') no-repeat center center / cover;
@@ -451,7 +448,6 @@
             --text-color: var(--main-color);
         }
 
-        /* Purple theme */
         .midnight-purple {
             --main-color: #CC66FF;
             --bg-image: url('purple.jpg') no-repeat center center / cover;
@@ -466,7 +462,6 @@
             --text-color: var(--main-color);
         }
 
-        /* About */
         .about-content {
             text-align: center;
             padding: 20px;
@@ -540,6 +535,7 @@ const System = {
     currentDate: new Date(),
     bootComplete: false,
     taskbarApps: {},
+    terminalAliases: {},
 
     async init() {
         await this.startBootSequence();
@@ -602,7 +598,13 @@ const System = {
                         theme: 'matrix-1',
                         version: '1.3.0'
                     }),
-                    'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.0\nDeveloped with ♥ by the SCos team'
+                    'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.0\nDeveloped with ♥ by the SCos team',
+                    'network.json': JSON.stringify({
+                        'google.com': { ip: '172.217.160.142', status: 'online', latency: '45ms' },
+                        'example.com': { ip: '93.184.216.34', status: 'online', latency: '60ms' },
+                        'local.net': { ip: '192.168.1.1', status: 'online', latency: '5ms' },
+                        'offline.site': { ip: '10.0.0.1', status: 'offline', latency: 'timeout' }
+                    })
                 }
             };
             this.save();
@@ -723,11 +725,9 @@ const System = {
             window.style.zIndex = ++this.zIndex;
             window.dataset.appId = appId;
 
-            // Position the window with a slight offset for each new window
             window.style.left = `${50 + (this.windows.length * 30)}px`;
             window.style.top = `${50 + (this.windows.length * 30)}px`;
             
-            // Set initial size
             window.style.width = options.width || '600px';
             window.style.height = options.height || '400px';
 
@@ -749,12 +749,10 @@ const System = {
             document.body.appendChild(window);
             this.windows.push(window);
             
-            // Add to taskbar
             if (appId) {
                 System.addTaskbarApp(appId, title, windowId);
             }
             
-            // Run onload if provided
             if (options.onload) {
                 options.onload(window);
             }
@@ -781,7 +779,6 @@ const System = {
                 currentX = e.clientX - initialX;
                 currentY = e.clientY - initialY;
                 
-                // Ensure window stays within viewport bounds
                 currentX = Math.max(0, Math.min(currentX, window.offsetWidth, document.body.clientWidth - 100));
                 currentY = Math.max(0, Math.min(currentY, document.body.clientHeight - 40));
                 
@@ -795,7 +792,6 @@ const System = {
         },
         
         makeWindowResizable(window) {
-            // Add resize handle
             const resizeHandle = document.createElement('div');
             resizeHandle.style.position = 'absolute';
             resizeHandle.style.bottom = '0';
@@ -854,7 +850,6 @@ const System = {
             window.style.transform = 'scale(0.8) translateY(-100vh)';
             window.style.opacity = '0';
             
-            // Remove from taskbar
             const appId = window.dataset.appId;
             if (appId) {
                 System.removeTaskbarApp(window.id);
@@ -1005,7 +1000,6 @@ const System = {
                             if (isDir) {
                                 loadDirectory(currentPath + file);
                             } else {
-                                // Open file with appropriate app
                                 const filePath = currentPath + file;
                                 const content = this.FileSystem.read(filePath);
                                 
@@ -1014,17 +1008,14 @@ const System = {
                                 } else if (file.endsWith('.json')) {
                                     this.createNotepadWindow(file, JSON.stringify(content, null, 2), filePath);
                                 } else {
-                                    // Default to notepad for other files
                                     this.createNotepadWindow(file, String(content), filePath);
                                 }
                             }
                         });
                         
-                        // Add right-click context menu
                         fileItem.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
                             
-                            // Create context menu
                             const contextMenu = document.createElement('div');
                             contextMenu.style.position = 'fixed';
                             contextMenu.style.left = `${e.clientX}px`;
@@ -1034,7 +1025,6 @@ const System = {
                             contextMenu.style.zIndex = '10000';
                             contextMenu.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
                             
-                            // Add menu items
                             const actions = [
                                 { label: 'Delete', icon: 'fa-trash', action: () => {
                                     if (confirm(`Are you sure you want to delete ${file}?`)) {
@@ -1064,7 +1054,6 @@ const System = {
                             
                             document.body.appendChild(contextMenu);
                             
-                            // Remove context menu when clicking elsewhere
                             const removeMenu = () => {
                                 contextMenu.remove();
                                 document.removeEventListener('click', removeMenu);
@@ -1107,7 +1096,6 @@ const System = {
                     }
                 });
                 
-                // Initial directory load
                 loadDirectory(currentPath);
             }
         });
@@ -1118,53 +1106,127 @@ const System = {
     createTerminalWindow() {
         const content = `
             <div class="terminal-content" id="terminal-content">
-                <div class="terminal-line">SCos Terminal v1.2</div>
+                <div class="terminal-line">SCos Terminal v1.3</div>
                 <div class="terminal-line">Type 'help' for available commands.</div>
                 <div class="terminal-input-container">
                     <span class="terminal-prompt">user@scos:~$</span>
-                    <input type="text" class="terminal-input" id="terminal-input">
+                    <span id="terminal-typed-command"></span><span id="terminal-cursor" class="blink-cursor">|</span><input type="text" class="terminal-input" id="terminal-input" style="opacity:0; position:absolute; left:-9999px;">
                 </div>
             </div>
         `;
         
         const window = this.WindowManager.create('Terminal', content, 'terminal', {
-            width: '600px',
-            height: '400px',
+            width: '700px',
+            height: '450px',
             onload: (window) => {
                 const terminalContent = window.querySelector('#terminal-content');
                 const terminalInput = window.querySelector('#terminal-input');
+                const terminalTypedCommand = window.querySelector('#terminal-typed-command');
+                const terminalCursor = window.querySelector('#terminal-cursor');
                 let commandHistory = [];
                 let historyIndex = -1;
                 let currentDirectory = '/home/';
-                
-                // Focus input when terminal is clicked
+                let currentTypingIndex = 0;
+                let currentTypingText = '';
+                let typingInterval = null;
+
+                const startTypingEffect = (text, targetElement, callback) => {
+                    currentTypingText = text;
+                    currentTypingIndex = 0;
+                    targetElement.textContent = ''; // Clear content before typing
+                    terminalCursor.style.display = 'inline'; // Show cursor during typing
+
+                    if (typingInterval) clearInterval(typingInterval);
+
+                    typingInterval = setInterval(() => {
+                        if (currentTypingIndex < currentTypingText.length) {
+                            targetElement.textContent += currentTypingText.charAt(currentTypingIndex);
+                            currentTypingIndex++;
+                            terminalContent.scrollTop = terminalContent.scrollHeight;
+                        } else {
+                            clearInterval(typingInterval);
+                            typingInterval = null;
+                            terminalCursor.style.display = 'none'; // Hide cursor after typing
+                            if (callback) callback();
+                        }
+                    }, 20); // Typing speed in milliseconds per character
+                };
+
                 terminalContent.addEventListener('click', () => {
                     terminalInput.focus();
                 });
                 
-                // Initialize input
                 terminalInput.focus();
-                
-                // Command execution
-                const executeCommand = (command) => {
-                    // Add command to history
+
+                const addLine = (text, isPrompt = false) => {
+                    const newLine = document.createElement('div');
+                    newLine.className = 'terminal-line';
+                    if (isPrompt) {
+                        newLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span>`;
+                        const span = document.createElement('span');
+                        newLine.appendChild(span);
+                        terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                        startTypingEffect(text, span, () => {
+                            terminalCursor.style.display = 'inline';
+                            terminalInput.style.position = 'relative';
+                            terminalInput.style.left = '0';
+                            terminalInput.style.opacity = '1';
+                            terminalInput.focus();
+                        });
+                    } else {
+                        terminalCursor.style.display = 'none';
+                        terminalInput.style.opacity = '0';
+                        terminalInput.style.position = 'absolute';
+                        terminalInput.style.left = '-9999px';
+
+                        terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                        startTypingEffect(text, newLine, () => {
+                            terminalCursor.style.display = 'inline';
+                            terminalInput.style.position = 'relative';
+                            terminalInput.style.left = '0';
+                            terminalInput.style.opacity = '1';
+                            terminalInput.focus();
+                        });
+                    }
+                };
+
+                const executeCommand = async (command) => {
+                    if (typingInterval) { // Prevent execution if still typing
+                        return;
+                    }
+
                     if (command.trim()) {
                         commandHistory.push(command);
                         historyIndex = commandHistory.length;
                     }
                     
-                    // Create output line with command
                     const cmdLine = document.createElement('div');
                     cmdLine.className = 'terminal-line';
-                    cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:~$</span> ${command}`;
+                    cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span> ${command}`;
                     terminalContent.insertBefore(cmdLine, terminalInput.parentElement);
                     
-                    // Process command
-                    const args = command.trim().split(' ');
-                    const cmd = args[0].toLowerCase();
-                    
-                    // Command response
                     let response = '';
+                    let showTypingEffect = true;
+
+                    // Resolve aliases
+                    let effectiveCommand = command;
+                    const aliasMatch = command.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                    if (aliasMatch) {
+                        const aliasName = aliasMatch[1];
+                        const aliasCmd = aliasMatch[2];
+                        System.terminalAliases[aliasName] = aliasCmd;
+                        response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                        showTypingEffect = true;
+                    } else {
+                        const parts = command.trim().split(' ');
+                        const potentialAlias = parts[0];
+                        if (System.terminalAliases[potentialAlias]) {
+                            effectiveCommand = System.terminalAliases[potentialAlias] + ' ' + parts.slice(1).join(' ');
+                        }
+                    }
+
+                    const args = effectiveCommand.trim().split(' ');
+                    const cmd = args[0].toLowerCase();
                     
                     switch (cmd) {
                         case 'help':
@@ -1174,21 +1236,29 @@ ls       - List directory contents
 cd       - Change directory
 cat      - Show file contents
 echo     - Display a message
-clear    - Clear terminal
+clear    - Clear terminal screen
 date     - Show current date and time
 mkdir    - Create directory
 touch    - Create an empty file
+rm       - Delete file or directory
 whoami   - Show current user
-version  - Show system version`;
+version  - Show system version
+calc     - Perform basic arithmetic (e.g., calc 5 + 3)
+ping     - Ping a host (simulated)
+sysinfo  - Display system information
+alias    - Create command aliases (e.g., alias ll='ls -l')
+history  - Show command history
+shutdown - Shut down the system (reloads page)
+reboot   - Reboot the system (reloads page)`;
                             break;
                         
                         case 'ls':
                             try {
                                 const path = args[1] || currentDirectory;
-                                const files = this.FileSystem.list(path);
+                                const files = System.FileSystem.list(path);
                                 response = files.length ? files.join('  ') : '(empty directory)';
                             } catch (err) {
-                                response = 'Error: Invalid path';
+                                response = 'Error: Invalid path or permission denied.';
                             }
                             break;
                         
@@ -1196,7 +1266,6 @@ version  - Show system version`;
                             try {
                                 const path = args[1] || '/home/';
                                 
-                                // Handle relative paths
                                 let targetPath;
                                 if (path.startsWith('/')) {
                                     targetPath = path;
@@ -1208,18 +1277,16 @@ version  - Show system version`;
                                     targetPath = currentDirectory + path + (path.endsWith('/') ? '' : '/');
                                 }
                                 
-                                // Ensure path ends with '/'
                                 if (!targetPath.endsWith('/')) targetPath += '/';
                                 
-                                // Check if directory exists
-                                if (this.FileSystem.isDirectory(targetPath)) {
+                                if (System.FileSystem.isDirectory(targetPath)) {
                                     currentDirectory = targetPath;
                                     response = `Changed directory to ${targetPath}`;
                                 } else {
                                     response = `Error: Directory not found: ${targetPath}`;
                                 }
                             } catch (err) {
-                                response = 'Error: Invalid path';
+                                response = 'Error: Invalid path.';
                             }
                             break;
                         
@@ -1229,13 +1296,12 @@ version  - Show system version`;
                                 if (!filename) {
                                     response = 'Error: No filename specified';
                                 } else {
-                                    // Handle path resolution
                                     const path = filename.startsWith('/') ? filename : currentDirectory + filename;
-                                    const content = this.FileSystem.read(path);
+                                    const content = System.FileSystem.read(path);
                                     response = content !== null ? String(content) : 'Error: File not found';
                                 }
                             } catch (err) {
-                                response = 'Error: Failed to read file';
+                                response = 'Error: Failed to read file.';
                             }
                             break;
                             
@@ -1244,10 +1310,11 @@ version  - Show system version`;
                             break;
                             
                         case 'clear':
-                            // Clear terminal content except input
                             while (terminalContent.firstChild !== terminalInput.parentElement) {
                                 terminalContent.removeChild(terminalContent.firstChild);
                             }
+                            response = ''; // No response needed, screen is cleared
+                            showTypingEffect = false;
                             break;
                             
                         case 'date':
@@ -1260,13 +1327,12 @@ version  - Show system version`;
                                 if (!dirname) {
                                     response = 'Error: No directory name specified';
                                 } else {
-                                    // Handle path resolution
                                     const path = dirname.startsWith('/') ? dirname : currentDirectory + dirname;
-                                    const success = this.FileSystem.mkdir(path + '/');
+                                    const success = System.FileSystem.mkdir(path + '/');
                                     response = success ? `Directory created: ${path}/` : 'Error: Failed to create directory';
                                 }
                             } catch (err) {
-                                response = 'Error: Failed to create directory';
+                                response = 'Error: Failed to create directory.';
                             }
                             break;
                             
@@ -1276,69 +1342,227 @@ version  - Show system version`;
                                 if (!filename) {
                                     response = 'Error: No filename specified';
                                 } else {
-                                    // Handle path resolution
                                     const path = filename.startsWith('/') ? filename : currentDirectory + filename;
-                                    const success = this.FileSystem.write(path, '');
+                                    const success = System.FileSystem.write(path, '');
                                     response = success ? `File created: ${path}` : 'Error: Failed to create file';
                                 }
                             } catch (err) {
-                                response = 'Error: Failed to create file';
+                                response = 'Error: Failed to create file.';
                             }
                             break;
-                            
+                        
+                        case 'rm':
+                            try {
+                                const targetPath = args[1];
+                                if (!targetPath) {
+                                    response = 'Error: No file or directory specified.';
+                                } else {
+                                    const path = targetPath.startsWith('/') ? targetPath : currentDirectory + targetPath;
+                                    const success = System.FileSystem.delete(path);
+                                    response = success ? `Removed: ${path}` : 'Error: File or directory not found.';
+                                }
+                            } catch (err) {
+                                response = 'Error: Failed to remove file/directory.';
+                            }
+                            break;
+
                         case 'whoami':
                             response = 'user';
                             break;
                             
                         case 'version':
-                            response = 'SCos version 1.3.0';
+                            response = 'SCos version 1.3.5';
+                            break;
+
+                        case 'calc':
+                            if (args.length !== 4) {
+                                response = 'Usage: calc <number1> <operator> <number2>';
+                            } else {
+                                const num1 = parseFloat(args[1]);
+                                const operator = args[2];
+                                const num2 = parseFloat(args[3]);
+
+                                if (isNaN(num1) || isNaN(num2)) {
+                                    response = 'Error: Invalid numbers. Please use numeric values.';
+                                } else {
+                                    let result;
+                                    switch (operator) {
+                                        case '+': result = num1 + num2; break;
+                                        case '-': result = num1 - num2; break;
+                                        case '*': result = num1 * num2; break;
+                                        case '/':
+                                            if (num2 === 0) { response = 'Error: Division by zero is not allowed.'; break; }
+                                            result = num1 / num2; break;
+                                        default: response = 'Error: Invalid operator. Use +, -, *, or /. Check "help calc"'; break;
+                                    }
+                                    if (result !== undefined) {
+                                        response = `Result: ${result}`;
+                                    }
+                                }
+                            }
+                            break;
+                        
+                        case 'ping':
+                            const host = args[1];
+                            if (!host) {
+                                response = 'Usage: ping <hostname>';
+                            } else {
+                                showTypingEffect = false; // Ping output might be multi-line
+                                const networkData = JSON.parse(System.FileSystem.read('system/network.json') || '{}');
+                                const hostInfo = networkData[host];
+                                if (hostInfo) {
+                                    let pingOutput = `PING ${hostInfo.ip} (${host}): 56 data bytes\n`;
+                                    if (hostInfo.status === 'online') {
+                                        const packets = 4;
+                                        for (let i = 0; i < packets; i++) {
+                                            pingOutput += `64 bytes from ${hostInfo.ip}: icmp_seq=${i+1} ttl=64 time=${hostInfo.latency}\n`;
+                                            await new Promise(r => setTimeout(r, Math.random() * 200 + 100)); // Simulate delay
+                                        }
+                                        pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                        pingOutput += `${packets} packets transmitted, ${packets} received, 0% packet loss\n`;
+                                        pingOutput += `round-trip min/avg/max/stddev = 0.0/${parseFloat(hostInfo.latency)}/${parseFloat(hostInfo.latency)}/0.0 ms\n`;
+                                    } else {
+                                        pingOutput += `Request timeout for icmp_seq 0\n`;
+                                        await new Promise(r => setTimeout(r, 1000));
+                                        pingOutput += `Request timeout for icmp_seq 1\n`;
+                                        await new Promise(r => setTimeout(r, 1000));
+                                        pingOutput += `Request timeout for icmp_seq 2\n`;
+                                        pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                        pingOutput += `4 packets transmitted, 0 received, 100% packet loss, time 3000ms\n`;
+                                    }
+                                    response = pingOutput;
+                                } else {
+                                    response = `ping: cannot resolve ${host}: Unknown host`;
+                                }
+                            }
+                            break;
+
+                        case 'sysinfo':
+                            const totalMem = 4096; // MB
+                            const freeMem = (Math.random() * 1024 + 1024).toFixed(2); // 1-2 GB
+                            response = `SCos System Information:
+OS Version: ${System.FileSystem.read('system/settings.json') ? JSON.parse(System.FileSystem.read('system/settings.json')).version : 'Unknown'}
+Kernel: SCos-1.3.5-alpha
+Architecture: x86_64 (simulated)
+Uptime: ${Math.floor(performance.now() / 1000 / 60)} minutes
+Total Memory: ${totalMem} MB
+Free Memory: ${freeMem} MB
+CPU Cores: 2 (simulated)
+Storage Used: ${(() => {
+                                const fsData = localStorage.getItem('filesystem');
+                                const bytes = fsData ? fsData.length : 0;
+                                if (bytes < 1024) return `${bytes} bytes`;
+                                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+                                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                            })()}
+Current Time: ${new Date().toLocaleString()}`;
+                            break;
+                        
+                        case 'alias':
+                            if (args.length === 1) {
+                                let aliasList = 'Current aliases:\n';
+                                for (const key in System.terminalAliases) {
+                                    aliasList += `${key}='${System.terminalAliases[key]}'\n`;
+                                }
+                                response = aliasList === 'Current aliases:\n' ? 'No aliases set.' : aliasList;
+                            } else {
+                                const aliasString = args.slice(1).join(' ');
+                                const match = aliasString.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                                if (match) {
+                                    const aliasName = match[1];
+                                    const aliasCmd = match[2];
+                                    System.terminalAliases[aliasName] = aliasCmd;
+                                    response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                } else {
+                                    response = 'Usage: alias <name>=\'<command>\'';
+                                }
+                            }
+                            break;
+
+                        case 'history':
+                            if (commandHistory.length === 0) {
+                                response = 'No commands in history.';
+                            } else {
+                                response = commandHistory.map((cmd, idx) => `${idx + 1}  ${cmd}`).join('\n');
+                            }
+                            break;
+
+                        case 'shutdown':
+                            response = 'Shutting down SCos... Goodbye!';
+                            await new Promise(r => setTimeout(r, 1500));
+                            location.reload();
+                            break;
+
+                        case 'reboot':
+                            response = 'Rebooting SCos... Please wait.';
+                            await new Promise(r => setTimeout(r, 1500));
+                            location.reload();
                             break;
                             
                         case '':
-                            // Empty command, do nothing
                             break;
                             
                         default:
-                            response = `Command not found: ${cmd}`;
+                            response = `Command not found: ${cmd}. Type 'help' for available commands.`;
                     }
                     
-                    // Add response (if any)
                     if (response) {
-                        const responseLines = response.split('\n');
-                        responseLines.forEach(line => {
+                        if (showTypingEffect) {
+                            await new Promise(resolve => {
+                                const responseLine = document.createElement('div');
+                                responseLine.className = 'terminal-line';
+                                terminalContent.insertBefore(responseLine, terminalInput.parentElement);
+                                startTypingEffect(response, responseLine, resolve);
+                            });
+                        } else {
                             const responseLine = document.createElement('div');
                             responseLine.className = 'terminal-line';
-                            responseLine.textContent = line;
+                            responseLine.textContent = response;
                             terminalContent.insertBefore(responseLine, terminalInput.parentElement);
-                        });
+                        }
                     }
                     
-                    // Clear input and scroll to bottom
                     terminalInput.value = '';
+                    terminalTypedCommand.textContent = '';
                     terminalContent.scrollTop = terminalContent.scrollHeight;
                 };
                 
-                // Handle input
-                terminalInput.addEventListener('keydown', (e) => {
+                terminalInput.addEventListener('input', () => {
+                    terminalTypedCommand.textContent = terminalInput.value;
+                });
+
+                terminalInput.addEventListener('keydown', async (e) => {
                     if (e.key === 'Enter') {
-                        executeCommand(terminalInput.value);
+                        e.preventDefault();
+                        const command = terminalInput.value;
+                        terminalInput.value = ''; // Clear immediately
+                        terminalTypedCommand.textContent = ''; // Clear typed text visual
+                        await executeCommand(command);
                     } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
                         if (historyIndex > 0) {
                             historyIndex--;
                             terminalInput.value = commandHistory[historyIndex];
+                            terminalTypedCommand.textContent = terminalInput.value;
                         }
-                        e.preventDefault();
                     } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
                         if (historyIndex < commandHistory.length - 1) {
                             historyIndex++;
                             terminalInput.value = commandHistory[historyIndex];
+                            terminalTypedCommand.textContent = terminalInput.value;
                         } else if (historyIndex === commandHistory.length - 1) {
                             historyIndex = commandHistory.length;
                             terminalInput.value = '';
+                            terminalTypedCommand.textContent = '';
                         }
-                        e.preventDefault();
                     }
                 });
+
+                // Initial prompt after window loads and typing effect finishes for initial messages
+                setTimeout(() => {
+                    executeCommand(''); // To display the initial prompt
+                }, 100);
             }
         });
         
@@ -1364,16 +1588,13 @@ version  - Show system version`;
                 const saveBtn = window.querySelector('#notepad-save');
                 const saveAsBtn = window.querySelector('#notepad-save-as');
                 
-                // Focus editor
                 editor.focus();
                 
-                // Save functionality
                 saveBtn.addEventListener('click', () => {
                     if (filepath) {
                         this.FileSystem.write(filepath, editor.value);
                         alert('File saved successfully!');
                     } else {
-                        // Prompt for file path if not provided
                         const newFilepath = prompt('Enter file path to save:', 'home/documents/untitled.txt');
                         if (newFilepath) {
                             this.FileSystem.write(newFilepath, editor.value);
@@ -1384,7 +1605,6 @@ version  - Show system version`;
                     }
                 });
                 
-                // Save As functionality
                 saveAsBtn.addEventListener('click', () => {
                     const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
                     if (newFilepath) {
@@ -1449,17 +1669,13 @@ createBrowserWindow() {
                 let currentMonth = currentDate.getMonth();
                 let currentYear = currentDate.getFullYear();
                 
-                // Function to render calendar
                 const renderCalendar = () => {
-                    // Update month and year display
                     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                        'July', 'August', 'September', 'October', 'November', 'December'];
                     monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
                     
-                    // Clear grid
                     calendarGrid.innerHTML = '';
                     
-                    // Add day headers
                     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                     dayNames.forEach(day => {
                         const dayHeader = document.createElement('div');
@@ -1468,32 +1684,27 @@ createBrowserWindow() {
                         calendarGrid.appendChild(dayHeader);
                     });
                     
-                    // Get first day of month and total days
                     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
                     const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
                     
-                    // Add empty cells for days before first day of month
                     for (let i = 0; i < firstDay; i++) {
                         const emptyCell = document.createElement('div');
                         emptyCell.className = 'calendar-day empty';
                         calendarGrid.appendChild(emptyCell);
                     }
                     
-                    // Add days of month
                     const realToday = new Date();
                     for (let i = 1; i <= lastDate; i++) {
                         const dayCell = document.createElement('div');
                         dayCell.className = 'calendar-day';
                         dayCell.textContent = i;
                         
-                        // Highlight today
                         if (i === realToday.getDate() && 
                             currentMonth === realToday.getMonth() && 
                             currentYear === realToday.getFullYear()) {
                             dayCell.classList.add('today');
                         }
                         
-                        // Add event handler
                         dayCell.addEventListener('click', () => {
                             const selectedDate = new Date(currentYear, currentMonth, i);
                             alert(`Selected date: ${selectedDate.toDateString()}`);
@@ -1503,7 +1714,6 @@ createBrowserWindow() {
                     }
                 };
                 
-                // Navigation handlers
                 prevMonthBtn.addEventListener('click', () => {
                     currentMonth--;
                     if (currentMonth < 0) {
@@ -1529,7 +1739,6 @@ createBrowserWindow() {
                     renderCalendar();
                 });
                 
-                // Initial render
                 renderCalendar();
             }
         });
@@ -1563,7 +1772,7 @@ createBrowserWindow() {
                 
                 <div class="setting-group">
                     <h4>System Information</h4>
-                    <p>OS Version: 1.3.0</p>
+                    <p>OS Version: 1.3.5</p>
                     <p>Storage Used: <span id="storage-used">Calculating...</span></p>
                     <button id="reset-system">Reset System</button>
                 </div>
@@ -1578,7 +1787,6 @@ createBrowserWindow() {
                 const storageUsed = window.querySelector('#storage-used');
                 const resetButton = window.querySelector('#reset-system');
                 
-                // Calculate storage used
                 const calculateStorage = () => {
                     const fsData = localStorage.getItem('filesystem');
                     const bytes = fsData ? fsData.length : 0;
@@ -1594,9 +1802,7 @@ createBrowserWindow() {
                 
                 calculateStorage();
                 
-                // Theme selection
                 themeButtons.forEach(button => {
-                    // Highlight current theme
                     if (button.dataset.theme === this.currentTheme) {
                         button.style.boxShadow = '0 0 8px currentColor';
                     }
@@ -1604,26 +1810,21 @@ createBrowserWindow() {
                     button.addEventListener('click', () => {
                         const theme = button.dataset.theme;
                         
-                        // Remove highlight from all buttons
                         themeButtons.forEach(btn => {
                             btn.style.boxShadow = 'none';
                         });
                         
-                        // Highlight selected theme
                         button.style.boxShadow = '0 0 8px currentColor';
                         
-                        // Apply theme
                         document.documentElement.className = theme;
                         this.currentTheme = theme;
                         
-                        // Save to filesystem
                         const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
                         settingsData.theme = theme;
                         this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
                     });
                 });
                 
-                // Reset system
                 resetButton.addEventListener('click', () => {
                     if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
                         localStorage.clear();
@@ -1642,7 +1843,7 @@ createBrowserWindow() {
             <div class="about-content">
                 <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
                 <div class="about-info">
-                    <p><strong>Version:</strong> 1.3.0</p>
+                    <p><strong>Version:</strong> 1.3.5</p>
                     <p><strong>Released:</strong> May 2025</p>
                     <p>SCos is a simulated computer operating system that runs in your browser.</p>
                 </div>
@@ -1688,7 +1889,6 @@ setTimeout(() => {
     }
 }, 5000);
 
-// Initialize the system when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     System.init();
 });
