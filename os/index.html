@@ -1149,7 +1149,7 @@ const System = {
                             terminalCursor.style.display = 'none'; // Hide cursor after typing
                             if (callback) callback();
                         }
-                    }, 50); // Typing speed in milliseconds per character
+                    }, 10); // Typing speed in milliseconds per character
                 };
 
                 terminalContent.addEventListener('click', () => {
