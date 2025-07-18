@@ -1149,7 +1149,7 @@ const System = {
                             terminalCursor.style.display = 'none'; // Hide cursor after typing
                             if (callback) callback();
                         }
-                    }, 20); // Typing speed in milliseconds per character
+                    }, 50); // Typing speed in milliseconds per character
                 };
 
                 terminalContent.addEventListener('click', () => {
@@ -1243,13 +1243,13 @@ touch    - Create an empty file
 rm       - Delete file or directory
 whoami   - Show current user
 version  - Show system version
-calc     - Perform basic arithmetic (e.g., calc 5 + 3)
-ping     - Ping a host (simulated)
+calc     - Perform basic arithmetic
+ping     - Ping a host
 sysinfo  - Display system information
-alias    - Create command aliases (e.g., alias ll='ls -l')
+alias    - Create command aliases
 history  - Show command history
-shutdown - Shut down the system (reloads page)
-reboot   - Reboot the system (reloads page)`;
+shutdown - Shut down the system
+reboot   - Reboot the system`;
                             break;
                         
                         case 'ls':
@@ -1371,7 +1371,7 @@ reboot   - Reboot the system (reloads page)`;
                             break;
                             
                         case 'version':
-                            response = 'SCos version 1.3.5';
+                            response = 'SCos version 1.3.5, Terminal v1.3';
                             break;
 
                         case 'calc':
@@ -1447,7 +1447,7 @@ Architecture: x86_64 (simulated)
 Uptime: ${Math.floor(performance.now() / 1000 / 60)} minutes
 Total Memory: ${totalMem} MB
 Free Memory: ${freeMem} MB
-CPU Cores: 2 (simulated)
+CPU Cores: 2
 Storage Used: ${(() => {
                                 const fsData = localStorage.getItem('filesystem');
                                 const bytes = fsData ? fsData.length : 0;
@@ -1490,8 +1490,9 @@ Current Time: ${new Date().toLocaleString()}`;
                         case 'shutdown':
                             response = 'Shutting down SCos... Goodbye!';
                             await new Promise(r => setTimeout(r, 1500));
-                            location.reload();
+                            window.close();
                             break;
+
 
                         case 'reboot':
                             response = 'Rebooting SCos... Please wait.';
