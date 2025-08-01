@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
+    <title>SCos 1.3.5 Mobile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Mobile-only styles */
+        @media (hover: none) and (pointer: coarse) {
+            :root {
+                --main-color: #39FF14;
+                --bg-dark: black;
+                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --window-bg: #1a1a1a;
+                --text-color: var(--main-color);
+            }
+
+            html {
+                touch-action: pan-x pan-y;
+            }
+
+            body {
+                background-color: black;        
+                background: var(--bg-image);
+                color: var(--text-color);
+                overflow: hidden;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                overscroll-behavior: none;
+                display: flex;
+                flex-direction: column;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+
+            #loading-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-dark);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                transition: opacity 0.5s;
+            }
+
+            .logo-text {
+                font-size: 48px;
+                letter-spacing: 2px;
+                margin-bottom: 20px;
+            }
+
+            
+            .spinning-o {
+                display: inline-block;
+                animation: spin 1s ease-in-out infinite;
+                color: #39FF14;
+                font-weight: bold;
+                text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(180deg) scale(1.5); }
+                100% { transform: rotate(360deg) scale(1); }
+            }
+
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .loading-bar {
+                width: 80%;
+                max-width: 300px;
+                height: 20px;
+                border: 2px solid var(--main-color);
+                margin: 20px 0;
+            }
+
+            .loading-progress {
+                width: 0;
+                height: 100%;
+                background: var(--main-color);
+                transition: width 0.1s;
+            }
+
+            .boot-messages {
+                background-color: black;        
+                margin-top: 20px;
+                text-align: left;
+                font-size: 14px;
+                max-width: 80%;
+            }
+
+            #desktop {
+                flex-grow: 1;
+                padding: 10px;
+                overflow-y: auto;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                align-content: flex-start;
+                gap: 10px;
+                transition: filter 0.3s ease;
+            }
+
+            #desktop.blurred {
+                filter: blur(5px);
+            }
+
+            .desktop-icons {
+                display: contents;
+            }
+
+            .icon {
+                width: 70px;
+                text-align: center;
+                cursor: pointer;
+                padding: 10px 5px;
+                border-radius: 5px;
+                transition: all 0.2s;
+                font-size: 12px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .icon:active {
+                background: rgba(57, 255, 20, 0.3);
+            }
+
+            .icon i {
+                font-size: 2em;
+            }
+
+            .icon span {
+                display: block;
+                margin-top: 5px;
+                font-size: 11px;
+            }
+            
+            .window {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: var(--window-bg);
+                border: 1px solid var(--main-color);
+                box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+                transition: transform 0.3s, opacity 0.3s;
+                transform: translateX(100%);
+                opacity: 0;
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .window.active {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            
+            .window-header {
+                background: var(--main-color);
+                color: var(--bg-dark);
+                padding: 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                touch-action: none;
+                cursor: grab;
+            }
+            
+            .window-controls {
+                display: flex;
+                gap: 5px;
+            }
+            
+            .window-control {
+                padding: 2px 8px;
+                cursor: pointer;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 3px;
+            }
+            
+            .window-content {
+                flex-grow: 1;
+                overflow: auto;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .terminal-content {
+                height: 100%;
+                background: #000;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                overflow-y: auto;
+                color: var(--main-color);
+                white-space: pre-wrap;
+            }
+            
+            .terminal-line {
+                margin: 2px 0;
+                white-space: pre-wrap;
+            }
+            
+            .terminal-prompt {
+                color: var(--main-color);
+                margin-right: 5px;
+            }
+            
+            .terminal-input-container {
+                display: flex;
+                align-items: flex-start;
+                word-break: break-all;
+            }
+            
+            #terminal-typed-command {
+                flex-grow: 1;
+                white-space: pre-wrap;
+            }
+            
+            .terminal-input {
+                background: transparent;
+                border: none;
+                color: transparent; /* Hide the native input text */
+                font-family: 'Courier New', monospace;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: 0;
+                outline: none;
+            }
+            
+            .blink-cursor {
+                border-right: 1px solid var(--main-color);
+                animation: blink 1s step-end infinite;
+            }
+            
+            @keyframes blink {
+                from, to { border-right-color: transparent }
+                50% { border-right-color: var(--main-color); }
+            }
+            
+            .browser-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .browser-toolbar {
+                display: flex;
+                padding: 5px;
+                gap: 5px;
+                background: rgba(57, 255, 20, 0.1);
+            }
+            
+            .browser-toolbar input {
+                flex-grow: 1;
+                background: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
+                padding: 5px;
+                outline: none;
+                font-size: 12px;
+            }
+            
+            .browser-toolbar button {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+            
+            .browser-content iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                margin: 0;
+                background: white;
+            }
+            
+            .calendar-app {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .calendar-toolbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                background: rgba(57, 255, 20, 0.1);
+                font-size: 14px;
+            }
+            
+            .calendar-toolbar button {
+                padding: 5px;
+            }
+            
+            .calendar-grid {
+                flex: 1;
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 1px;
+                background: rgba(57, 255, 20, 0.1);
+                padding: 5px;
+                font-size: 12px;
+            }
+            
+            .calendar-day {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                background: var(--window-bg);
+            }
+            
+            .calendar-day:active {
+                background: rgba(57, 255, 20, 0.3);
+            }
+            
+            .calendar-day.today {
+                background: var(--main-color);
+                color: var(--bg-dark);
+            }
+            
+            .calendar-header {
+                background: rgba(57, 255, 20, 0.2);
+                font-weight: bold;
+                text-align: center;
+                padding: 5px 0;
+            }
+            
+            .taskbar {
+                height: 40px;
+                background: rgba(26, 26, 26, 0.95);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 10px;
+                border-top: 1px solid var(--main-color);
+            }
+            
+            .running-apps {
+                display: flex;
+                gap: 5px;
+                overflow-x: auto;
+                flex-grow: 1;
+                scrollbar-width: none;
+            }
+            
+            .running-apps::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .task-item {
+                padding: 5px 10px;
+                cursor: pointer;
+                border-radius: 3px;
+                background: rgba(57, 255, 20, 0.1);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100px;
+                font-size: 12px;
+            }
+            
+            .task-item:active {
+                background: rgba(57, 255, 20, 0.2);
+            }
+            
+            .files-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .files-toolbar {
+                padding: 5px;
+                background: rgba(57, 255, 20, 0.1);
+                display: flex;
+                gap: 5px;
+                align-items: center;
+            }
+            
+            .files-toolbar button {
+                padding: 5px 8px;
+            }
+            
+            .files-path {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px;
+                flex-grow: 1;
+                font-size: 12px;
+            }
+            
+            .files-list {
+                flex: 1;
+                padding: 10px;
+                overflow-y: auto;
+            }
+            
+            .file-item {
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 3px;
+                font-size: 14px;
+            }
+            
+            .file-item:active {
+                background: rgba(57, 255, 20, 0.1);
+            }
+            
+            .notepad-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .notepad-toolbar {
+                padding: 5px;
+                background: rgba(57, 255, 20, 0.1);
+                display: flex;
+                gap: 5px;
+            }
+            
+            .notepad-editor {
+                flex: 1;
+                background: var(--window-bg);
+                color: var(--main-color);
+                border: none;
+                padding: 10px;
+                resize: none;
+                font-family: 'Courier New', monospace;
+                outline: none;
+                font-size: 14px;
+            }
+            
+            .settings-content {
+                padding: 10px;
+            }
+            
+            .setting-group {
+                margin-bottom: 15px;
+            }
+            
+            .setting-group h4 {
+                margin-bottom: 5px;
+            }
+            
+            select, button {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px 10px;
+                cursor: pointer;
+                outline: none;
+                font-size: 12px;
+            }
+            
+            select:active, button:active {
+                background: var(--main-color);
+                color: var(--bg-dark);
+            }
+            
+            .themes-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5px;
+                margin-top: 5px;
+            }
+            
+            .theme-preview {
+                height: 50px;
+                cursor: pointer;
+                border: 1px solid var(--main-color);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 5px;
+                font-size: 12px;
+            }
+            
+            .about-content {
+                text-align: center;
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .about-logo {
+                font-size: 28px;
+                margin-bottom: 10px;
+                color: #39FF14;
+            }
+            
+            .about-info {
+                margin-bottom: 10px;
+            }
+            
+            .about-content ul {
+                text-align: left;
+                margin: 5px 0 5px 20px;
+                padding: 0;
+            }
+
+            .ai-content {
+                flex-grow: 1;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                background-color: #000;
+                overflow-y: auto;
+            }
+            
+            .ai-message {
+                margin-bottom: 10px;
+                padding: 8px;
+                border-radius: 5px;
+                max-width: 80%;
+            }
+            
+            .ai-message.user {
+                background-color: var(--main-color);
+                color: var(--bg-dark);
+                align-self: flex-end;
+            }
+            
+            .ai-message.assistant {
+                background-color: rgba(57, 255, 20, 0.2);
+                color: var(--text-color);
+                align-self: flex-start;
+            }
+
+            .ai-input-container {
+                display: flex;
+                padding: 10px;
+                border-top: 1px solid var(--main-color);
+            }
+            
+            .ai-input-container input {
+                flex-grow: 1;
+                background-color: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
+                padding: 8px;
+                outline: none;
+                font-size: 14px;
+            }
+
+            .ai-input-container button {
+                background: var(--main-color);
+                color: var(--bg-dark);
+                border: 1px solid var(--main-color);
+                padding: 8px 12px;
+                margin-left: 5px;
+                cursor: pointer;
+            }
+
+            .ai-message-timestamp {
+                font-size: 10px;
+                color: #888;
+                margin-top: 5px;
+            }
+
+
+            .matrix-1 {
+                --main-color: #39FF14;
+                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --window-bg: #1a1a1a;
+                --text-color: var(--main-color);
+            }
+            
+            .blue-sky {
+                --main-color: #00AAFF;
+                --bg-image: url('blue.jpg') no-repeat center center / cover;
+                --window-bg: #002B4D;
+                --text-color: var(--main-color);
+            }
+            
+            .midnight-purple {
+                --main-color: #CC66FF;
+                --bg-image: url('purple.jpg') no-repeat center center / cover;
+                --window-bg: #330066;
+                --text-color: var(--main-color);
+            }
+            
+            .amber-tech {
+                --main-color: #FF0000;
+                --bg-image: url('red.jpg') no-repeat center center / cover;
+                --window-bg: #4D0000;
+                --text-color: var(--main-color);
+            }
+
+            /* Android-style navigation bar */
+            #bottom-nav {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                height: 50px;
+                width: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                border-top: 1px solid var(--main-color);
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                z-index: 9999;
+            }
+            
+            .nav-button {
+                width: 33.33%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: var(--main-color);
+                font-size: 1.5em;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .nav-button:active {
+                background-color: rgba(57, 255, 20, 0.2);
+            }
+
+            #recents-panel {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 999;
+                display: none;
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .recent-app-card {
+                background: var(--window-bg);
+                border: 1px solid var(--main-color);
+                margin-bottom: 10px;
+                padding: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+            }
+        }
+
+        /* Styles for desktop/laptop that hide the entire page */
+        @media (hover: hover) and (pointer: fine) {
+            body {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-screen">
+        <div class="logo-text">SC<span class="spinning-o">o</span>s</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        <div class="boot-messages"></div>
+    </div>
+
+    <div id="desktop">
+        <div class="desktop-icons">
+            <div class="icon" data-app="files">
+                <i class="fas fa-folder fa-2x"></i>
+                <span>Files</span>
+            </div>
+            <div class="icon" data-app="terminal">
+                <i class="fas fa-terminal fa-2x"></i>
+                <span>Terminal</span>
+            </div>
+            <div class="icon" data-app="notepad">
+                <i class="fas fa-edit fa-2x"></i>
+                <span>Notepad</span>
+            </div>
+            <div class="icon" data-app="browser">
+                <i class="fas fa-globe fa-2x"></i>
+                <span>Browser</span>
+            </div>
+            <div class="icon" data-app="calendar">
+                <i class="fas fa-calendar fa-2x"></i>
+                <span>Calendar</span>
+            </div>
+            <div class="icon" data-app="settings">
+                <i class="fas fa-cog fa-2x"></i>
+                <span>Settings</span>
+            </div>
+            <div class="icon" data-app="ai">
+                <i class="fas fa-brain fa-2x"></i>
+                <span>AI</span>
+            </div>
+            <div class="icon" data-app="about">
+                <i class="fas fa-info-circle fa-2x"></i>
+                <span>About</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="bottom-nav">
+        <div class="nav-button" id="back-button">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="nav-button" id="home-button">
+            <i class="fas fa-circle"></i>
+        </div>
+        <div class="nav-button" id="recents-button">
+            <i class="fas fa-square"></i>
+        </div>
+    </div>
+
+    <div id="recents-panel"></div>
+
+    <script>
+        const System = {
+            currentTheme: 'matrix-1',
+            currentDate: new Date(),
+            bootComplete: false,
+            taskbarApps: {},
+            terminalAliases: {},
+            aiAPIKey: "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",
+            runningApps: [],
+            activeWindow: null,
+            
+            async init() {
+                await this.startBootSequence();
+                this.FileSystem.init();
+                this.WindowManager.init();
+                this.initDesktop();
+                this.initNavigation();
+                this.applyTheme(this.loadTheme());
+            },
+
+            async startBootSequence() {
+                const loadingBar = document.querySelector('.loading-progress');
+                const bootMessages = document.querySelector('.boot-messages');
+                const loadingScreen = document.getElementById('loading-screen');
+
+                const bootSteps = [
+                    { message: 'Initializing system core...', duration: 1000 },
+                    { message: 'Loading file system...', duration: 800 },
+                    { message: 'Starting window manager...', duration: 600 },
+                    { message: 'Loading desktop environment...', duration: 700 },
+                    { message: 'Finishing... I think...', duration: 600 }
+                ];
+
+                let totalProgress = 0;
+                
+                for (const step of bootSteps) {
+                    const msgElement = document.createElement('div');
+                    msgElement.textContent = step.message;
+                    bootMessages.appendChild(msgElement);
+                    
+                    await new Promise(resolve => setTimeout(resolve, step.duration));
+                    
+                    totalProgress += 20;
+                    loadingBar.style.width = `${totalProgress}%`;
+                }
+
+                this.bootComplete = true;
+                await new Promise(resolve => setTimeout(resolve, 500));
+                loadingScreen.style.opacity = '0';
+                await new Promise(resolve => setTimeout(resolve, 500));
+                loadingScreen.style.display = 'none';
+            },
+
+            loadTheme() {
+                const settings = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
+                return settings.theme || 'matrix-1';
+            },
+
+            FileSystem: {
+                data: {},
+                currentPath: '/',
+
+                init() {
+                    this.data = JSON.parse(localStorage.getItem('filesystem')) || {
+                        'home/': {
+                            'documents/': {
+                                'welcome.txt': 'Welcome to SCos!\nThis is your personal computer system.',
+                                'changelog.txt': 'SCos 1.3.5 Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
+                            },
+                            'downloads/': {},
+                            'desktop/': {}
+                        },
+                        'system/': {
+                            'settings.json': JSON.stringify({
+                                theme: 'matrix-1',
+                                version: '1.3.5'
+                            }),
+                            'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.5\nDeveloped with ♥ by the SCos team',
+                            'network.json': JSON.stringify({
+                                'google.com': { ip: '172.217.160.142', status: 'online', latency: '45ms' },
+                                'example.com': { ip: '93.184.216.34', status: 'online', latency: '60ms' },
+                                'local.net': { ip: '192.168.1.1', status: 'online', latency: '5ms' },
+                                'offline.site': { ip: '10.0.0.1', status: 'offline', latency: 'timeout' }
+                            })
+                        }
+                    };
+                    this.save();
+                },
+
+                save() {
+                    localStorage.setItem('filesystem', JSON.stringify(this.data));
+                },
+
+                read(path) {
+                    return this.traverse(path);
+                },
+
+                write(path, content) {
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
+
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const part = parts[i] + '/';
+                        if (!current[part]) current[part] = {};
+                        current = current[part];
+                    }
+
+                    const fileName = parts[parts.length - 1];
+                    current[fileName] = content;
+                    this.save();
+                    return true;
+                },
+
+                list(path = '/') {
+                    const content = this.traverse(path);
+                    return typeof content === 'object' ? Object.keys(content) : [];
+                },
+
+                isDirectory(path) {
+                    const item = this.traverse(path);
+                    return item && typeof item === 'object';
+                },
+
+                mkdir(path) {
+                    if (path.endsWith('/')) {
+                        const parts = path.split('/').filter(p => p);
+                        let current = this.data;
+
+                        for (let i = 0; i < parts.length; i++) {
+                            const part = parts[i] + '/';
+                            if (!current[part]) current[part] = {};
+                            current = current[part];
+                        }
+                        this.save();
+                        return true;
+                    }
+                    return false;
+                },
+
+                delete(path) {
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
+                    
+                    if (parts.length === 0) return false;
+                    
+                    if (parts.length === 1) {
+                        const key = parts[0].endsWith('/') ? parts[0] : parts[0];
+                        if (current[key] !== undefined) {
+                            delete current[key];
+                            this.save();
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const part = parts[i] + (parts[i].endsWith('/') ? '' : '/');
+                        if (!current[part]) return false;
+                        current = current[part];
+                    }
+                    
+                    const lastPart = parts[parts.length - 1];
+                    const key = lastPart.endsWith('/') ? lastPart : lastPart;
+                    
+                    if (current[key] !== undefined) {
+                        delete current[key];
+                        this.save();
+                        return true;
+                    }
+                    
+                    return false;
+                },
+
+                traverse(path) {
+                    if (!path || path === '/') return this.data;
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
+
+                    for (const part of parts) {
+                        const withSlash = part + '/';
+                        current = current[withSlash] || current[part];
+                        if (!current) return null;
+                    }
+                    return current;
+                }
+            },
+
+            WindowManager: {
+                windows: [],
+                windowIdCounter: 0,
+
+                init() {
+                    document.addEventListener('touchstart', this.handleTouch.bind(this));
+                },
+
+                handleTouch(e) {
+                    // Check if the touch is on an app icon
+                    const appIcon = e.target.closest('.icon');
+                    if (appIcon) {
+                        e.preventDefault();
+                        System.openApp(appIcon.dataset.app);
+                    }
+                },
+
+                create(title, content, appId = null, options = {}) {
+                    const windowId = `window-${++this.windowIdCounter}`;
+                    const window = document.createElement('div');
+                    window.className = 'window';
+                    window.id = windowId;
+                    window.dataset.appId = appId;
+                    
+                    const windowContent = document.createElement('div');
+                    windowContent.className = 'window-content';
+                    windowContent.innerHTML = content;
+                    
+                    window.appendChild(windowContent);
+                    document.body.appendChild(window);
+                    
+                    setTimeout(() => {
+                        window.classList.add('active');
+                        System.activeWindow = window;
+                        document.getElementById('desktop').classList.add('blurred');
+                        System.runningApps.push({id: windowId, title: title, appId: appId});
+                        System.updateRecentsPanel();
+                    }, 10); // Small delay to allow transition
+
+                    if (options.onload) {
+                        options.onload(window);
+                    }
+                    
+                    return window;
+                },
+
+                closeActiveWindow() {
+                    if (System.activeWindow) {
+                        const window = System.activeWindow;
+                        window.classList.remove('active');
+                        document.getElementById('desktop').classList.remove('blurred');
+                        setTimeout(() => {
+                            window.remove();
+                            System.runningApps = System.runningApps.filter(app => app.id !== window.id);
+                            System.activeWindow = null;
+                            System.updateRecentsPanel();
+                        }, 300); // Wait for transition
+                    }
+                },
+
+                closeWindow(windowId) {
+                    const window = document.getElementById(windowId);
+                    if (window) {
+                         window.classList.remove('active');
+                         if (System.activeWindow && System.activeWindow.id === windowId) {
+                            document.getElementById('desktop').classList.remove('blurred');
+                         }
+                         setTimeout(() => {
+                            window.remove();
+                            System.runningApps = System.runningApps.filter(app => app.id !== windowId);
+                            if (System.activeWindow && System.activeWindow.id === windowId) {
+                                System.activeWindow = null;
+                            }
+                            System.updateRecentsPanel();
+                         }, 300);
+                    }
+                },
+
+                showWindow(windowId) {
+                    const window = document.getElementById(windowId);
+                    if (window) {
+                        System.activeWindow = window;
+                        window.classList.add('active');
+                        document.getElementById('desktop').classList.add('blurred');
+                    }
+                }
+            },
+
+            initDesktop() {
+                const icons = document.querySelectorAll('.icon');
+                icons.forEach(icon => {
+                    icon.ontouchstart = (e) => {
+                        e.preventDefault();
+                        this.openApp(icon.dataset.app);
+                    };
+                });
+            },
+
+            initNavigation() {
+                document.getElementById('home-button').ontouchstart = (e) => {
+                    e.preventDefault();
+                    if (this.activeWindow) {
+                        this.WindowManager.closeActiveWindow();
+                    }
+                    document.getElementById('recents-panel').style.display = 'none';
+                };
+                
+                document.getElementById('back-button').ontouchstart = (e) => {
+                    e.preventDefault();
+                    if (document.getElementById('recents-panel').style.display === 'flex') {
+                        document.getElementById('recents-panel').style.display = 'none';
+                    } else if (this.activeWindow) {
+                        this.WindowManager.closeActiveWindow();
+                    }
+                };
+
+                document.getElementById('recents-button').ontouchstart = (e) => {
+                    e.preventDefault();
+                    this.toggleRecentsPanel();
+                };
+            },
+
+            updateRecentsPanel() {
+                const recentsPanel = document.getElementById('recents-panel');
+                recentsPanel.innerHTML = '';
+                this.runningApps.forEach(app => {
+                    const appCard = document.createElement('div');
+                    appCard.className = 'recent-app-card';
+                    appCard.textContent = app.title;
+                    appCard.dataset.windowId = app.id;
+                    appCard.ontouchstart = (e) => {
+                        e.preventDefault();
+                        this.WindowManager.showWindow(app.id);
+                        recentsPanel.style.display = 'none';
+                    };
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = '×';
+                    closeBtn.style.background = 'transparent';
+                    closeBtn.style.border = 'none';
+                    closeBtn.style.color = 'red';
+                    closeBtn.style.fontSize = '1.5em';
+                    closeBtn.style.cursor = 'pointer';
+                    closeBtn.ontouchstart = (e) => {
+                        e.stopPropagation();
+                        this.WindowManager.closeWindow(app.id);
+                    };
+                    appCard.appendChild(closeBtn);
+                    recentsPanel.appendChild(appCard);
+                });
+            },
+
+            toggleRecentsPanel() {
+                const recentsPanel = document.getElementById('recents-panel');
+                if (recentsPanel.style.display === 'flex') {
+                    recentsPanel.style.display = 'none';
+                } else {
+                    recentsPanel.style.display = 'flex';
+                }
+            },
+
+            openApp(appName) {
+                const apps = {
+                    files: () => this.createFilesWindow(),
+                    terminal: () => this.createTerminalWindow(),
+                    notepad: () => this.createNotepadWindow(),
+                    browser: () => this.createBrowserWindow(),
+                    calendar: () => this.createCalendarWindow(),
+                    settings: () => this.createSettingsWindow(),
+                    ai: () => this.createAIWindow(),
+                    about: () => this.createAboutWindow()
+                };
+
+                if (apps[appName]) {
+                    apps[appName]();
+                }
+            },
+            
+            createFilesWindow() {
+                let currentPath = '/';
+                
+                const content = `
+                    <div class="files-content">
+                        <div class="files-toolbar">
+                            <button id="files-back"><i class="fas fa-arrow-left"></i></button>
+                            <button id="files-up"><i class="fas fa-arrow-up"></i></button>
+                            <button id="files-refresh"><i class="fas fa-sync"></i></button>
+                            <input type="text" class="files-path" value="/" readonly>
+                            <button id="files-new-folder"><i class="fas fa-folder-plus"></i></button>
+                        </div>
+                        <div class="files-list"></div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('File Explorer', content, 'files', {
+                    onload: (window) => {
+                        const filesPath = window.querySelector('.files-path');
+                        const filesList = window.querySelector('.files-list');
+                        const backBtn = window.querySelector('#files-back');
+                        const upBtn = window.querySelector('#files-up');
+                        const refreshBtn = window.querySelector('#files-refresh');
+                        const newFolderBtn = window.querySelector('#files-new-folder');
+                        
+                        const loadDirectory = (path) => {
+                            currentPath = path;
+                            filesPath.value = path;
+                            filesList.innerHTML = '';
+                            
+                            const files = this.FileSystem.list(path);
+                            files.forEach(file => {
+                                const isDir = file.endsWith('/');
+                                const fileItem = document.createElement('div');
+                                fileItem.className = 'file-item';
+                                fileItem.innerHTML = `
+                                    <i class="fas ${isDir ? 'fa-folder' : 'fa-file'}" style="color: var(--main-color)"></i>
+                                    <span>${file}</span>
+                                `;
+                                
+                                fileItem.ontouchstart = (e) => {
+                                    e.preventDefault();
+                                    if (isDir) {
+                                        loadDirectory(currentPath + file);
+                                    } else {
+                                        const filePath = currentPath + file;
+                                        const content = this.FileSystem.read(filePath);
+                                        
+                                        if (file.endsWith('.txt')) {
+                                            this.createNotepadWindow(file, content, filePath);
+                                        } else if (file.endsWith('.json')) {
+                                            this.createNotepadWindow(file, JSON.stringify(content, null, 2), filePath);
+                                        } else {
+                                            this.createNotepadWindow(file, String(content), filePath);
+                                        }
+                                    }
+                                };
+                                
+                                filesList.appendChild(fileItem);
+                            });
+                        };
+                        
+                        backBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const parts = currentPath.split('/').filter(p => p);
+                            if (parts.length > 0) {
+                                parts.pop();
+                                loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                            }
+                        };
+                        
+                        upBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const parts = currentPath.split('/').filter(p => p);
+                            if (parts.length > 0) {
+                                parts.pop();
+                                loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                            }
+                        };
+                        
+                        refreshBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            loadDirectory(currentPath);
+                        };
+                        
+                        newFolderBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const folderName = prompt('Enter folder name:');
+                            if (folderName && !folderName.includes('/')) {
+                                this.FileSystem.mkdir(currentPath + folderName + '/');
+                                loadDirectory(currentPath);
+                            }
+                        };
+                        
+                        loadDirectory(currentPath);
+                    }
+                });
+                
+                return window;
+            },
+            
+            createTerminalWindow() {
+                const content = `
+                    <div class="terminal-content" id="terminal-content">
+                        <div class="terminal-line">SCos Terminal v1.3.5</div>
+                        <div class="terminal-line">Type 'help' for available commands. Unrecognized commands will be processed by the AI.</div>
+                        <div class="terminal-input-container">
+                            <span class="terminal-prompt">user@scos:~$</span>
+                            <span id="terminal-typed-command"></span><span id="terminal-cursor" class="blink-cursor">|</span><input type="text" class="terminal-input" id="terminal-input">
+                        </div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('Terminal', content, 'terminal', {
+                    onload: (window) => {
+                        const terminalContent = window.querySelector('#terminal-content');
+                        const terminalInput = window.querySelector('#terminal-input');
+                        const terminalTypedCommand = window.querySelector('#terminal-typed-command');
+                        const terminalCursor = window.querySelector('#terminal-cursor');
+                        let commandHistory = [];
+                        let historyIndex = -1;
+                        let currentDirectory = '/home/';
+                        let currentTypingIndex = 0;
+                        let currentTypingText = '';
+                        let typingInterval = null;
+
+                        const startTypingEffect = (text, targetElement, callback) => {
+                            currentTypingText = text;
+                            currentTypingIndex = 0;
+                            targetElement.textContent = ''; 
+                            terminalCursor.style.display = 'inline'; 
+
+                            if (typingInterval) clearInterval(typingInterval);
+
+                            typingInterval = setInterval(() => {
+                                if (currentTypingIndex < currentTypingText.length) {
+                                    targetElement.textContent += currentTypingText.charAt(currentTypingIndex);
+                                    currentTypingIndex++;
+                                    terminalContent.scrollTop = terminalContent.scrollHeight;
+                                } else {
+                                    clearInterval(typingInterval);
+                                    typingInterval = null;
+                                    terminalCursor.style.display = 'inline'; 
+                                    if (callback) callback();
+                                }
+                            }, 10); 
+                        };
+
+                        terminalContent.ontouchstart = () => {
+                            terminalInput.focus();
+                        };
+                        
+                        terminalInput.focus();
+                        
+                        const addLine = (text, isPrompt = false) => {
+                            const newLine = document.createElement('div');
+                            newLine.className = 'terminal-line';
+                            if (isPrompt) {
+                                newLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span>`;
+                                const span = document.createElement('span');
+                                newLine.appendChild(span);
+                                terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                                startTypingEffect(text, span, () => {
+                                    terminalCursor.style.display = 'inline';
+                                    terminalInput.focus();
+                                });
+                            } else {
+                                terminalCursor.style.display = 'none';
+                                terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                                startTypingEffect(text, newLine, () => {
+                                    terminalCursor.style.display = 'inline';
+                                    terminalInput.focus();
+                                });
+                            }
+                        };
+                        
+                        const executeCommand = async (command) => {
+                            if (typingInterval) {
+                                return;
+                            }
+
+                            if (command.trim()) {
+                                commandHistory.push(command);
+                                historyIndex = commandHistory.length;
+                            }
+                            
+                            const cmdLine = document.createElement('div');
+                            cmdLine.className = 'terminal-line';
+                            cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span> ${command}`;
+                            terminalContent.insertBefore(cmdLine, terminalInput.parentElement);
+                            
+                            let response = '';
+                            let showTypingEffect = true;
+
+                            let effectiveCommand = command;
+                            const aliasMatch = command.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                            if (aliasMatch) {
+                                const aliasName = aliasMatch[1];
+                                const aliasCmd = aliasMatch[2];
+                                System.terminalAliases[aliasName] = aliasCmd;
+                                response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                showTypingEffect = true;
+                            } else {
+                                const parts = command.trim().split(' ');
+                                const potentialAlias = parts[0];
+                                if (System.terminalAliases[potentialAlias]) {
+                                    effectiveCommand = System.terminalAliases[potentialAlias] + ' ' + parts.slice(1).join(' ');
+                                }
+                            }
+
+                            const args = effectiveCommand.trim().split(' ');
+                            const cmd = args[0].toLowerCase();
+                            
+                            switch (cmd) {
+                                case 'help':
+                                    response = `Available commands:
+help     - Show this help message
+ls       - List directory contents
+cd       - Change directory
+cat      - Show file contents
+echo     - Display a message
+clear    - Clear terminal screen
+date     - Show current date and time
+mkdir    - Create directory
+touch    - Create an empty file
+rm       - Delete file or directory
+whoami   - Show current user
+version  - Show system version
+calc     - Perform basic arithmetic
+ping     - Ping a host
+sysinfo  - Display system information
+alias    - Create command aliases
+history  - Show command history
+shutdown - Shut down the system
+reboot   - Reboot the system`;
+                                    break;
+                                
+                                case 'ls':
+                                    try {
+                                        const path = args[1] || currentDirectory;
+                                        const files = System.FileSystem.list(path);
+                                        response = files.length ? files.join('  ') : '(empty directory)';
+                                    } catch (err) {
+                                        response = 'Error: Invalid path or permission denied.';
+                                    }
+                                    break;
+                                
+                                case 'cd':
+                                    try {
+                                        const path = args[1] || '/home/';
+                                        
+                                        let targetPath;
+                                        if (path.startsWith('/')) {
+                                            targetPath = path;
+                                        } else if (path === '..') {
+                                            const parts = currentDirectory.split('/').filter(p => p);
+                                            parts.pop();
+                                            targetPath = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
+                                        } else {
+                                            targetPath = currentDirectory + path + (path.endsWith('/') ? '' : '/');
+                                        }
+                                        
+                                        if (!targetPath.endsWith('/')) targetPath += '/';
+                                        
+                                        if (System.FileSystem.isDirectory(targetPath)) {
+                                            currentDirectory = targetPath;
+                                            response = `Changed directory to ${targetPath}`;
+                                        } else {
+                                            response = `Error: Directory not found: ${targetPath}`;
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Invalid path.';
+                                    }
+                                    break;
+                                
+                                case 'cat':
+                                    try {
+                                        const filename = args[1];
+                                        if (!filename) {
+                                            response = 'Error: No filename specified';
+                                        } else {
+                                            const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                            const content = System.FileSystem.read(path);
+                                            response = content !== null ? String(content) : 'Error: File not found';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to read file.';
+                                    }
+                                    break;
+                                    
+                                case 'echo':
+                                    response = args.slice(1).join(' ');
+                                    break;
+                                    
+                                case 'clear':
+                                    while (terminalContent.firstChild !== terminalInput.parentElement) {
+                                        terminalContent.removeChild(terminalContent.firstChild);
+                                    }
+                                    response = '';
+                                    showTypingEffect = false;
+                                    break;
+                                    
+                                case 'date':
+                                    response = new Date().toString();
+                                    break;
+                                    
+                                case 'mkdir':
+                                    try {
+                                        const dirname = args[1];
+                                        if (!dirname) {
+                                            response = 'Error: No directory name specified';
+                                        } else {
+                                            const path = dirname.startsWith('/') ? dirname : currentDirectory + dirname;
+                                            const success = System.FileSystem.mkdir(path + '/');
+                                            response = success ? `Directory created: ${path}/` : 'Error: Failed to create directory';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to create directory.';
+                                    }
+                                    break;
+                                    
+                                case 'touch':
+                                    try {
+                                        const filename = args[1];
+                                        if (!filename) {
+                                            response = 'Error: No filename specified';
+                                        } else {
+                                            const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                            const success = System.FileSystem.write(path, '');
+                                            response = success ? `File created: ${path}` : 'Error: Failed to create file';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to create file.';
+                                    }
+                                    break;
+                                
+                                case 'rm':
+                                    try {
+                                        const targetPath = args[1];
+                                        if (!targetPath) {
+                                            response = 'Error: No file or directory specified.';
+                                        } else {
+                                            const path = targetPath.startsWith('/') ? targetPath : currentDirectory + targetPath;
+                                            const success = System.FileSystem.delete(path);
+                                            response = success ? `Removed: ${path}` : 'Error: File or directory not found.';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to remove file/directory.';
+                                    }
+                                    break;
+
+                                case 'whoami':
+                                    response = 'user';
+                                    break;
+                                    
+                                case 'version':
+                                    response = 'SCos version 1.3.5, Terminal v1.3.5';
+                                    break;
+
+                                case 'calc':
+                                    if (args.length !== 4) {
+                                        response = 'Usage: calc <number1> <operator> <number2>';
+                                    } else {
+                                        const num1 = parseFloat(args[1]);
+                                        const operator = args[2];
+                                        const num2 = parseFloat(args[3]);
+
+                                        if (isNaN(num1) || isNaN(num2)) {
+                                            response = 'Error: Invalid numbers. Please use numeric values.';
+                                        } else {
+                                            let result;
+                                            switch (operator) {
+                                                case '+': result = num1 + num2; break;
+                                                case '-': result = num1 - num2; break;
+                                                case '*': result = num1 * num2; break;
+                                                case '/':
+                                                    if (num2 === 0) { response = 'Error: Division by zero is not allowed.'; break; }
+                                                    result = num1 / num2; break;
+                                                default: response = 'Error: Invalid operator. Use +, -, *, or /. Check "help calc"'; break;
+                                            }
+                                            if (result !== undefined) {
+                                                response = `Result: ${result}`;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                
+                                case 'ping':
+                                    const host = args[1];
+                                    if (!host) {
+                                        response = 'Usage: ping <hostname>';
+                                    } else {
+                                        showTypingEffect = false;
+                                        const networkData = JSON.parse(System.FileSystem.read('system/network.json') || '{}');
+                                        const hostInfo = networkData[host];
+                                        if (hostInfo) {
+                                            let pingOutput = `PING ${hostInfo.ip} (${host}): 56 data bytes\n`;
+                                            if (hostInfo.status === 'online') {
+                                                const packets = 4;
+                                                for (let i = 0; i < packets; i++) {
+                                                    pingOutput += `64 bytes from ${hostInfo.ip}: icmp_seq=${i+1} ttl=64 time=${hostInfo.latency}\n`;
+                                                    await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+                                                }
+                                                pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                                pingOutput += `${packets} packets transmitted, ${packets} received, 0% packet loss\n`;
+                                                pingOutput += `round-trip min/avg/max/stddev = 0.0/${parseFloat(hostInfo.latency)}/${parseFloat(hostInfo.latency)}/0.0 ms\n`;
+                                            } else {
+                                                pingOutput += `Request timeout for icmp_seq 0\n`;
+                                                await new Promise(r => setTimeout(r, 1000));
+                                                pingOutput += `Request timeout for icmp_seq 1\n`;
+                                                await new Promise(r => setTimeout(r, 1000));
+                                                pingOutput += `Request timeout for icmp_seq 2\n`;
+                                                pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                                pingOutput += `4 packets transmitted, 0 received, 100% packet loss, time 3000ms\n`;
+                                            }
+                                            response = pingOutput;
+                                        } else {
+                                            response = `ping: cannot resolve ${host}: Unknown host`;
+                                        }
+                                    }
+                                    break;
+
+                                case 'sysinfo':
+                                    const totalMem = 4096;
+                                    const freeMem = (Math.random() * 1024 + 1024).toFixed(2);
+                                    response = `SCos System Information:
+OS Version: ${System.FileSystem.read('system/settings.json') ? JSON.parse(System.FileSystem.read('system/settings.json')).version : 'Unknown'}
+Kernel: SCos-1.3.5-alpha
+Architecture: x86_64 (simulated)
+Uptime: ${Math.floor(performance.now() / 1000 / 60)} minutes
+Total Memory: ${totalMem} MB
+Free Memory: ${freeMem} MB
+CPU Cores: 2
+Storage Used: ${(() => {
+                                        const fsData = localStorage.getItem('filesystem');
+                                        const bytes = fsData ? fsData.length : 0;
+                                        if (bytes < 1024) return `${bytes} bytes`;
+                                        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+                                        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                                    })()}
+Current Time: ${new Date().toLocaleString()}`;
+                                    break;
+                                
+                                case 'alias':
+                                    if (args.length === 1) {
+                                        let aliasList = 'Current aliases:\n';
+                                        for (const key in System.terminalAliases) {
+                                            aliasList += `${key}='${System.terminalAliases[key]}'\n`;
+                                        }
+                                        response = aliasList === 'Current aliases:\n' ? 'No aliases set.' : aliasList;
+                                    } else {
+                                        const aliasString = args.slice(1).join(' ');
+                                        const match = aliasString.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                                        if (match) {
+                                            const aliasName = match[1];
+                                            const aliasCmd = match[2];
+                                            System.terminalAliases[aliasName] = aliasCmd;
+                                            response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                        } else {
+                                            response = 'Usage: alias <name>=\'<command>\'';
+                                        }
+                                    }
+                                    break;
+
+                                case 'history':
+                                    if (commandHistory.length === 0) {
+                                        response = 'No commands in history.';
+                                    } else {
+                                        response = commandHistory.map((cmd, idx) => `${idx + 1}  ${cmd}`).join('\n');
+                                    }
+                                    break;
+
+                                case 'shutdown':
+                                    response = 'Shutting down SCos... Goodbye!';
+                                    await new Promise(r => setTimeout(r, 1500));
+                                    window.close();
+                                    break;
+
+
+                                case 'reboot':
+                                    response = 'Rebooting SCos... Please wait.';
+                                    await new Promise(r => setTimeout(r, 1500));
+                                    location.reload();
+                                    break;
+                                    
+                                case '':
+                                    break;
+                                    
+                                default:
+                                    response = await System.getAIResponse(command);
+                                    if (!response) {
+                                        response = `Command not found: ${cmd}. Type 'help' for available commands.`;
+                                    }
+                            }
+                            
+                            if (response) {
+                                if (showTypingEffect) {
+                                    await new Promise(resolve => {
+                                        const responseLine = document.createElement('div');
+                                        responseLine.className = 'terminal-line';
+                                        terminalContent.insertBefore(responseLine, terminalInput.parentElement);
+                                        startTypingEffect(response, responseLine, resolve);
+                                    });
+                                } else {
+                                    const responseLine = document.createElement('div');
+                                    responseLine.className = 'terminal-line';
+                                    responseLine.textContent = response;
+                                    terminalContent.insertBefore(responseLine, terminalInput.parentElement);
+                                }
+                            }
+                            
+                            terminalInput.value = '';
+                            terminalTypedCommand.textContent = '';
+                            terminalContent.scrollTop = terminalContent.scrollHeight;
+                        };
+                        
+                        terminalInput.addEventListener('input', () => {
+                            terminalTypedCommand.textContent = terminalInput.value;
+                        });
+
+                        terminalInput.addEventListener('keydown', async (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const command = terminalInput.value;
+                                terminalInput.value = '';
+                                terminalTypedCommand.textContent = '';
+                                await executeCommand(command);
+                            } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                if (historyIndex > 0) {
+                                    historyIndex--;
+                                    terminalInput.value = commandHistory[historyIndex];
+                                    terminalTypedCommand.textContent = terminalInput.value;
+                                }
+                            } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                if (historyIndex < commandHistory.length - 1) {
+                                    historyIndex++;
+                                    terminalInput.value = commandHistory[historyIndex];
+                                    terminalTypedCommand.textContent = terminalInput.value;
+                                } else if (historyIndex === commandHistory.length - 1) {
+                                    historyIndex = commandHistory.length;
+                                    terminalInput.value = '';
+                                    terminalTypedCommand.textContent = '';
+                                }
+                            }
+                        });
+
+                        setTimeout(() => {
+                            executeCommand('');
+                        }, 100);
+                    }
+                });
+                
+                return window;
+            },
+            
+            createNotepadWindow(filename = 'Untitled.txt', content = '', filepath = null) {
+                const windowContent = `
+                    <div class="notepad-content">
+                        <div class="notepad-toolbar">
+                            <button id="notepad-save">Save</button>
+                            <button id="notepad-save-as">Save As</button>
+                        </div>
+                        <textarea class="notepad-editor" id="notepad-editor">${content}</textarea>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create(`Notepad - ${filename}`, windowContent, 'notepad', {
+                    onload: (window) => {
+                        const editor = window.querySelector('#notepad-editor');
+                        const saveBtn = window.querySelector('#notepad-save');
+                        const saveAsBtn = window.querySelector('#notepad-save-as');
+                        
+                        editor.focus();
+                        
+                        saveBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            if (filepath) {
+                                this.FileSystem.write(filepath, editor.value);
+                                alert('File saved successfully!');
+                            } else {
+                                const newFilepath = prompt('Enter file path to save:', 'home/documents/untitled.txt');
+                                if (newFilepath) {
+                                    this.FileSystem.write(newFilepath, editor.value);
+                                    alert('File saved successfully!');
+                                    filepath = newFilepath;
+                                    window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                                }
+                            }
+                        };
+                        
+                        saveAsBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
+                            if (newFilepath) {
+                                this.FileSystem.write(newFilepath, editor.value);
+                                alert('File saved successfully!');
+                                filepath = newFilepath;
+                                window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                            }
+                        };
+                    }
+                });
+                
+                return window;
+            },
+            
+            createBrowserWindow() {
+                const content = `
+                    <div class="browser-content">
+                        <div class="browser-toolbar">
+                            <button id="browser-back"><i class="fas fa-arrow-left"></i></button>
+                            <button id="browser-forward"><i class="fas fa-arrow-right"></i></button>
+                            <input type="text" id="browser-url" value="https://whatever-you-want-here.global.ssl.fastly.net/">
+                            <button id="browser-go"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                        <iframe id="browser-iframe" src="https://whatever-you-want-here.global.ssl.fastly.net/"></iframe>
+                    </div>
+                `;
+            
+                const window = this.WindowManager.create('Web Browser', content, 'browser', {
+                    onload: (window) => {
+                        const iframe = window.querySelector('#browser-iframe');
+                        const urlInput = window.querySelector('#browser-url');
+                        const goBtn = window.querySelector('#browser-go');
+                        const backBtn = window.querySelector('#browser-back');
+                        const forwardBtn = window.querySelector('#browser-forward');
+            
+                        goBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            let url = urlInput.value;
+                            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                                url = 'https://' + url;
+                            }
+                            iframe.src = url;
+                        };
+                        
+                        backBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            iframe.contentWindow.history.back();
+                        };
+            
+                        forwardBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            iframe.contentWindow.history.forward();
+                        };
+                    }
+                });
+            
+                return window;
+            },
+            
+            createCalendarWindow() {
+                const today = new Date();
+                
+                const content = `
+                    <div class="calendar-app">
+                        <div class="calendar-toolbar">
+                            <div>
+                                <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                                <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <h3 id="month-year"></h3>
+                            <button id="today-btn">Today</button>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid"></div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('Calendar', content, 'calendar', {
+                    onload: (window) => {
+                        const monthYearElement = window.querySelector('#month-year');
+                        const calendarGrid = window.querySelector('#calendar-grid');
+                        const prevMonthBtn = window.querySelector('#prev-month');
+                        const nextMonthBtn = window.querySelector('#next-month');
+                        const todayBtn = window.querySelector('#today-btn');
+                        
+                        let currentDate = new Date();
+                        let currentMonth = currentDate.getMonth();
+                        let currentYear = currentDate.getFullYear();
+                        
+                        const renderCalendar = () => {
+                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                               'July', 'August', 'September', 'October', 'November', 'December'];
+                            monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                            
+                            calendarGrid.innerHTML = '';
+                            
+                            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                            dayNames.forEach(day => {
+                                const dayHeader = document.createElement('div');
+                                dayHeader.className = 'calendar-header';
+                                dayHeader.textContent = day;
+                                calendarGrid.appendChild(dayHeader);
+                            });
+                            
+                            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+                            
+                            for (let i = 0; i < firstDay; i++) {
+                                const emptyCell = document.createElement('div');
+                                emptyCell.className = 'calendar-day empty';
+                                calendarGrid.appendChild(emptyCell);
+                            }
+                            
+                            const realToday = new Date();
+                            for (let i = 1; i <= lastDate; i++) {
+                                const dayCell = document.createElement('div');
+                                dayCell.className = 'calendar-day';
+                                dayCell.textContent = i;
+                                
+                                if (i === realToday.getDate() && 
+                                    currentMonth === realToday.getMonth() && 
+                                    currentYear === realToday.getFullYear()) {
+                                    dayCell.classList.add('today');
+                                }
+                                
+                                dayCell.ontouchstart = (e) => {
+                                    e.preventDefault();
+                                    const selectedDate = new Date(currentYear, currentMonth, i);
+                                    alert(`Selected date: ${selectedDate.toDateString()}`);
+                                };
+                                
+                                calendarGrid.appendChild(dayCell);
+                            }
+                        };
+                        
+                        prevMonthBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            currentMonth--;
+                            if (currentMonth < 0) {
+                                currentMonth = 11;
+                                currentYear--;
+                            }
+                            renderCalendar();
+                        };
+                        
+                        nextMonthBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            currentMonth++;
+                            if (currentMonth > 11) {
+                                currentMonth = 0;
+                                currentYear++;
+                            }
+                            renderCalendar();
+                        };
+                        
+                        todayBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const today = new Date();
+                            currentMonth = today.getMonth();
+                            currentYear = today.getFullYear();
+                            renderCalendar();
+                        };
+                        
+                        renderCalendar();
+                    }
+                });
+                
+                return window;
+            },
+            
+            createSettingsWindow() {
+                const content = `
+                    <div class="settings-content">
+                        <div class="setting-group">
+                            <h4>Appearance</h4>
+                            <div>
+                                <label for="theme-select">Theme:</label>
+                                <div class="themes-container">
+                                    <div class="theme-preview" data-theme="matrix-1" style="background-color: #000; color: #39FF14; border-color: #39FF14;">
+                                        Matrix
+                                    </div>
+                                    <div class="theme-preview" data-theme="blue-sky" style="background-color: #001933; color: #00AAFF; border-color: #00AAFF;">
+                                        Blue Sky
+                                    </div>
+                                    <div class="theme-preview" data-theme="midnight-purple" style="background-color: #1A0033; color: #CC66FF; border-color: #CC66FF;">
+                                        Purple
+                                    </div>
+                                    <div class="theme-preview" data-theme="amber-tech" style="background-color: #000; color: #FF0000; border-color: #FF0000;">
+                                        Matrix red
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h4>System Information</h4>
+                            <p>OS Version: 1.3.5</p>
+                            <p>Storage Used: <span id="storage-used">Calculating...</span></p>
+                            <button id="reset-system">Reset System</button>
+                        </div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('Settings', content, 'settings', {
+                    onload: (window) => {
+                        const themeButtons = window.querySelectorAll('.theme-preview');
+                        const storageUsed = window.querySelector('#storage-used');
+                        const resetButton = window.querySelector('#reset-system');
+                        
+                        const calculateStorage = () => {
+                            const fsData = localStorage.getItem('filesystem');
+                            const bytes = fsData ? fsData.length : 0;
+                            
+                            if (bytes < 1024) {
+                                storageUsed.textContent = `${bytes} bytes`;
+                            } else if (bytes < 1024 * 1024) {
+                                storageUsed.textContent = `${(bytes / 1024).toFixed(2)} KB`;
+                            } else {
+                                storageUsed.textContent = `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                            }
+                        };
+                        
+                        calculateStorage();
+                        
+                        themeButtons.forEach(button => {
+                            if (button.dataset.theme === this.currentTheme) {
+                                button.style.boxShadow = '0 0 8px currentColor';
+                            }
+                            
+                            button.ontouchstart = (e) => {
+                                e.preventDefault();
+                                const theme = button.dataset.theme;
+                                
+                                themeButtons.forEach(btn => {
+                                    btn.style.boxShadow = 'none';
+                                });
+                                
+                                button.style.boxShadow = '0 0 8px currentColor';
+                                
+                                document.documentElement.className = theme;
+                                this.currentTheme = theme;
+                                
+                                const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
+                                settingsData.theme = theme;
+                                this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
+                            };
+                        });
+                        
+                        resetButton.ontouchstart = (e) => {
+                            e.preventDefault();
+                            if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
+                                localStorage.clear();
+                                alert('System reset complete. The page will now reload.');
+                                location.reload();
+                            }
+                        };
+                    }
+                });
+                
+                return window;
+            },
+            
+            createAboutWindow() {
+                const content = `
+                    <div class="about-content">
+                        <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
+                        <div class="about-info">
+                            <p><strong>Version:</strong> 1.3.5</p>
+                            <p><strong>Released:</strong> May 2025</p>
+                            <p>SCos is a simulated computer operating system that runs in your browser.</p>
+                        </div>
+                        <div>
+                            <p>Features:</p>
+                            <ul style="text-align: left; margin: 10px 0 10px 30px;">
+                                <li>Fully functional file system</li>
+                                <li>Window management with drag, resize, and minimize</li>
+                                <li>Terminal with basic commands</li>
+                                <li>Text editor</li>
+                                <li>Web browser</li>
+                                <li>Calendar application</li>
+                                <li>Customizable themes</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('About SCos', content, 'about');
+                
+                return window;
+            },
+
+            createAIWindow() {
+                const content = `
+                    <div class="ai-content" id="ai-chat-history">
+                        <div class="ai-message assistant">Hello, I am SCos AI. How can I assist you today?</div>
+                    </div>
+                    <div class="ai-input-container">
+                        <input type="text" id="ai-input" placeholder="Ask me anything...">
+                        <button id="ai-send-button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                `;
+
+                const window = this.WindowManager.create('AI Assistant', content, 'ai', {
+                    onload: (window) => {
+                        const chatHistory = window.querySelector('#ai-chat-history');
+                        const input = window.querySelector('#ai-input');
+                        const sendButton = window.querySelector('#ai-send-button');
+
+                        const addMessage = (text, type) => {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = `ai-message ${type}`;
+                            messageDiv.textContent = text;
+                            chatHistory.appendChild(messageDiv);
+                            chatHistory.scrollTop = chatHistory.scrollHeight;
+                        };
+
+                        const handleSend = async () => {
+                            const userMessage = input.value;
+                            if (!userMessage.trim()) return;
+
+                            addMessage(userMessage, 'user');
+                            input.value = '';
+
+                            const assistantResponse = await this.getAIResponse(userMessage);
+                            addMessage(assistantResponse, 'assistant');
+                        };
+
+                        sendButton.ontouchstart = (e) => {
+                            e.preventDefault();
+                            handleSend();
+                        };
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                handleSend();
+                            }
+                        });
+                    }
+                });
+                return window;
+            },
+
+            async getAIResponse(prompt) {
+                try {
+                    const response = await fetch("https://api-inference.huggingface.co/models/deepseek-ai/deepseek-coder-v2-instruct", {
+                        headers: { Authorization: `Bearer ${this.aiAPIKey}` },
+                        method: "POST",
+                        body: JSON.stringify({
+                            inputs: `You are an AI assistant in a simulated operating system called SCos. Your responses should be short, concise, and helpful, and you should act as if you are part of the system.
+User: ${prompt}
+AI:`
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    if (result && result.length > 0 && result[0].generated_text) {
+                        return result[0].generated_text.replace(/^User:.*?AI:/s, '').trim();
+                    } else {
+                        return "I'm sorry, I couldn't process that request.";
+                    }
+                } catch (error) {
+                    console.error("AI API Error:", error);
+                    return "Sorry, I am having trouble connecting to the AI service. Please try again later.";
+                }
+            },
+
+            applyTheme(theme) {
+                document.documentElement.className = theme;
+                this.currentTheme = theme;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            System.init();
+        });
+    </script>
+</body>
+</html>
