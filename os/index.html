@@ -2,479 +2,560 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
     <title>SCos 1.3.5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --main-color: #39FF14;
-            --bg-dark: black;
-            --bg-image: url('green.jpg') no-repeat center center / cover;
-            --window-bg: #1a1a1a;
-            --text-color: var(--main-color);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-
-        body {
-            background-color: black;        
-            background: var(--bg-image);
-            color: var(--text-color);
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s;
-        }
-
-        .logo-text {
-            font-size: 48px;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-
-        
-.spinning-o {
-    display: inline-block;
-    animation: spin 1s ease-in-out infinite;
-    color: #39FF14;
-    font-weight: bold;
-    text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.5); }
-    100% { transform: rotate(360deg) scale(1); }
-}
-
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-bar {
-            width: 300px;
-            height: 20px;
-            border: 2px solid var(--main-color);
-            margin: 20px 0;
-        }
-
-        .loading-progress {
-            width: 0;
-            height: 100%;
-            background: var(--main-color);
-            transition: width 0.1s;
-        }
-
-        .boot-messages {
-            background-color: black;        
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        #desktop {
-            height: calc(100vh - 40px);
-            padding: 20px;
-        }
-
-        .desktop-icons {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 80px);
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .icon {
-            text-align: center;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
-            transition: all 0.2s;
-        }
-
-        .icon:hover {
-            background: rgba(57, 255, 20, 0.1);
-        }
-
-        .icon span {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-        }
-
-        .window {
-            position: absolute;
-            background: var(--window-bg);
-            border: 1px solid var(--main-color);
-            min-width: 400px;
-            min-height: 300px;
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
-            transition: transform 0.3s, opacity 0.3s;
-        }
-
-        .window.maximized {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: calc(100vh - 40px) !important;
-            transform: none !important;
-        }
-
-        .window-header {
-            background: var(--main-color);
-            color: var(--bg-dark);
-            padding: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
-        }
-
-        .window-controls {
-            display: flex;
-            gap: 5px;
-        }
-
-        .window-control {
-            padding: 2px 8px;
-            cursor: pointer;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-
-        .window-content {
-            height: calc(100% - 35px);
-            overflow: auto;
-            padding: 10px;
-        }
-
-        .terminal-content {
-            height: 100%;
-            background: #000;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            overflow-y: auto;
-            color: var(--main-color);
-            white-space: pre-wrap; /* Important for preserving line breaks */
-        }
-
-        .terminal-line {
-            margin: 2px 0;
-            white-space: pre-wrap;
-        }
-
-        .terminal-prompt {
-            color: var(--main-color);
-            margin-right: 5px;
-        }
-
-        .terminal-input {
-            background: transparent;
-            border: none;
-            color: var(--main-color);
-            font-family: 'Courier New', monospace;
-            width: calc(100% - 20px);
-            outline: none;
-        }
-
-        .blink-cursor {
-            animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-            from, to { border-right-color: transparent }
-            50% { border-right-color: var(--main-color); }
-        }
-
-        .browser-content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .browser-toolbar {
-            display: flex;
-            padding: 5px;
-            gap: 5px;
-            background: rgba(57, 255, 20, 0.1);
-        }
-
-        .browser-toolbar input {
-            flex-grow: 1;
-            background: #333;
-            border: 1px solid var(--main-color);
-            color: var(--main-color);
-            padding: 5px;
-            outline: none;
-        }
-
-        .browser-toolbar button {
-            background: #333;
-            color: var(--main-color);
-            border: 1px solid var(--main-color);
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        .browser-content iframe {
-            width: 100%;
-            height: 500%;
-            border: none;
-            margin: 5px;
-            background: white;
-        }
-
-        .calendar-app {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .calendar-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: rgba(57, 255, 20, 0.1);
-        }
-
-        .calendar-grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background: rgba(57, 255, 20, 0.1);
-            padding: 10px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: var(--window-bg);
-        }
-
-        .calendar-day:hover {
-            background: rgba(57, 255, 20, 0.1);
-        }
-
-        .calendar-day.today {
-            background: var(--main-color);
-            color: var(--bg-dark);
-        }
-
-        .calendar-header {
-            background: rgba(57, 255, 20, 0.2);
-            font-weight: bold;
-            text-align: center;
-            padding: 5px 0;
-        }
-
-        .taskbar {
-            height: 40px;
-            background: rgba(26, 26, 26, 0.95);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            border-top: 1px solid var(--main-color);
-        }
-
-        .running-apps {
-            display: flex;
-            gap: 10px;
-        }
-
-        .task-item {
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 3px;
-            background: rgba(57, 255, 20, 0.1);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
-        }
-
-        .task-item:hover {
-            background: rgba(57, 255, 20, 0.2);
-        }
-
-        .files-content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .files-toolbar {
-            padding: 10px;
-            background: rgba(57, 255, 20, 0.1);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .files-path {
-            background: #333;
-            color: var(--main-color);
-            border: 1px solid var(--main-color);
-            padding: 5px;
-            flex-grow: 1;
-        }
-
-        .files-list {
-            flex: 1;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        .file-item {
-            padding: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-radius: 3px;
-        }
-
-        .file-item:hover {
-            background: rgba(57, 255, 20, 0.1);
-        }
-
-        .notepad-content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .notepad-toolbar {
-            padding: 10px;
-            background: rgba(57, 255, 20, 0.1);
-            display: flex;
-            gap: 10px;
-        }
-
-        .notepad-editor {
-            flex: 1;
-            background: var(--window-bg);
-            color: var(--main-color);
-            border: none;
-            padding: 10px;
-            resize: none;
-            font-family: 'Courier New', monospace;
-            outline: none;
-        }
-
-        .settings-content {
-            padding: 20px;
-        }
-
-        .setting-group {
-            margin-bottom: 20px;
-        }
-
-        .setting-group h4 {
-            margin-bottom: 10px;
-        }
-
-        select, button {
-            background: #333;
-            color: var(--main-color);
-            border: 1px solid var(--main-color);
-            padding: 5px 10px;
-            cursor: pointer;
-            outline: none;
-        }
-
-        select:hover, button:hover {
-            background: var(--main-color);
-            color: var(--bg-dark);
-        }
-
-        .themes-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .theme-preview {
-            height: 80px;
-            cursor: pointer;
-            border: 1px solid var(--main-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 10px;
-        }
-
-        .matrix-1 {
-            --main-color: #39FF14;
-            --bg-image: url('green.jpg') no-repeat center center / cover;
-            --window-bg: #1a1a1a;
-            --text-color: var(--main-color);
-        }
-
-        .blue-sky {
-            --main-color: #00AAFF;
-            --bg-image: url('blue.jpg') no-repeat center center / cover;
-            --window-bg: #002B4D;
-            --text-color: var(--main-color);
-        }
-
-        .midnight-purple {
-            --main-color: #CC66FF;
-            --bg-image: url('purple.jpg') no-repeat center center / cover;
-            --window-bg: #330066;
-            --text-color: var(--main-color);
-        }
-
-        .amber-tech {
-            --main-color: #FF0000;
-            --bg-image: url('red.jpg') no-repeat center center / cover;
-            --window-bg: #4D0000;
-            --text-color: var(--main-color);
-        }
-
-        .about-content {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .about-logo {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: #39FF14;
-        }
-
-        .about-info {
-            margin-bottom: 20px;
+        /* Mobile-only styles */
+        @media (hover: none) and (pointer: coarse) {
+            :root {
+                --main-color: #39FF14;
+                --bg-dark: black;
+                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --window-bg: #1a1a1a;
+                --text-color: var(--main-color);
+            }
+
+            html {
+                touch-action: pan-x pan-y;
+            }
+
+            body {
+                background-color: black;        
+                background: var(--bg-image);
+                color: var(--text-color);
+                overflow: hidden;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                overscroll-behavior: none;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+
+            #loading-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-dark);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                transition: opacity 0.5s;
+            }
+
+            .logo-text {
+                font-size: 48px;
+                letter-spacing: 2px;
+                margin-bottom: 20px;
+            }
+
+            
+            .spinning-o {
+                display: inline-block;
+                animation: spin 1s ease-in-out infinite;
+                color: #39FF14;
+                font-weight: bold;
+                text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(180deg) scale(1.5); }
+                100% { transform: rotate(360deg) scale(1); }
+            }
+
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .loading-bar {
+                width: 80%;
+                max-width: 300px;
+                height: 20px;
+                border: 2px solid var(--main-color);
+                margin: 20px 0;
+            }
+
+            .loading-progress {
+                width: 0;
+                height: 100%;
+                background: var(--main-color);
+                transition: width 0.1s;
+            }
+
+            .boot-messages {
+                background-color: black;        
+                margin-top: 20px;
+                text-align: left;
+                font-size: 14px;
+                max-width: 80%;
+            }
+
+            #desktop {
+                height: calc(100vh - 40px);
+                padding: 10px;
+                overflow-y: auto;
+            }
+
+            .desktop-icons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .icon {
+                width: 70px;
+                text-align: center;
+                cursor: pointer;
+                padding: 10px 5px;
+                border-radius: 5px;
+                transition: all 0.2s;
+                font-size: 12px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .icon:active {
+                background: rgba(57, 255, 20, 0.3);
+            }
+
+            .icon i {
+                font-size: 2em;
+            }
+
+            .icon span {
+                display: block;
+                margin-top: 5px;
+                font-size: 11px;
+            }
+            
+            .window {
+                position: absolute;
+                background: var(--window-bg);
+                border: 1px solid var(--main-color);
+                min-width: 90%;
+                min-height: 50%;
+                box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+                transition: transform 0.3s, opacity 0.3s;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) scale(0.9);
+                touch-action: none; /* Prevents touch scrolling on the window itself */
+            }
+            
+            .window.maximized {
+                width: 100vw !important;
+                height: calc(100vh - 40px) !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+            }
+            
+            .window-header {
+                background: var(--main-color);
+                color: var(--bg-dark);
+                padding: 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                touch-action: none;
+                cursor: grab;
+            }
+            
+            .window-controls {
+                display: flex;
+                gap: 5px;
+            }
+            
+            .window-control {
+                padding: 2px 8px;
+                cursor: pointer;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 3px;
+            }
+            
+            .window-content {
+                height: calc(100% - 35px);
+                overflow: auto;
+                padding: 10px;
+            }
+            
+            .terminal-content {
+                height: 100%;
+                background: #000;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                overflow-y: auto;
+                color: var(--main-color);
+                white-space: pre-wrap;
+            }
+            
+            .terminal-line {
+                margin: 2px 0;
+                white-space: pre-wrap;
+            }
+            
+            .terminal-prompt {
+                color: var(--main-color);
+                margin-right: 5px;
+            }
+            
+            .terminal-input-container {
+                display: flex;
+                align-items: flex-start;
+                word-break: break-all;
+            }
+            
+            #terminal-typed-command {
+                flex-grow: 1;
+                white-space: pre-wrap;
+            }
+            
+            .terminal-input {
+                background: transparent;
+                border: none;
+                color: transparent; /* Hide the native input text */
+                font-family: 'Courier New', monospace;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: 0;
+                outline: none;
+            }
+            
+            .blink-cursor {
+                border-right: 1px solid var(--main-color);
+                animation: blink 1s step-end infinite;
+            }
+            
+            @keyframes blink {
+                from, to { border-right-color: transparent }
+                50% { border-right-color: var(--main-color); }
+            }
+            
+            .browser-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .browser-toolbar {
+                display: flex;
+                padding: 5px;
+                gap: 5px;
+                background: rgba(57, 255, 20, 0.1);
+            }
+            
+            .browser-toolbar input {
+                flex-grow: 1;
+                background: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
+                padding: 5px;
+                outline: none;
+                font-size: 12px;
+            }
+            
+            .browser-toolbar button {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+            
+            .browser-content iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                margin: 0;
+                background: white;
+            }
+            
+            .calendar-app {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .calendar-toolbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                background: rgba(57, 255, 20, 0.1);
+                font-size: 14px;
+            }
+            
+            .calendar-toolbar button {
+                padding: 5px;
+            }
+            
+            .calendar-grid {
+                flex: 1;
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 1px;
+                background: rgba(57, 255, 20, 0.1);
+                padding: 5px;
+                font-size: 12px;
+            }
+            
+            .calendar-day {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                background: var(--window-bg);
+            }
+            
+            .calendar-day:active {
+                background: rgba(57, 255, 20, 0.3);
+            }
+            
+            .calendar-day.today {
+                background: var(--main-color);
+                color: var(--bg-dark);
+            }
+            
+            .calendar-header {
+                background: rgba(57, 255, 20, 0.2);
+                font-weight: bold;
+                text-align: center;
+                padding: 5px 0;
+            }
+            
+            .taskbar {
+                height: 40px;
+                background: rgba(26, 26, 26, 0.95);
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 10px;
+                border-top: 1px solid var(--main-color);
+            }
+            
+            .running-apps {
+                display: flex;
+                gap: 5px;
+                overflow-x: auto;
+                flex-grow: 1;
+                scrollbar-width: none;
+            }
+            
+            .running-apps::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .task-item {
+                padding: 5px 10px;
+                cursor: pointer;
+                border-radius: 3px;
+                background: rgba(57, 255, 20, 0.1);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100px;
+                font-size: 12px;
+            }
+            
+            .task-item:active {
+                background: rgba(57, 255, 20, 0.2);
+            }
+            
+            .files-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .files-toolbar {
+                padding: 5px;
+                background: rgba(57, 255, 20, 0.1);
+                display: flex;
+                gap: 5px;
+                align-items: center;
+            }
+            
+            .files-toolbar button {
+                padding: 5px 8px;
+            }
+            
+            .files-path {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px;
+                flex-grow: 1;
+                font-size: 12px;
+            }
+            
+            .files-list {
+                flex: 1;
+                padding: 10px;
+                overflow-y: auto;
+            }
+            
+            .file-item {
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 3px;
+                font-size: 14px;
+            }
+            
+            .file-item:active {
+                background: rgba(57, 255, 20, 0.1);
+            }
+            
+            .notepad-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .notepad-toolbar {
+                padding: 5px;
+                background: rgba(57, 255, 20, 0.1);
+                display: flex;
+                gap: 5px;
+            }
+            
+            .notepad-editor {
+                flex: 1;
+                background: var(--window-bg);
+                color: var(--main-color);
+                border: none;
+                padding: 10px;
+                resize: none;
+                font-family: 'Courier New', monospace;
+                outline: none;
+                font-size: 14px;
+            }
+            
+            .settings-content {
+                padding: 10px;
+            }
+            
+            .setting-group {
+                margin-bottom: 15px;
+            }
+            
+            .setting-group h4 {
+                margin-bottom: 5px;
+            }
+            
+            select, button {
+                background: #333;
+                color: var(--main-color);
+                border: 1px solid var(--main-color);
+                padding: 5px 10px;
+                cursor: pointer;
+                outline: none;
+                font-size: 12px;
+            }
+            
+            select:active, button:active {
+                background: var(--main-color);
+                color: var(--bg-dark);
+            }
+            
+            .themes-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5px;
+                margin-top: 5px;
+            }
+            
+            .theme-preview {
+                height: 50px;
+                cursor: pointer;
+                border: 1px solid var(--main-color);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 5px;
+                font-size: 12px;
+            }
+            
+            .about-content {
+                text-align: center;
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .about-logo {
+                font-size: 28px;
+                margin-bottom: 10px;
+                color: #39FF14;
+            }
+            
+            .about-info {
+                margin-bottom: 10px;
+            }
+            
+            .about-content ul {
+                text-align: left;
+                margin: 5px 0 5px 20px;
+                padding: 0;
+            }
+
+            .matrix-1 {
+                --main-color: #39FF14;
+                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --window-bg: #1a1a1a;
+                --text-color: var(--main-color);
+            }
+            
+            .blue-sky {
+                --main-color: #00AAFF;
+                --bg-image: url('blue.jpg') no-repeat center center / cover;
+                --window-bg: #002B4D;
+                --text-color: var(--main-color);
+            }
+            
+            .midnight-purple {
+                --main-color: #CC66FF;
+                --bg-image: url('purple.jpg') no-repeat center center / cover;
+                --window-bg: #330066;
+                --text-color: var(--main-color);
+            }
+            
+            .amber-tech {
+                --main-color: #FF0000;
+                --bg-image: url('red.jpg') no-repeat center center / cover;
+                --window-bg: #4D0000;
+                --text-color: var(--main-color);
+            }
+        }
+
+        /* Styles for desktop/laptop that hide the entire page */
+        @media (hover: hover) and (pointer: fine) {
+            body {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -522,7 +603,6 @@
     </div>
 
     <div class="taskbar">
-active apps:
         <div class="running-apps"></div>
         <div class="system-tray">
             <span id="system-time"></span>
@@ -530,707 +610,669 @@ active apps:
     </div>
 
     <script>
-const System = {
-    currentTheme: 'matrix-1',
-    currentDate: new Date(),
-    bootComplete: false,
-    taskbarApps: {},
-    terminalAliases: {},
+        const System = {
+            currentTheme: 'matrix-1',
+            currentDate: new Date(),
+            bootComplete: false,
+            taskbarApps: {},
+            terminalAliases: {},
 
-    async init() {
-        await this.startBootSequence();
-        this.FileSystem.init();
-        this.WindowManager.init();
-        this.initDesktop();
-        this.initClock();
-        this.initTaskbar();
-    },
+            async init() {
+                await this.startBootSequence();
+                this.FileSystem.init();
+                this.WindowManager.init();
+                this.initDesktop();
+                this.initClock();
+                this.initTaskbar();
+            },
 
-    async startBootSequence() {
-        const loadingBar = document.querySelector('.loading-progress');
-        const bootMessages = document.querySelector('.boot-messages');
-        const loadingScreen = document.getElementById('loading-screen');
+            async startBootSequence() {
+                const loadingBar = document.querySelector('.loading-progress');
+                const bootMessages = document.querySelector('.boot-messages');
+                const loadingScreen = document.getElementById('loading-screen');
 
-        const bootSteps = [
-            { message: 'Initializing system core...', duration: 1000 },
-            { message: 'Loading file system...', duration: 800 },
-            { message: 'Starting window manager...', duration: 600 },
-            { message: 'Loading desktop environment...', duration: 700 },
-            { message: 'Finishing... I think...', duration: 600 }
-        ];
+                const bootSteps = [
+                    { message: 'Initializing system core...', duration: 1000 },
+                    { message: 'Loading file system...', duration: 800 },
+                    { message: 'Starting window manager...', duration: 600 },
+                    { message: 'Loading desktop environment...', duration: 700 },
+                    { message: 'Finishing... I think...', duration: 600 }
+                ];
 
-        let totalProgress = 0;
-        
-        for (const step of bootSteps) {
-            const msgElement = document.createElement('div');
-            msgElement.textContent = step.message;
-            bootMessages.appendChild(msgElement);
-            
-            await new Promise(resolve => setTimeout(resolve, step.duration));
-            
-            totalProgress += 20;
-            loadingBar.style.width = `${totalProgress}%`;
-        }
+                let totalProgress = 0;
+                
+                for (const step of bootSteps) {
+                    const msgElement = document.createElement('div');
+                    msgElement.textContent = step.message;
+                    bootMessages.appendChild(msgElement);
+                    
+                    await new Promise(resolve => setTimeout(resolve, step.duration));
+                    
+                    totalProgress += 20;
+                    loadingBar.style.width = `${totalProgress}%`;
+                }
 
-        this.bootComplete = true;
-        await new Promise(resolve => setTimeout(resolve, 500));
-        loadingScreen.style.opacity = '0';
-        await new Promise(resolve => setTimeout(resolve, 500));
-        loadingScreen.style.display = 'none';
-    },
+                this.bootComplete = true;
+                await new Promise(resolve => setTimeout(resolve, 500));
+                loadingScreen.style.opacity = '0';
+                await new Promise(resolve => setTimeout(resolve, 500));
+                loadingScreen.style.display = 'none';
+            },
 
-    FileSystem: {
-        data: {},
-        currentPath: '/',
+            FileSystem: {
+                data: {},
+                currentPath: '/',
 
-        init() {
-            this.data = JSON.parse(localStorage.getItem('filesystem')) || {
-                'home/': {
-                    'documents/': {
-                        'welcome.txt': 'Welcome to SCos!\nThis is your personal computer system.',
-                        'changelog.txt': 'SCos 1.3.0 Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
-                    },
-                    'downloads/': {},
-                    'desktop/': {}
+                init() {
+                    this.data = JSON.parse(localStorage.getItem('filesystem')) || {
+                        'home/': {
+                            'documents/': {
+                                'welcome.txt': 'Welcome to SCos!\nThis is your personal computer system.',
+                                'changelog.txt': 'SCos 1.3.0 Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
+                            },
+                            'downloads/': {},
+                            'desktop/': {}
+                        },
+                        'system/': {
+                            'settings.json': JSON.stringify({
+                                theme: 'matrix-1',
+                                version: '1.3.0'
+                            }),
+                            'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.0\nDeveloped with ♥ by the SCos team',
+                            'network.json': JSON.stringify({
+                                'google.com': { ip: '172.217.160.142', status: 'online', latency: '45ms' },
+                                'example.com': { ip: '93.184.216.34', status: 'online', latency: '60ms' },
+                                'local.net': { ip: '192.168.1.1', status: 'online', latency: '5ms' },
+                                'offline.site': { ip: '10.0.0.1', status: 'offline', latency: 'timeout' }
+                            })
+                        }
+                    };
+                    this.save();
                 },
-                'system/': {
-                    'settings.json': JSON.stringify({
-                        theme: 'matrix-1',
-                        version: '1.3.0'
-                    }),
-                    'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.0\nDeveloped with ♥ by the SCos team',
-                    'network.json': JSON.stringify({
-                        'google.com': { ip: '172.217.160.142', status: 'online', latency: '45ms' },
-                        'example.com': { ip: '93.184.216.34', status: 'online', latency: '60ms' },
-                        'local.net': { ip: '192.168.1.1', status: 'online', latency: '5ms' },
-                        'offline.site': { ip: '10.0.0.1', status: 'offline', latency: 'timeout' }
-                    })
-                }
-            };
-            this.save();
-        },
 
-        save() {
-            localStorage.setItem('filesystem', JSON.stringify(this.data));
-        },
+                save() {
+                    localStorage.setItem('filesystem', JSON.stringify(this.data));
+                },
 
-        read(path) {
-            return this.traverse(path);
-        },
+                read(path) {
+                    return this.traverse(path);
+                },
 
-        write(path, content) {
-            const parts = path.split('/').filter(p => p);
-            let current = this.data;
+                write(path, content) {
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
 
-            for (let i = 0; i < parts.length - 1; i++) {
-                const part = parts[i] + '/';
-                if (!current[part]) current[part] = {};
-                current = current[part];
-            }
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const part = parts[i] + '/';
+                        if (!current[part]) current[part] = {};
+                        current = current[part];
+                    }
 
-            const fileName = parts[parts.length - 1];
-            current[fileName] = content;
-            this.save();
-            return true;
-        },
-
-        list(path = '/') {
-            const content = this.traverse(path);
-            return typeof content === 'object' ? Object.keys(content) : [];
-        },
-
-        isDirectory(path) {
-            const item = this.traverse(path);
-            return item && typeof item === 'object';
-        },
-
-        mkdir(path) {
-            if (path.endsWith('/')) {
-                const parts = path.split('/').filter(p => p);
-                let current = this.data;
-
-                for (let i = 0; i < parts.length; i++) {
-                    const part = parts[i] + '/';
-                    if (!current[part]) current[part] = {};
-                    current = current[part];
-                }
-                this.save();
-                return true;
-            }
-            return false;
-        },
-
-        delete(path) {
-            const parts = path.split('/').filter(p => p);
-            let current = this.data;
-            
-            if (parts.length === 0) return false;
-            
-            if (parts.length === 1) {
-                const key = parts[0].endsWith('/') ? parts[0] : parts[0];
-                if (current[key] !== undefined) {
-                    delete current[key];
+                    const fileName = parts[parts.length - 1];
+                    current[fileName] = content;
                     this.save();
                     return true;
-                }
-                return false;
-            }
-            
-            for (let i = 0; i < parts.length - 1; i++) {
-                const part = parts[i] + (parts[i].endsWith('/') ? '' : '/');
-                if (!current[part]) return false;
-                current = current[part];
-            }
-            
-            const lastPart = parts[parts.length - 1];
-            const key = lastPart.endsWith('/') ? lastPart : lastPart;
-            
-            if (current[key] !== undefined) {
-                delete current[key];
-                this.save();
-                return true;
-            }
-            
-            return false;
-        },
+                },
 
-        traverse(path) {
-            if (!path || path === '/') return this.data;
-            const parts = path.split('/').filter(p => p);
-            let current = this.data;
+                list(path = '/') {
+                    const content = this.traverse(path);
+                    return typeof content === 'object' ? Object.keys(content) : [];
+                },
 
-            for (const part of parts) {
-                const withSlash = part + '/';
-                current = current[withSlash] || current[part];
-                if (!current) return null;
-            }
-            return current;
-        }
-    },
+                isDirectory(path) {
+                    const item = this.traverse(path);
+                    return item && typeof item === 'object';
+                },
 
-    WindowManager: {
-        windows: [],
-        zIndex: 1000,
-        windowIdCounter: 0,
+                mkdir(path) {
+                    if (path.endsWith('/')) {
+                        const parts = path.split('/').filter(p => p);
+                        let current = this.data;
 
-        init() {
-            document.addEventListener('mousedown', this.handleWindowFocus.bind(this));
-        },
-
-        create(title, content, appId = null, options = {}) {
-            const windowId = `window-${++this.windowIdCounter}`;
-            const window = document.createElement('div');
-            window.className = 'window';
-            window.id = windowId;
-            window.style.zIndex = ++this.zIndex;
-            window.dataset.appId = appId;
-
-            window.style.left = `${50 + (this.windows.length * 30)}px`;
-            window.style.top = `${50 + (this.windows.length * 30)}px`;
-            
-            window.style.width = options.width || '600px';
-            window.style.height = options.height || '400px';
-
-            window.innerHTML = `
-                <div class="window-header">
-                    <span>${title}</span>
-                    <div class="window-controls">
-                        <span class="window-control minimize">_</span>
-                        <span class="window-control maximize">□</span>
-                        <span class="window-control close">×</span>
-                    </div>
-                </div>
-                <div class="window-content">${content}</div>
-            `;
-
-            this.makeWindowDraggable(window);
-            this.makeWindowResizable(window);
-            this.setupWindowControls(window);
-            document.body.appendChild(window);
-            this.windows.push(window);
-            
-            if (appId) {
-                System.addTaskbarApp(appId, title, windowId);
-            }
-            
-            if (options.onload) {
-                options.onload(window);
-            }
-            
-            return window;
-        },
-
-        makeWindowDraggable(window) {
-            const header = window.querySelector('.window-header');
-            let isDragging = false;
-            let currentX, currentY, initialX, initialY;
-
-            header.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.window-controls')) return;
-                isDragging = true;
-                initialX = e.clientX - window.offsetLeft;
-                initialY = e.clientY - window.offsetTop;
-                window.style.zIndex = ++this.zIndex;
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                
-                currentX = Math.max(0, Math.min(currentX, window.offsetWidth, document.body.clientWidth - 100));
-                currentY = Math.max(0, Math.min(currentY, document.body.clientHeight - 40));
-                
-                window.style.left = `${currentX}px`;
-                window.style.top = `${currentY}px`;
-            });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-        },
-        
-        makeWindowResizable(window) {
-            const resizeHandle = document.createElement('div');
-            resizeHandle.style.position = 'absolute';
-            resizeHandle.style.bottom = '0';
-            resizeHandle.style.right = '0';
-            resizeHandle.style.width = '15px';
-            resizeHandle.style.height = '15px';
-            resizeHandle.style.cursor = 'nwse-resize';
-            window.appendChild(resizeHandle);
-            
-            let isResizing = false;
-            let startX, startY, startWidth, startHeight;
-            
-            resizeHandle.addEventListener('mousedown', (e) => {
-                isResizing = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(window.style.width);
-                startHeight = parseInt(window.style.height);
-                window.style.zIndex = ++this.zIndex;
-                e.preventDefault();
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (!isResizing) return;
-                
-                const width = startWidth + e.clientX - startX;
-                const height = startHeight + e.clientY - startY;
-                
-                if (width > 300) window.style.width = `${width}px`;
-                if (height > 200) window.style.height = `${height}px`;
-            });
-            
-            document.addEventListener('mouseup', () => {
-                isResizing = false;
-            });
-        },
-
-        setupWindowControls(window) {
-            const controls = window.querySelectorAll('.window-control');
-            controls[0].onclick = () => this.minimizeWindow(window);
-            controls[1].onclick = () => this.maximizeWindow(window);
-            controls[2].onclick = () => this.closeWindow(window);
-        },
-
-        minimizeWindow(window) {
-            window.style.transform = 'scale(0.8) translateY(100vh)';
-            window.style.opacity = '0';
-            setTimeout(() => window.style.display = 'none', 300);
-        },
-
-        maximizeWindow(window) {
-            window.classList.toggle('maximized');
-        },
-
-        closeWindow(window) {
-            window.style.transform = 'scale(0.8) translateY(-100vh)';
-            window.style.opacity = '0';
-            
-            const appId = window.dataset.appId;
-            if (appId) {
-                System.removeTaskbarApp(window.id);
-            }
-            
-            setTimeout(() => {
-                window.remove();
-                this.windows = this.windows.filter(w => w !== window);
-            }, 300);
-        },
-
-        handleWindowFocus(e) {
-            const window = e.target.closest('.window');
-            if (window) {
-                this.zIndex++;
-                window.style.zIndex = this.zIndex;
-            }
-        },
-        
-        showWindow(windowId) {
-            const window = document.getElementById(windowId);
-            if (window) {
-                window.style.display = 'block';
-                window.style.transform = 'scale(1) translateY(0)';
-                window.style.opacity = '1';
-                window.style.zIndex = ++this.zIndex;
-            }
-        },
-        
-        getWindowByAppId(appId) {
-            return this.windows.find(w => w.dataset.appId === appId);
-        }
-    },
-
-    initDesktop() {
-        const icons = document.querySelectorAll('.icon');
-        icons.forEach(icon => {
-            icon.onclick = () => this.openApp(icon.dataset.app);
-        });
-    },
-
-    initClock() {
-        const updateTime = () => {
-            const now = new Date();
-            document.getElementById('system-time').textContent = 
-                now.toLocaleTimeString();
-        };
-        updateTime();
-        setInterval(updateTime, 1000);
-    },
-
-    initTaskbar() {
-        const taskbar = document.querySelector('.taskbar');
-        taskbar.style.zIndex = '9999';
-    },
-    
-    addTaskbarApp(appId, title, windowId) {
-        const runningApps = document.querySelector('.running-apps');
-        
-        if (!this.taskbarApps[windowId]) {
-            const taskItem = document.createElement('div');
-            taskItem.className = 'task-item';
-            taskItem.textContent = title;
-            taskItem.dataset.windowId = windowId;
-            
-            taskItem.onclick = () => {
-                const window = document.getElementById(windowId);
-                if (window) {
-                    if (window.style.display === 'none') {
-                        this.WindowManager.showWindow(windowId);
-                    } else {
-                        this.WindowManager.minimizeWindow(window);
+                        for (let i = 0; i < parts.length; i++) {
+                            const part = parts[i] + '/';
+                            if (!current[part]) current[part] = {};
+                            current = current[part];
+                        }
+                        this.save();
+                        return true;
                     }
-                }
-            };
-            
-            runningApps.appendChild(taskItem);
-            this.taskbarApps[windowId] = taskItem;
-        }
-    },
-    
-    removeTaskbarApp(windowId) {
-        if (this.taskbarApps[windowId]) {
-            this.taskbarApps[windowId].remove();
-            delete this.taskbarApps[windowId];
-        }
-    },
+                    return false;
+                },
 
-    openApp(appName) {
-        const apps = {
-            files: () => this.createFilesWindow(),
-            terminal: () => this.createTerminalWindow(),
-            notepad: () => this.createNotepadWindow(),
-            browser: () => this.createBrowserWindow(),
-            calendar: () => this.createCalendarWindow(),
-            settings: () => this.createSettingsWindow(),
-            about: () => this.createAboutWindow()
-        };
-
-        if (apps[appName]) {
-            apps[appName]();
-        }
-    },
-    
-    createFilesWindow() {
-        let currentPath = '/';
-        
-        const content = `
-            <div class="files-content">
-                <div class="files-toolbar">
-                    <button id="files-back"><i class="fas fa-arrow-left"></i></button>
-                    <button id="files-up"><i class="fas fa-arrow-up"></i></button>
-                    <button id="files-refresh"><i class="fas fa-sync"></i></button>
-                    <input type="text" class="files-path" value="/" readonly>
-                    <button id="files-new-folder"><i class="fas fa-folder-plus"></i></button>
-                </div>
-                <div class="files-list"></div>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create('File Explorer', content, 'files', {
-            width: '700px',
-            height: '500px',
-            onload: (window) => {
-                const filesPath = window.querySelector('.files-path');
-                const filesList = window.querySelector('.files-list');
-                const backBtn = window.querySelector('#files-back');
-                const upBtn = window.querySelector('#files-up');
-                const refreshBtn = window.querySelector('#files-refresh');
-                const newFolderBtn = window.querySelector('#files-new-folder');
-                
-                const loadDirectory = (path) => {
-                    currentPath = path;
-                    filesPath.value = path;
-                    filesList.innerHTML = '';
+                delete(path) {
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
                     
-                    const files = this.FileSystem.list(path);
-                    files.forEach(file => {
-                        const isDir = file.endsWith('/');
-                        const fileItem = document.createElement('div');
-                        fileItem.className = 'file-item';
-                        fileItem.innerHTML = `
-                            <i class="fas ${isDir ? 'fa-folder' : 'fa-file'}" style="color: var(--main-color)"></i>
-                            <span>${file}</span>
-                        `;
-                        
-                        fileItem.addEventListener('click', () => {
-                            if (isDir) {
-                                loadDirectory(currentPath + file);
-                            } else {
-                                const filePath = currentPath + file;
-                                const content = this.FileSystem.read(filePath);
-                                
-                                if (file.endsWith('.txt')) {
-                                    this.createNotepadWindow(file, content, filePath);
-                                } else if (file.endsWith('.json')) {
-                                    this.createNotepadWindow(file, JSON.stringify(content, null, 2), filePath);
-                                } else {
-                                    this.createNotepadWindow(file, String(content), filePath);
-                                }
-                            }
-                        });
-                        
-                        fileItem.addEventListener('contextmenu', (e) => {
-                            e.preventDefault();
-                            
-                            const contextMenu = document.createElement('div');
-                            contextMenu.style.position = 'fixed';
-                            contextMenu.style.left = `${e.clientX}px`;
-                            contextMenu.style.top = `${e.clientY}px`;
-                            contextMenu.style.background = 'var(--window-bg)';
-                            contextMenu.style.border = '1px solid var(--main-color)';
-                            contextMenu.style.zIndex = '10000';
-                            contextMenu.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-                            
-                            const actions = [
-                                { label: 'Delete', icon: 'fa-trash', action: () => {
-                                    if (confirm(`Are you sure you want to delete ${file}?`)) {
-                                        this.FileSystem.delete(currentPath + file);
-                                        loadDirectory(currentPath);
-                                    }
-                                }}
-                            ];
-                            
-                            actions.forEach(item => {
-                                const menuItem = document.createElement('div');
-                                menuItem.style.padding = '8px 15px';
-                                menuItem.style.cursor = 'pointer';
-                                menuItem.innerHTML = `<i class="fas ${item.icon}"></i> ${item.label}`;
-                                menuItem.addEventListener('click', () => {
-                                    item.action();
-                                    contextMenu.remove();
-                                });
-                                menuItem.addEventListener('mouseover', () => {
-                                    menuItem.style.background = 'rgba(57, 255, 20, 0.1)';
-                                });
-                                menuItem.addEventListener('mouseout', () => {
-                                    menuItem.style.background = 'transparent';
-                                });
-                                contextMenu.appendChild(menuItem);
-                            });
-                            
-                            document.body.appendChild(contextMenu);
-                            
-                            const removeMenu = () => {
-                                contextMenu.remove();
-                                document.removeEventListener('click', removeMenu);
-                            };
-                            
-                            setTimeout(() => {
-                                document.addEventListener('click', removeMenu);
-                            }, 100);
-                        });
-                        
-                        filesList.appendChild(fileItem);
+                    if (parts.length === 0) return false;
+                    
+                    if (parts.length === 1) {
+                        const key = parts[0].endsWith('/') ? parts[0] : parts[0];
+                        if (current[key] !== undefined) {
+                            delete current[key];
+                            this.save();
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const part = parts[i] + (parts[i].endsWith('/') ? '' : '/');
+                        if (!current[part]) return false;
+                        current = current[part];
+                    }
+                    
+                    const lastPart = parts[parts.length - 1];
+                    const key = lastPart.endsWith('/') ? lastPart : lastPart;
+                    
+                    if (current[key] !== undefined) {
+                        delete current[key];
+                        this.save();
+                        return true;
+                    }
+                    
+                    return false;
+                },
+
+                traverse(path) {
+                    if (!path || path === '/') return this.data;
+                    const parts = path.split('/').filter(p => p);
+                    let current = this.data;
+
+                    for (const part of parts) {
+                        const withSlash = part + '/';
+                        current = current[withSlash] || current[part];
+                        if (!current) return null;
+                    }
+                    return current;
+                }
+            },
+
+            WindowManager: {
+                windows: [],
+                zIndex: 1000,
+                windowIdCounter: 0,
+                activeWindow: null,
+
+                init() {
+                    document.addEventListener('touchstart', this.handleWindowFocus.bind(this));
+                },
+
+                create(title, content, appId = null, options = {}) {
+                    const windowId = `window-${++this.windowIdCounter}`;
+                    const window = document.createElement('div');
+                    window.className = 'window';
+                    window.id = windowId;
+                    window.style.zIndex = ++this.zIndex;
+                    window.dataset.appId = appId;
+                    window.style.width = options.width || '90%';
+                    window.style.height = options.height || '80%';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'window-header';
+                    header.innerHTML = `
+                        <span>${title}</span>
+                        <div class="window-controls">
+                            <span class="window-control minimize">_</span>
+                            <span class="window-control maximize">□</span>
+                            <span class="window-control close">×</span>
+                        </div>
+                    `;
+
+                    const windowContent = document.createElement('div');
+                    windowContent.className = 'window-content';
+                    windowContent.innerHTML = content;
+                    
+                    window.appendChild(header);
+                    window.appendChild(windowContent);
+                    document.body.appendChild(window);
+                    
+                    this.makeWindowDraggable(window);
+                    this.makeWindowResizable(window);
+                    this.setupWindowControls(window);
+                    
+                    this.windows.push(window);
+                    
+                    if (appId) {
+                        System.addTaskbarApp(appId, title, windowId);
+                    }
+                    
+                    if (options.onload) {
+                        options.onload(window);
+                    }
+                    
+                    this.handleWindowFocus({ target: window });
+                    
+                    return window;
+                },
+
+                makeWindowDraggable(window) {
+                    const header = window.querySelector('.window-header');
+                    let startX, startY, initialX, initialY, isDragging = false;
+                    
+                    header.addEventListener('touchstart', (e) => {
+                        if (e.target.closest('.window-controls')) return;
+                        isDragging = true;
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        initialX = touch.clientX - window.offsetLeft;
+                        initialY = touch.clientY - window.offsetTop;
+                        window.style.zIndex = ++this.zIndex;
+                        window.style.transition = 'none';
+                        header.style.cursor = 'grabbing';
                     });
+                    
+                    document.addEventListener('touchmove', (e) => {
+                        if (!isDragging) return;
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const currentX = touch.clientX - initialX;
+                        const currentY = touch.clientY - initialY;
+                        
+                        window.style.left = `${currentX}px`;
+                        window.style.top = `${currentY}px`;
+                    });
+                    
+                    document.addEventListener('touchend', () => {
+                        isDragging = false;
+                        window.style.transition = '';
+                        header.style.cursor = 'grab';
+                    });
+                },
+
+                makeWindowResizable(window) {
+                    const resizeHandle = document.createElement('div');
+                    resizeHandle.style.position = 'absolute';
+                    resizeHandle.style.bottom = '0';
+                    resizeHandle.style.right = '0';
+                    resizeHandle.style.width = '25px';
+                    resizeHandle.style.height = '25px';
+                    resizeHandle.style.cursor = 'nwse-resize';
+                    window.appendChild(resizeHandle);
+                    
+                    let isResizing = false;
+                    let startX, startY, startWidth, startHeight;
+                    
+                    resizeHandle.addEventListener('touchstart', (e) => {
+                        isResizing = true;
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        startX = touch.clientX;
+                        startY = touch.clientY;
+                        startWidth = window.offsetWidth;
+                        startHeight = window.offsetHeight;
+                        window.style.zIndex = ++this.zIndex;
+                        window.style.transition = 'none';
+                    });
+                    
+                    document.addEventListener('touchmove', (e) => {
+                        if (!isResizing) return;
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const width = startWidth + touch.clientX - startX;
+                        const height = startHeight + touch.clientY - startY;
+                        
+                        if (width > window.offsetWidth * 0.8) window.style.width = `${width}px`;
+                        if (height > window.offsetHeight * 0.8) window.style.height = `${height}px`;
+                    });
+                    
+                    document.addEventListener('touchend', () => {
+                        isResizing = false;
+                        window.style.transition = '';
+                    });
+                },
+
+                setupWindowControls(window) {
+                    const controls = window.querySelectorAll('.window-control');
+                    controls[0].onclick = () => this.minimizeWindow(window);
+                    controls[1].onclick = () => this.maximizeWindow(window);
+                    controls[2].onclick = () => this.closeWindow(window);
+                },
+
+                minimizeWindow(window) {
+                    window.style.transform = 'translate(-50%, -50%) scale(0.8) translateY(100vh)';
+                    window.style.opacity = '0';
+                    setTimeout(() => window.style.display = 'none', 300);
+                },
+
+                maximizeWindow(window) {
+                    window.classList.toggle('maximized');
+                    // Recalculate transform to keep it centered on non-maximized toggle
+                    if (!window.classList.contains('maximized')) {
+                        window.style.transform = 'translate(-50%, -50%)';
+                    }
+                },
+
+                closeWindow(window) {
+                    window.style.transform = 'translate(-50%, -50%) scale(0.8) translateY(-100vh)';
+                    window.style.opacity = '0';
+                    
+                    const appId = window.dataset.appId;
+                    if (appId) {
+                        System.removeTaskbarApp(window.id);
+                    }
+                    
+                    setTimeout(() => {
+                        window.remove();
+                        this.windows = this.windows.filter(w => w !== window);
+                    }, 300);
+                },
+
+                handleWindowFocus(e) {
+                    const window = e.target.closest('.window');
+                    if (window) {
+                        this.zIndex++;
+                        window.style.zIndex = this.zIndex;
+                        this.activeWindow = window;
+                    }
+                },
+                
+                showWindow(windowId) {
+                    const window = document.getElementById(windowId);
+                    if (window) {
+                        window.style.display = 'block';
+                        window.style.transform = 'translate(-50%, -50%) scale(1)';
+                        window.style.opacity = '1';
+                        window.style.zIndex = ++this.zIndex;
+                        this.activeWindow = window;
+                    }
+                },
+                
+                getWindowByAppId(appId) {
+                    return this.windows.find(w => w.dataset.appId === appId);
+                }
+            },
+
+            initDesktop() {
+                const icons = document.querySelectorAll('.icon');
+                icons.forEach(icon => {
+                    icon.ontouchstart = (e) => {
+                        e.preventDefault();
+                        this.openApp(icon.dataset.app);
+                    };
+                });
+            },
+
+            initClock() {
+                const updateTime = () => {
+                    const now = new Date();
+                    document.getElementById('system-time').textContent = 
+                        now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 };
+                updateTime();
+                setInterval(updateTime, 1000);
+            },
+
+            initTaskbar() {
+                const taskbar = document.querySelector('.taskbar');
+                taskbar.style.zIndex = '9999';
+            },
+            
+            addTaskbarApp(appId, title, windowId) {
+                const runningApps = document.querySelector('.running-apps');
                 
-                backBtn.addEventListener('click', () => {
-                    const parts = currentPath.split('/').filter(p => p);
-                    if (parts.length > 0) {
-                        parts.pop();
-                        loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
-                    }
-                });
+                if (!this.taskbarApps[windowId]) {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-item';
+                    taskItem.textContent = title;
+                    taskItem.dataset.windowId = windowId;
+                    
+                    taskItem.ontouchstart = (e) => {
+                        e.preventDefault();
+                        const window = document.getElementById(windowId);
+                        if (window) {
+                            if (window.style.display === 'none') {
+                                this.WindowManager.showWindow(windowId);
+                            } else {
+                                this.WindowManager.minimizeWindow(window);
+                            }
+                        }
+                    };
+                    
+                    runningApps.appendChild(taskItem);
+                    this.taskbarApps[windowId] = taskItem;
+                }
+            },
+            
+            removeTaskbarApp(windowId) {
+                if (this.taskbarApps[windowId]) {
+                    this.taskbarApps[windowId].remove();
+                    delete this.taskbarApps[windowId];
+                }
+            },
+
+            openApp(appName) {
+                const apps = {
+                    files: () => this.createFilesWindow(),
+                    terminal: () => this.createTerminalWindow(),
+                    notepad: () => this.createNotepadWindow(),
+                    browser: () => this.createBrowserWindow(),
+                    calendar: () => this.createCalendarWindow(),
+                    settings: () => this.createSettingsWindow(),
+                    about: () => this.createAboutWindow()
+                };
+
+                if (apps[appName]) {
+                    apps[appName]();
+                }
+            },
+            
+            createFilesWindow() {
+                let currentPath = '/';
                 
-                upBtn.addEventListener('click', () => {
-                    const parts = currentPath.split('/').filter(p => p);
-                    if (parts.length > 0) {
-                        parts.pop();
-                        loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
-                    }
-                });
+                const content = `
+                    <div class="files-content">
+                        <div class="files-toolbar">
+                            <button id="files-back"><i class="fas fa-arrow-left"></i></button>
+                            <button id="files-up"><i class="fas fa-arrow-up"></i></button>
+                            <button id="files-refresh"><i class="fas fa-sync"></i></button>
+                            <input type="text" class="files-path" value="/" readonly>
+                            <button id="files-new-folder"><i class="fas fa-folder-plus"></i></button>
+                        </div>
+                        <div class="files-list"></div>
+                    </div>
+                `;
                 
-                refreshBtn.addEventListener('click', () => {
-                    loadDirectory(currentPath);
-                });
-                
-                newFolderBtn.addEventListener('click', () => {
-                    const folderName = prompt('Enter folder name:');
-                    if (folderName && !folderName.includes('/')) {
-                        this.FileSystem.mkdir(currentPath + folderName + '/');
+                const window = this.WindowManager.create('File Explorer', content, 'files', {
+                    onload: (window) => {
+                        const filesPath = window.querySelector('.files-path');
+                        const filesList = window.querySelector('.files-list');
+                        const backBtn = window.querySelector('#files-back');
+                        const upBtn = window.querySelector('#files-up');
+                        const refreshBtn = window.querySelector('#files-refresh');
+                        const newFolderBtn = window.querySelector('#files-new-folder');
+                        
+                        const loadDirectory = (path) => {
+                            currentPath = path;
+                            filesPath.value = path;
+                            filesList.innerHTML = '';
+                            
+                            const files = this.FileSystem.list(path);
+                            files.forEach(file => {
+                                const isDir = file.endsWith('/');
+                                const fileItem = document.createElement('div');
+                                fileItem.className = 'file-item';
+                                fileItem.innerHTML = `
+                                    <i class="fas ${isDir ? 'fa-folder' : 'fa-file'}" style="color: var(--main-color)"></i>
+                                    <span>${file}</span>
+                                `;
+                                
+                                fileItem.ontouchstart = (e) => {
+                                    e.preventDefault();
+                                    if (isDir) {
+                                        loadDirectory(currentPath + file);
+                                    } else {
+                                        const filePath = currentPath + file;
+                                        const content = this.FileSystem.read(filePath);
+                                        
+                                        if (file.endsWith('.txt')) {
+                                            this.createNotepadWindow(file, content, filePath);
+                                        } else if (file.endsWith('.json')) {
+                                            this.createNotepadWindow(file, JSON.stringify(content, null, 2), filePath);
+                                        } else {
+                                            this.createNotepadWindow(file, String(content), filePath);
+                                        }
+                                    }
+                                };
+                                
+                                filesList.appendChild(fileItem);
+                            });
+                        };
+                        
+                        backBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const parts = currentPath.split('/').filter(p => p);
+                            if (parts.length > 0) {
+                                parts.pop();
+                                loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                            }
+                        };
+                        
+                        upBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const parts = currentPath.split('/').filter(p => p);
+                            if (parts.length > 0) {
+                                parts.pop();
+                                loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
+                            }
+                        };
+                        
+                        refreshBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            loadDirectory(currentPath);
+                        };
+                        
+                        newFolderBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const folderName = prompt('Enter folder name:');
+                            if (folderName && !folderName.includes('/')) {
+                                this.FileSystem.mkdir(currentPath + folderName + '/');
+                                loadDirectory(currentPath);
+                            }
+                        };
+                        
                         loadDirectory(currentPath);
                     }
                 });
                 
-                loadDirectory(currentPath);
-            }
-        });
-        
-        return window;
-    },
-    
-    createTerminalWindow() {
-        const content = `
-            <div class="terminal-content" id="terminal-content">
-                <div class="terminal-line">SCos Terminal v1.3</div>
-                <div class="terminal-line">Type 'help' for available commands.</div>
-                <div class="terminal-input-container">
-                    <span class="terminal-prompt">user@scos:~$</span>
-                    <span id="terminal-typed-command"></span><span id="terminal-cursor" class="blink-cursor">|</span><input type="text" class="terminal-input" id="terminal-input" style="opacity:0; position:absolute; left:-9999px;">
-                </div>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create('Terminal', content, 'terminal', {
-            width: '700px',
-            height: '450px',
-            onload: (window) => {
-                const terminalContent = window.querySelector('#terminal-content');
-                const terminalInput = window.querySelector('#terminal-input');
-                const terminalTypedCommand = window.querySelector('#terminal-typed-command');
-                const terminalCursor = window.querySelector('#terminal-cursor');
-                let commandHistory = [];
-                let historyIndex = -1;
-                let currentDirectory = '/home/';
-                let currentTypingIndex = 0;
-                let currentTypingText = '';
-                let typingInterval = null;
-
-                const startTypingEffect = (text, targetElement, callback) => {
-                    currentTypingText = text;
-                    currentTypingIndex = 0;
-                    targetElement.textContent = ''; // Clear content before typing
-                    terminalCursor.style.display = 'inline'; // Show cursor during typing
-
-                    if (typingInterval) clearInterval(typingInterval);
-
-                    typingInterval = setInterval(() => {
-                        if (currentTypingIndex < currentTypingText.length) {
-                            targetElement.textContent += currentTypingText.charAt(currentTypingIndex);
-                            currentTypingIndex++;
-                            terminalContent.scrollTop = terminalContent.scrollHeight;
-                        } else {
-                            clearInterval(typingInterval);
-                            typingInterval = null;
-                            terminalCursor.style.display = 'none'; // Hide cursor after typing
-                            if (callback) callback();
-                        }
-                    }, 10); // Typing speed in milliseconds per character
-                };
-
-                terminalContent.addEventListener('click', () => {
-                    terminalInput.focus();
-                });
+                return window;
+            },
+            
+            createTerminalWindow() {
+                const content = `
+                    <div class="terminal-content" id="terminal-content">
+                        <div class="terminal-line">SCos Terminal v1.3</div>
+                        <div class="terminal-line">Type 'help' for available commands.</div>
+                        <div class="terminal-input-container">
+                            <span class="terminal-prompt">user@scos:~$</span>
+                            <span id="terminal-typed-command"></span><span id="terminal-cursor" class="blink-cursor">|</span><input type="text" class="terminal-input" id="terminal-input">
+                        </div>
+                    </div>
+                `;
                 
-                terminalInput.focus();
+                const window = this.WindowManager.create('Terminal', content, 'terminal', {
+                    onload: (window) => {
+                        const terminalContent = window.querySelector('#terminal-content');
+                        const terminalInput = window.querySelector('#terminal-input');
+                        const terminalTypedCommand = window.querySelector('#terminal-typed-command');
+                        const terminalCursor = window.querySelector('#terminal-cursor');
+                        let commandHistory = [];
+                        let historyIndex = -1;
+                        let currentDirectory = '/home/';
+                        let currentTypingIndex = 0;
+                        let currentTypingText = '';
+                        let typingInterval = null;
 
-                const addLine = (text, isPrompt = false) => {
-                    const newLine = document.createElement('div');
-                    newLine.className = 'terminal-line';
-                    if (isPrompt) {
-                        newLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span>`;
-                        const span = document.createElement('span');
-                        newLine.appendChild(span);
-                        terminalContent.insertBefore(newLine, terminalInput.parentElement);
-                        startTypingEffect(text, span, () => {
-                            terminalCursor.style.display = 'inline';
-                            terminalInput.style.position = 'relative';
-                            terminalInput.style.left = '0';
-                            terminalInput.style.opacity = '1';
+                        const startTypingEffect = (text, targetElement, callback) => {
+                            currentTypingText = text;
+                            currentTypingIndex = 0;
+                            targetElement.textContent = ''; // Clear content before typing
+                            terminalCursor.style.display = 'inline'; // Show cursor during typing
+
+                            if (typingInterval) clearInterval(typingInterval);
+
+                            typingInterval = setInterval(() => {
+                                if (currentTypingIndex < currentTypingText.length) {
+                                    targetElement.textContent += currentTypingText.charAt(currentTypingIndex);
+                                    currentTypingIndex++;
+                                    terminalContent.scrollTop = terminalContent.scrollHeight;
+                                } else {
+                                    clearInterval(typingInterval);
+                                    typingInterval = null;
+                                    terminalCursor.style.display = 'none'; // Hide cursor after typing
+                                    if (callback) callback();
+                                }
+                            }, 10); // Typing speed in milliseconds per character
+                        };
+
+                        terminalContent.ontouchstart = () => {
                             terminalInput.focus();
-                        });
-                    } else {
-                        terminalCursor.style.display = 'none';
-                        terminalInput.style.opacity = '0';
-                        terminalInput.style.position = 'absolute';
-                        terminalInput.style.left = '-9999px';
+                        };
+                        
+                        terminalInput.focus();
+                        
+                        const addLine = (text, isPrompt = false) => {
+                            const newLine = document.createElement('div');
+                            newLine.className = 'terminal-line';
+                            if (isPrompt) {
+                                newLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span>`;
+                                const span = document.createElement('span');
+                                newLine.appendChild(span);
+                                terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                                startTypingEffect(text, span, () => {
+                                    terminalCursor.style.display = 'inline';
+                                    terminalInput.focus();
+                                });
+                            } else {
+                                terminalCursor.style.display = 'none';
+                                terminalContent.insertBefore(newLine, terminalInput.parentElement);
+                                startTypingEffect(text, newLine, () => {
+                                    terminalCursor.style.display = 'inline';
+                                    terminalInput.focus();
+                                });
+                            }
+                        };
+                        
+                        const executeCommand = async (command) => {
+                            if (typingInterval) {
+                                return;
+                            }
 
-                        terminalContent.insertBefore(newLine, terminalInput.parentElement);
-                        startTypingEffect(text, newLine, () => {
-                            terminalCursor.style.display = 'inline';
-                            terminalInput.style.position = 'relative';
-                            terminalInput.style.left = '0';
-                            terminalInput.style.opacity = '1';
-                            terminalInput.focus();
-                        });
-                    }
-                };
+                            if (command.trim()) {
+                                commandHistory.push(command);
+                                historyIndex = commandHistory.length;
+                            }
+                            
+                            const cmdLine = document.createElement('div');
+                            cmdLine.className = 'terminal-line';
+                            cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span> ${command}`;
+                            terminalContent.insertBefore(cmdLine, terminalInput.parentElement);
+                            
+                            let response = '';
+                            let showTypingEffect = true;
 
-                const executeCommand = async (command) => {
-                    if (typingInterval) { // Prevent execution if still typing
-                        return;
-                    }
+                            let effectiveCommand = command;
+                            const aliasMatch = command.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                            if (aliasMatch) {
+                                const aliasName = aliasMatch[1];
+                                const aliasCmd = aliasMatch[2];
+                                System.terminalAliases[aliasName] = aliasCmd;
+                                response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                showTypingEffect = true;
+                            } else {
+                                const parts = command.trim().split(' ');
+                                const potentialAlias = parts[0];
+                                if (System.terminalAliases[potentialAlias]) {
+                                    effectiveCommand = System.terminalAliases[potentialAlias] + ' ' + parts.slice(1).join(' ');
+                                }
+                            }
 
-                    if (command.trim()) {
-                        commandHistory.push(command);
-                        historyIndex = commandHistory.length;
-                    }
-                    
-                    const cmdLine = document.createElement('div');
-                    cmdLine.className = 'terminal-line';
-                    cmdLine.innerHTML = `<span class="terminal-prompt">user@scos:${currentDirectory}$</span> ${command}`;
-                    terminalContent.insertBefore(cmdLine, terminalInput.parentElement);
-                    
-                    let response = '';
-                    let showTypingEffect = true;
-
-                    // Resolve aliases
-                    let effectiveCommand = command;
-                    const aliasMatch = command.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
-                    if (aliasMatch) {
-                        const aliasName = aliasMatch[1];
-                        const aliasCmd = aliasMatch[2];
-                        System.terminalAliases[aliasName] = aliasCmd;
-                        response = `Alias '${aliasName}' set to '${aliasCmd}'`;
-                        showTypingEffect = true;
-                    } else {
-                        const parts = command.trim().split(' ');
-                        const potentialAlias = parts[0];
-                        if (System.terminalAliases[potentialAlias]) {
-                            effectiveCommand = System.terminalAliases[potentialAlias] + ' ' + parts.slice(1).join(' ');
-                        }
-                    }
-
-                    const args = effectiveCommand.trim().split(' ');
-                    const cmd = args[0].toLowerCase();
-                    
-                    switch (cmd) {
-                        case 'help':
-                            response = `Available commands:
+                            const args = effectiveCommand.trim().split(' ');
+                            const cmd = args[0].toLowerCase();
+                            
+                            switch (cmd) {
+                                case 'help':
+                                    response = `Available commands:
 help     - Show this help message
 ls       - List directory contents
 cd       - Change directory
@@ -1250,197 +1292,197 @@ alias    - Create command aliases
 history  - Show command history
 shutdown - Shut down the system
 reboot   - Reboot the system`;
-                            break;
-                        
-                        case 'ls':
-                            try {
-                                const path = args[1] || currentDirectory;
-                                const files = System.FileSystem.list(path);
-                                response = files.length ? files.join('  ') : '(empty directory)';
-                            } catch (err) {
-                                response = 'Error: Invalid path or permission denied.';
-                            }
-                            break;
-                        
-                        case 'cd':
-                            try {
-                                const path = args[1] || '/home/';
+                                    break;
                                 
-                                let targetPath;
-                                if (path.startsWith('/')) {
-                                    targetPath = path;
-                                } else if (path === '..') {
-                                    const parts = currentDirectory.split('/').filter(p => p);
-                                    parts.pop();
-                                    targetPath = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
-                                } else {
-                                    targetPath = currentDirectory + path + (path.endsWith('/') ? '' : '/');
-                                }
-                                
-                                if (!targetPath.endsWith('/')) targetPath += '/';
-                                
-                                if (System.FileSystem.isDirectory(targetPath)) {
-                                    currentDirectory = targetPath;
-                                    response = `Changed directory to ${targetPath}`;
-                                } else {
-                                    response = `Error: Directory not found: ${targetPath}`;
-                                }
-                            } catch (err) {
-                                response = 'Error: Invalid path.';
-                            }
-                            break;
-                        
-                        case 'cat':
-                            try {
-                                const filename = args[1];
-                                if (!filename) {
-                                    response = 'Error: No filename specified';
-                                } else {
-                                    const path = filename.startsWith('/') ? filename : currentDirectory + filename;
-                                    const content = System.FileSystem.read(path);
-                                    response = content !== null ? String(content) : 'Error: File not found';
-                                }
-                            } catch (err) {
-                                response = 'Error: Failed to read file.';
-                            }
-                            break;
-                            
-                        case 'echo':
-                            response = args.slice(1).join(' ');
-                            break;
-                            
-                        case 'clear':
-                            while (terminalContent.firstChild !== terminalInput.parentElement) {
-                                terminalContent.removeChild(terminalContent.firstChild);
-                            }
-                            response = ''; // No response needed, screen is cleared
-                            showTypingEffect = false;
-                            break;
-                            
-                        case 'date':
-                            response = new Date().toString();
-                            break;
-                            
-                        case 'mkdir':
-                            try {
-                                const dirname = args[1];
-                                if (!dirname) {
-                                    response = 'Error: No directory name specified';
-                                } else {
-                                    const path = dirname.startsWith('/') ? dirname : currentDirectory + dirname;
-                                    const success = System.FileSystem.mkdir(path + '/');
-                                    response = success ? `Directory created: ${path}/` : 'Error: Failed to create directory';
-                                }
-                            } catch (err) {
-                                response = 'Error: Failed to create directory.';
-                            }
-                            break;
-                            
-                        case 'touch':
-                            try {
-                                const filename = args[1];
-                                if (!filename) {
-                                    response = 'Error: No filename specified';
-                                } else {
-                                    const path = filename.startsWith('/') ? filename : currentDirectory + filename;
-                                    const success = System.FileSystem.write(path, '');
-                                    response = success ? `File created: ${path}` : 'Error: Failed to create file';
-                                }
-                            } catch (err) {
-                                response = 'Error: Failed to create file.';
-                            }
-                            break;
-                        
-                        case 'rm':
-                            try {
-                                const targetPath = args[1];
-                                if (!targetPath) {
-                                    response = 'Error: No file or directory specified.';
-                                } else {
-                                    const path = targetPath.startsWith('/') ? targetPath : currentDirectory + targetPath;
-                                    const success = System.FileSystem.delete(path);
-                                    response = success ? `Removed: ${path}` : 'Error: File or directory not found.';
-                                }
-                            } catch (err) {
-                                response = 'Error: Failed to remove file/directory.';
-                            }
-                            break;
-
-                        case 'whoami':
-                            response = 'user';
-                            break;
-                            
-                        case 'version':
-                            response = 'SCos version 1.3.5, Terminal v1.3';
-                            break;
-
-                        case 'calc':
-                            if (args.length !== 4) {
-                                response = 'Usage: calc <number1> <operator> <number2>';
-                            } else {
-                                const num1 = parseFloat(args[1]);
-                                const operator = args[2];
-                                const num2 = parseFloat(args[3]);
-
-                                if (isNaN(num1) || isNaN(num2)) {
-                                    response = 'Error: Invalid numbers. Please use numeric values.';
-                                } else {
-                                    let result;
-                                    switch (operator) {
-                                        case '+': result = num1 + num2; break;
-                                        case '-': result = num1 - num2; break;
-                                        case '*': result = num1 * num2; break;
-                                        case '/':
-                                            if (num2 === 0) { response = 'Error: Division by zero is not allowed.'; break; }
-                                            result = num1 / num2; break;
-                                        default: response = 'Error: Invalid operator. Use +, -, *, or /. Check "help calc"'; break;
+                                case 'ls':
+                                    try {
+                                        const path = args[1] || currentDirectory;
+                                        const files = System.FileSystem.list(path);
+                                        response = files.length ? files.join('  ') : '(empty directory)';
+                                    } catch (err) {
+                                        response = 'Error: Invalid path or permission denied.';
                                     }
-                                    if (result !== undefined) {
-                                        response = `Result: ${result}`;
-                                    }
-                                }
-                            }
-                            break;
-                        
-                        case 'ping':
-                            const host = args[1];
-                            if (!host) {
-                                response = 'Usage: ping <hostname>';
-                            } else {
-                                showTypingEffect = false; // Ping output might be multi-line
-                                const networkData = JSON.parse(System.FileSystem.read('system/network.json') || '{}');
-                                const hostInfo = networkData[host];
-                                if (hostInfo) {
-                                    let pingOutput = `PING ${hostInfo.ip} (${host}): 56 data bytes\n`;
-                                    if (hostInfo.status === 'online') {
-                                        const packets = 4;
-                                        for (let i = 0; i < packets; i++) {
-                                            pingOutput += `64 bytes from ${hostInfo.ip}: icmp_seq=${i+1} ttl=64 time=${hostInfo.latency}\n`;
-                                            await new Promise(r => setTimeout(r, Math.random() * 200 + 100)); // Simulate delay
+                                    break;
+                                
+                                case 'cd':
+                                    try {
+                                        const path = args[1] || '/home/';
+                                        
+                                        let targetPath;
+                                        if (path.startsWith('/')) {
+                                            targetPath = path;
+                                        } else if (path === '..') {
+                                            const parts = currentDirectory.split('/').filter(p => p);
+                                            parts.pop();
+                                            targetPath = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
+                                        } else {
+                                            targetPath = currentDirectory + path + (path.endsWith('/') ? '' : '/');
                                         }
-                                        pingOutput += `\n--- ${host} ping statistics ---\n`;
-                                        pingOutput += `${packets} packets transmitted, ${packets} received, 0% packet loss\n`;
-                                        pingOutput += `round-trip min/avg/max/stddev = 0.0/${parseFloat(hostInfo.latency)}/${parseFloat(hostInfo.latency)}/0.0 ms\n`;
-                                    } else {
-                                        pingOutput += `Request timeout for icmp_seq 0\n`;
-                                        await new Promise(r => setTimeout(r, 1000));
-                                        pingOutput += `Request timeout for icmp_seq 1\n`;
-                                        await new Promise(r => setTimeout(r, 1000));
-                                        pingOutput += `Request timeout for icmp_seq 2\n`;
-                                        pingOutput += `\n--- ${host} ping statistics ---\n`;
-                                        pingOutput += `4 packets transmitted, 0 received, 100% packet loss, time 3000ms\n`;
+                                        
+                                        if (!targetPath.endsWith('/')) targetPath += '/';
+                                        
+                                        if (System.FileSystem.isDirectory(targetPath)) {
+                                            currentDirectory = targetPath;
+                                            response = `Changed directory to ${targetPath}`;
+                                        } else {
+                                            response = `Error: Directory not found: ${targetPath}`;
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Invalid path.';
                                     }
-                                    response = pingOutput;
-                                } else {
-                                    response = `ping: cannot resolve ${host}: Unknown host`;
-                                }
-                            }
-                            break;
+                                    break;
+                                
+                                case 'cat':
+                                    try {
+                                        const filename = args[1];
+                                        if (!filename) {
+                                            response = 'Error: No filename specified';
+                                        } else {
+                                            const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                            const content = System.FileSystem.read(path);
+                                            response = content !== null ? String(content) : 'Error: File not found';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to read file.';
+                                    }
+                                    break;
+                                    
+                                case 'echo':
+                                    response = args.slice(1).join(' ');
+                                    break;
+                                    
+                                case 'clear':
+                                    while (terminalContent.firstChild !== terminalInput.parentElement) {
+                                        terminalContent.removeChild(terminalContent.firstChild);
+                                    }
+                                    response = '';
+                                    showTypingEffect = false;
+                                    break;
+                                    
+                                case 'date':
+                                    response = new Date().toString();
+                                    break;
+                                    
+                                case 'mkdir':
+                                    try {
+                                        const dirname = args[1];
+                                        if (!dirname) {
+                                            response = 'Error: No directory name specified';
+                                        } else {
+                                            const path = dirname.startsWith('/') ? dirname : currentDirectory + dirname;
+                                            const success = System.FileSystem.mkdir(path + '/');
+                                            response = success ? `Directory created: ${path}/` : 'Error: Failed to create directory';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to create directory.';
+                                    }
+                                    break;
+                                    
+                                case 'touch':
+                                    try {
+                                        const filename = args[1];
+                                        if (!filename) {
+                                            response = 'Error: No filename specified';
+                                        } else {
+                                            const path = filename.startsWith('/') ? filename : currentDirectory + filename;
+                                            const success = System.FileSystem.write(path, '');
+                                            response = success ? `File created: ${path}` : 'Error: Failed to create file';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to create file.';
+                                    }
+                                    break;
+                                
+                                case 'rm':
+                                    try {
+                                        const targetPath = args[1];
+                                        if (!targetPath) {
+                                            response = 'Error: No file or directory specified.';
+                                        } else {
+                                            const path = targetPath.startsWith('/') ? targetPath : currentDirectory + targetPath;
+                                            const success = System.FileSystem.delete(path);
+                                            response = success ? `Removed: ${path}` : 'Error: File or directory not found.';
+                                        }
+                                    } catch (err) {
+                                        response = 'Error: Failed to remove file/directory.';
+                                    }
+                                    break;
 
-                        case 'sysinfo':
-                            const totalMem = 4096; // MB
-                            const freeMem = (Math.random() * 1024 + 1024).toFixed(2); // 1-2 GB
-                            response = `SCos System Information:
+                                case 'whoami':
+                                    response = 'user';
+                                    break;
+                                    
+                                case 'version':
+                                    response = 'SCos version 1.3.5, Terminal v1.3';
+                                    break;
+
+                                case 'calc':
+                                    if (args.length !== 4) {
+                                        response = 'Usage: calc <number1> <operator> <number2>';
+                                    } else {
+                                        const num1 = parseFloat(args[1]);
+                                        const operator = args[2];
+                                        const num2 = parseFloat(args[3]);
+
+                                        if (isNaN(num1) || isNaN(num2)) {
+                                            response = 'Error: Invalid numbers. Please use numeric values.';
+                                        } else {
+                                            let result;
+                                            switch (operator) {
+                                                case '+': result = num1 + num2; break;
+                                                case '-': result = num1 - num2; break;
+                                                case '*': result = num1 * num2; break;
+                                                case '/':
+                                                    if (num2 === 0) { response = 'Error: Division by zero is not allowed.'; break; }
+                                                    result = num1 / num2; break;
+                                                default: response = 'Error: Invalid operator. Use +, -, *, or /. Check "help calc"'; break;
+                                            }
+                                            if (result !== undefined) {
+                                                response = `Result: ${result}`;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                
+                                case 'ping':
+                                    const host = args[1];
+                                    if (!host) {
+                                        response = 'Usage: ping <hostname>';
+                                    } else {
+                                        showTypingEffect = false;
+                                        const networkData = JSON.parse(System.FileSystem.read('system/network.json') || '{}');
+                                        const hostInfo = networkData[host];
+                                        if (hostInfo) {
+                                            let pingOutput = `PING ${hostInfo.ip} (${host}): 56 data bytes\n`;
+                                            if (hostInfo.status === 'online') {
+                                                const packets = 4;
+                                                for (let i = 0; i < packets; i++) {
+                                                    pingOutput += `64 bytes from ${hostInfo.ip}: icmp_seq=${i+1} ttl=64 time=${hostInfo.latency}\n`;
+                                                    await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+                                                }
+                                                pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                                pingOutput += `${packets} packets transmitted, ${packets} received, 0% packet loss\n`;
+                                                pingOutput += `round-trip min/avg/max/stddev = 0.0/${parseFloat(hostInfo.latency)}/${parseFloat(hostInfo.latency)}/0.0 ms\n`;
+                                            } else {
+                                                pingOutput += `Request timeout for icmp_seq 0\n`;
+                                                await new Promise(r => setTimeout(r, 1000));
+                                                pingOutput += `Request timeout for icmp_seq 1\n`;
+                                                await new Promise(r => setTimeout(r, 1000));
+                                                pingOutput += `Request timeout for icmp_seq 2\n`;
+                                                pingOutput += `\n--- ${host} ping statistics ---\n`;
+                                                pingOutput += `4 packets transmitted, 0 received, 100% packet loss, time 3000ms\n`;
+                                            }
+                                            response = pingOutput;
+                                        } else {
+                                            response = `ping: cannot resolve ${host}: Unknown host`;
+                                        }
+                                    }
+                                    break;
+
+                                case 'sysinfo':
+                                    const totalMem = 4096;
+                                    const freeMem = (Math.random() * 1024 + 1024).toFixed(2);
+                                    response = `SCos System Information:
 OS Version: ${System.FileSystem.read('system/settings.json') ? JSON.parse(System.FileSystem.read('system/settings.json')).version : 'Unknown'}
 Kernel: SCos-1.3.5-alpha
 Architecture: x86_64 (simulated)
@@ -1449,450 +1491,477 @@ Total Memory: ${totalMem} MB
 Free Memory: ${freeMem} MB
 CPU Cores: 2
 Storage Used: ${(() => {
-                                const fsData = localStorage.getItem('filesystem');
-                                const bytes = fsData ? fsData.length : 0;
-                                if (bytes < 1024) return `${bytes} bytes`;
-                                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-                                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-                            })()}
+                                        const fsData = localStorage.getItem('filesystem');
+                                        const bytes = fsData ? fsData.length : 0;
+                                        if (bytes < 1024) return `${bytes} bytes`;
+                                        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+                                        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                                    })()}
 Current Time: ${new Date().toLocaleString()}`;
-                            break;
-                        
-                        case 'alias':
-                            if (args.length === 1) {
-                                let aliasList = 'Current aliases:\n';
-                                for (const key in System.terminalAliases) {
-                                    aliasList += `${key}='${System.terminalAliases[key]}'\n`;
-                                }
-                                response = aliasList === 'Current aliases:\n' ? 'No aliases set.' : aliasList;
-                            } else {
-                                const aliasString = args.slice(1).join(' ');
-                                const match = aliasString.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
-                                if (match) {
-                                    const aliasName = match[1];
-                                    const aliasCmd = match[2];
-                                    System.terminalAliases[aliasName] = aliasCmd;
-                                    response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                    break;
+                                
+                                case 'alias':
+                                    if (args.length === 1) {
+                                        let aliasList = 'Current aliases:\n';
+                                        for (const key in System.terminalAliases) {
+                                            aliasList += `${key}='${System.terminalAliases[key]}'\n`;
+                                        }
+                                        response = aliasList === 'Current aliases:\n' ? 'No aliases set.' : aliasList;
+                                    } else {
+                                        const aliasString = args.slice(1).join(' ');
+                                        const match = aliasString.match(/^(\w+)\s*=\s*['"]?(.+)['"]?$/);
+                                        if (match) {
+                                            const aliasName = match[1];
+                                            const aliasCmd = match[2];
+                                            System.terminalAliases[aliasName] = aliasCmd;
+                                            response = `Alias '${aliasName}' set to '${aliasCmd}'`;
+                                        } else {
+                                            response = 'Usage: alias <name>=\'<command>\'';
+                                        }
+                                    }
+                                    break;
+
+                                case 'history':
+                                    if (commandHistory.length === 0) {
+                                        response = 'No commands in history.';
+                                    } else {
+                                        response = commandHistory.map((cmd, idx) => `${idx + 1}  ${cmd}`).join('\n');
+                                    }
+                                    break;
+
+                                case 'shutdown':
+                                    response = 'Shutting down SCos... Goodbye!';
+                                    await new Promise(r => setTimeout(r, 1500));
+                                    window.close();
+                                    break;
+
+
+                                case 'reboot':
+                                    response = 'Rebooting SCos... Please wait.';
+                                    await new Promise(r => setTimeout(r, 1500));
+                                    location.reload();
+                                    break;
+                                    
+                                case '':
+                                    break;
+                                    
+                                default:
+                                    response = `Command not found: ${cmd}. Type 'help' for available commands.`;
+                            }
+                            
+                            if (response) {
+                                if (showTypingEffect) {
+                                    await new Promise(resolve => {
+                                        const responseLine = document.createElement('div');
+                                        responseLine.className = 'terminal-line';
+                                        terminalContent.insertBefore(responseLine, terminalInput.parentElement);
+                                        startTypingEffect(response, responseLine, resolve);
+                                    });
                                 } else {
-                                    response = 'Usage: alias <name>=\'<command>\'';
+                                    const responseLine = document.createElement('div');
+                                    responseLine.className = 'terminal-line';
+                                    responseLine.textContent = response;
+                                    terminalContent.insertBefore(responseLine, terminalInput.parentElement);
                                 }
                             }
-                            break;
-
-                        case 'history':
-                            if (commandHistory.length === 0) {
-                                response = 'No commands in history.';
-                            } else {
-                                response = commandHistory.map((cmd, idx) => `${idx + 1}  ${cmd}`).join('\n');
-                            }
-                            break;
-
-                        case 'shutdown':
-                            response = 'Shutting down SCos... Goodbye!';
-                            await new Promise(r => setTimeout(r, 1500));
-                            window.close();
-                            break;
-
-
-                        case 'reboot':
-                            response = 'Rebooting SCos... Please wait.';
-                            await new Promise(r => setTimeout(r, 1500));
-                            location.reload();
-                            break;
                             
-                        case '':
-                            break;
-                            
-                        default:
-                            response = `Command not found: ${cmd}. Type 'help' for available commands.`;
-                    }
-                    
-                    if (response) {
-                        if (showTypingEffect) {
-                            await new Promise(resolve => {
-                                const responseLine = document.createElement('div');
-                                responseLine.className = 'terminal-line';
-                                terminalContent.insertBefore(responseLine, terminalInput.parentElement);
-                                startTypingEffect(response, responseLine, resolve);
-                            });
-                        } else {
-                            const responseLine = document.createElement('div');
-                            responseLine.className = 'terminal-line';
-                            responseLine.textContent = response;
-                            terminalContent.insertBefore(responseLine, terminalInput.parentElement);
-                        }
-                    }
-                    
-                    terminalInput.value = '';
-                    terminalTypedCommand.textContent = '';
-                    terminalContent.scrollTop = terminalContent.scrollHeight;
-                };
-                
-                terminalInput.addEventListener('input', () => {
-                    terminalTypedCommand.textContent = terminalInput.value;
-                });
-
-                terminalInput.addEventListener('keydown', async (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const command = terminalInput.value;
-                        terminalInput.value = ''; // Clear immediately
-                        terminalTypedCommand.textContent = ''; // Clear typed text visual
-                        await executeCommand(command);
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        if (historyIndex > 0) {
-                            historyIndex--;
-                            terminalInput.value = commandHistory[historyIndex];
-                            terminalTypedCommand.textContent = terminalInput.value;
-                        }
-                    } else if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        if (historyIndex < commandHistory.length - 1) {
-                            historyIndex++;
-                            terminalInput.value = commandHistory[historyIndex];
-                            terminalTypedCommand.textContent = terminalInput.value;
-                        } else if (historyIndex === commandHistory.length - 1) {
-                            historyIndex = commandHistory.length;
                             terminalInput.value = '';
                             terminalTypedCommand.textContent = '';
-                        }
-                    }
-                });
-
-                // Initial prompt after window loads and typing effect finishes for initial messages
-                setTimeout(() => {
-                    executeCommand(''); // To display the initial prompt
-                }, 100);
-            }
-        });
-        
-        return window;
-    },
-    
-    createNotepadWindow(filename = 'Untitled.txt', content = '', filepath = null) {
-        const windowContent = `
-            <div class="notepad-content">
-                <div class="notepad-toolbar">
-                    <button id="notepad-save">Save</button>
-                    <button id="notepad-save-as">Save As</button>
-                </div>
-                <textarea class="notepad-editor" id="notepad-editor">${content}</textarea>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create(`Notepad - ${filename}`, windowContent, 'notepad', {
-            width: '700px',
-            height: '500px',
-            onload: (window) => {
-                const editor = window.querySelector('#notepad-editor');
-                const saveBtn = window.querySelector('#notepad-save');
-                const saveAsBtn = window.querySelector('#notepad-save-as');
-                
-                editor.focus();
-                
-                saveBtn.addEventListener('click', () => {
-                    if (filepath) {
-                        this.FileSystem.write(filepath, editor.value);
-                        alert('File saved successfully!');
-                    } else {
-                        const newFilepath = prompt('Enter file path to save:', 'home/documents/untitled.txt');
-                        if (newFilepath) {
-                            this.FileSystem.write(newFilepath, editor.value);
-                            alert('File saved successfully!');
-                            filepath = newFilepath;
-                            window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
-                        }
-                    }
-                });
-                
-                saveAsBtn.addEventListener('click', () => {
-                    const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
-                    if (newFilepath) {
-                        this.FileSystem.write(newFilepath, editor.value);
-                        alert('File saved successfully!');
-                        filepath = newFilepath;
-                        window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
-                    }
-                });
-            }
-        });
-        
-        return window;
-    },
-    
-createBrowserWindow() {
-    const content = `
-        <iframe 
-            id="browser-iframe" 
-            src="https://whatever-you-want-here.global.ssl.fastly.net/"
-            style="width: 100%; height: 100%; border: none;"
-        ></iframe>
-    `;
-
-    const window = this.WindowManager.create('Web Browser', content, 'browser', {
-        width: '800px',
-        height: '600px'
-    });
-
-    return window;
-},
-
-    
-    createCalendarWindow() {
-        const today = new Date();
-        
-        const content = `
-            <div class="calendar-app">
-                <div class="calendar-toolbar">
-                    <div>
-                        <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
-                        <button id="next-month"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                    <h3 id="month-year"></h3>
-                    <button id="today-btn">Today</button>
-                </div>
-                <div class="calendar-grid" id="calendar-grid"></div>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create('Calendar', content, 'calendar', {
-            width: '600px',
-            height: '500px',
-            onload: (window) => {
-                const monthYearElement = window.querySelector('#month-year');
-                const calendarGrid = window.querySelector('#calendar-grid');
-                const prevMonthBtn = window.querySelector('#prev-month');
-                const nextMonthBtn = window.querySelector('#next-month');
-                const todayBtn = window.querySelector('#today-btn');
-                
-                let currentDate = new Date();
-                let currentMonth = currentDate.getMonth();
-                let currentYear = currentDate.getFullYear();
-                
-                const renderCalendar = () => {
-                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                       'July', 'August', 'September', 'October', 'November', 'December'];
-                    monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-                    
-                    calendarGrid.innerHTML = '';
-                    
-                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    dayNames.forEach(day => {
-                        const dayHeader = document.createElement('div');
-                        dayHeader.className = 'calendar-header';
-                        dayHeader.textContent = day;
-                        calendarGrid.appendChild(dayHeader);
-                    });
-                    
-                    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-                    const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
-                    
-                    for (let i = 0; i < firstDay; i++) {
-                        const emptyCell = document.createElement('div');
-                        emptyCell.className = 'calendar-day empty';
-                        calendarGrid.appendChild(emptyCell);
-                    }
-                    
-                    const realToday = new Date();
-                    for (let i = 1; i <= lastDate; i++) {
-                        const dayCell = document.createElement('div');
-                        dayCell.className = 'calendar-day';
-                        dayCell.textContent = i;
+                            terminalContent.scrollTop = terminalContent.scrollHeight;
+                        };
                         
-                        if (i === realToday.getDate() && 
-                            currentMonth === realToday.getMonth() && 
-                            currentYear === realToday.getFullYear()) {
-                            dayCell.classList.add('today');
-                        }
-                        
-                        dayCell.addEventListener('click', () => {
-                            const selectedDate = new Date(currentYear, currentMonth, i);
-                            alert(`Selected date: ${selectedDate.toDateString()}`);
+                        terminalInput.addEventListener('input', () => {
+                            terminalTypedCommand.textContent = terminalInput.value;
                         });
+
+                        terminalInput.addEventListener('keydown', async (e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const command = terminalInput.value;
+                                terminalInput.value = '';
+                                terminalTypedCommand.textContent = '';
+                                await executeCommand(command);
+                            } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                if (historyIndex > 0) {
+                                    historyIndex--;
+                                    terminalInput.value = commandHistory[historyIndex];
+                                    terminalTypedCommand.textContent = terminalInput.value;
+                                }
+                            } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                if (historyIndex < commandHistory.length - 1) {
+                                    historyIndex++;
+                                    terminalInput.value = commandHistory[historyIndex];
+                                    terminalTypedCommand.textContent = terminalInput.value;
+                                } else if (historyIndex === commandHistory.length - 1) {
+                                    historyIndex = commandHistory.length;
+                                    terminalInput.value = '';
+                                    terminalTypedCommand.textContent = '';
+                                }
+                            }
+                        });
+
+                        setTimeout(() => {
+                            executeCommand('');
+                        }, 100);
+                    }
+                });
+                
+                return window;
+            },
+            
+            createNotepadWindow(filename = 'Untitled.txt', content = '', filepath = null) {
+                const windowContent = `
+                    <div class="notepad-content">
+                        <div class="notepad-toolbar">
+                            <button id="notepad-save">Save</button>
+                            <button id="notepad-save-as">Save As</button>
+                        </div>
+                        <textarea class="notepad-editor" id="notepad-editor">${content}</textarea>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create(`Notepad - ${filename}`, windowContent, 'notepad', {
+                    onload: (window) => {
+                        const editor = window.querySelector('#notepad-editor');
+                        const saveBtn = window.querySelector('#notepad-save');
+                        const saveAsBtn = window.querySelector('#notepad-save-as');
                         
-                        calendarGrid.appendChild(dayCell);
+                        editor.focus();
+                        
+                        saveBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            if (filepath) {
+                                this.FileSystem.write(filepath, editor.value);
+                                alert('File saved successfully!');
+                            } else {
+                                const newFilepath = prompt('Enter file path to save:', 'home/documents/untitled.txt');
+                                if (newFilepath) {
+                                    this.FileSystem.write(newFilepath, editor.value);
+                                    alert('File saved successfully!');
+                                    filepath = newFilepath;
+                                    window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                                }
+                            }
+                        };
+                        
+                        saveAsBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
+                            if (newFilepath) {
+                                this.FileSystem.write(newFilepath, editor.value);
+                                alert('File saved successfully!');
+                                filepath = newFilepath;
+                                window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
+                            }
+                        };
                     }
-                };
-                
-                prevMonthBtn.addEventListener('click', () => {
-                    currentMonth--;
-                    if (currentMonth < 0) {
-                        currentMonth = 11;
-                        currentYear--;
-                    }
-                    renderCalendar();
                 });
                 
-                nextMonthBtn.addEventListener('click', () => {
-                    currentMonth++;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
+                return window;
+            },
+            
+            createBrowserWindow() {
+                const content = `
+                    <div class="browser-content">
+                        <div class="browser-toolbar">
+                            <button id="browser-back"><i class="fas fa-arrow-left"></i></button>
+                            <button id="browser-forward"><i class="fas fa-arrow-right"></i></button>
+                            <input type="text" id="browser-url" value="https://whatever-you-want-here.global.ssl.fastly.net/">
+                            <button id="browser-go"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                        <iframe id="browser-iframe" src="https://whatever-you-want-here.global.ssl.fastly.net/"></iframe>
+                    </div>
+                `;
+            
+                const window = this.WindowManager.create('Web Browser', content, 'browser', {
+                    onload: (window) => {
+                        const iframe = window.querySelector('#browser-iframe');
+                        const urlInput = window.querySelector('#browser-url');
+                        const goBtn = window.querySelector('#browser-go');
+                        const backBtn = window.querySelector('#browser-back');
+                        const forwardBtn = window.querySelector('#browser-forward');
+            
+                        goBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            let url = urlInput.value;
+                            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                                url = 'https://' + url;
+                            }
+                            iframe.src = url;
+                        };
+                        
+                        // Note: back/forward functionality is limited in an iframe and not a true browser
+                        // These buttons might not work as expected with same-origin policy.
+                        backBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            iframe.contentWindow.history.back();
+                        };
+            
+                        forwardBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            iframe.contentWindow.history.forward();
+                        };
                     }
-                    renderCalendar();
+                });
+            
+                return window;
+            },
+            
+            createCalendarWindow() {
+                const today = new Date();
+                
+                const content = `
+                    <div class="calendar-app">
+                        <div class="calendar-toolbar">
+                            <div>
+                                <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                                <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <h3 id="month-year"></h3>
+                            <button id="today-btn">Today</button>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid"></div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('Calendar', content, 'calendar', {
+                    onload: (window) => {
+                        const monthYearElement = window.querySelector('#month-year');
+                        const calendarGrid = window.querySelector('#calendar-grid');
+                        const prevMonthBtn = window.querySelector('#prev-month');
+                        const nextMonthBtn = window.querySelector('#next-month');
+                        const todayBtn = window.querySelector('#today-btn');
+                        
+                        let currentDate = new Date();
+                        let currentMonth = currentDate.getMonth();
+                        let currentYear = currentDate.getFullYear();
+                        
+                        const renderCalendar = () => {
+                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                               'July', 'August', 'September', 'October', 'November', 'December'];
+                            monthYearElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                            
+                            calendarGrid.innerHTML = '';
+                            
+                            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                            dayNames.forEach(day => {
+                                const dayHeader = document.createElement('div');
+                                dayHeader.className = 'calendar-header';
+                                dayHeader.textContent = day;
+                                calendarGrid.appendChild(dayHeader);
+                            });
+                            
+                            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+                            
+                            for (let i = 0; i < firstDay; i++) {
+                                const emptyCell = document.createElement('div');
+                                emptyCell.className = 'calendar-day empty';
+                                calendarGrid.appendChild(emptyCell);
+                            }
+                            
+                            const realToday = new Date();
+                            for (let i = 1; i <= lastDate; i++) {
+                                const dayCell = document.createElement('div');
+                                dayCell.className = 'calendar-day';
+                                dayCell.textContent = i;
+                                
+                                if (i === realToday.getDate() && 
+                                    currentMonth === realToday.getMonth() && 
+                                    currentYear === realToday.getFullYear()) {
+                                    dayCell.classList.add('today');
+                                }
+                                
+                                dayCell.ontouchstart = (e) => {
+                                    e.preventDefault();
+                                    const selectedDate = new Date(currentYear, currentMonth, i);
+                                    alert(`Selected date: ${selectedDate.toDateString()}`);
+                                };
+                                
+                                calendarGrid.appendChild(dayCell);
+                            }
+                        };
+                        
+                        prevMonthBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            currentMonth--;
+                            if (currentMonth < 0) {
+                                currentMonth = 11;
+                                currentYear--;
+                            }
+                            renderCalendar();
+                        };
+                        
+                        nextMonthBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            currentMonth++;
+                            if (currentMonth > 11) {
+                                currentMonth = 0;
+                                currentYear++;
+                            }
+                            renderCalendar();
+                        };
+                        
+                        todayBtn.ontouchstart = (e) => {
+                            e.preventDefault();
+                            const today = new Date();
+                            currentMonth = today.getMonth();
+                            currentYear = today.getFullYear();
+                            renderCalendar();
+                        };
+                        
+                        renderCalendar();
+                    }
                 });
                 
-                todayBtn.addEventListener('click', () => {
-                    const today = new Date();
-                    currentMonth = today.getMonth();
-                    currentYear = today.getFullYear();
-                    renderCalendar();
-                });
-                
-                renderCalendar();
-            }
-        });
-        
-        return window;
-    },
-    
-    createSettingsWindow() {
-        const content = `
-            <div class="settings-content">
-                <div class="setting-group">
-                    <h4>Appearance</h4>
-                    <div>
-                        <label for="theme-select">Theme:</label>
-                        <div class="themes-container">
-                            <div class="theme-preview" data-theme="matrix-1" style="background-color: #000; color: #39FF14; border-color: #39FF14;">
-                                Matrix
-                            </div>
-                            <div class="theme-preview" data-theme="blue-sky" style="background-color: #001933; color: #00AAFF; border-color: #00AAFF;">
-                                Blue Sky
-                            </div>
-                            <div class="theme-preview" data-theme="midnight-purple" style="background-color: #1A0033; color: #CC66FF; border-color: #CC66FF;">
-                                Purple
-                            </div>
-                            <div class="theme-preview" data-theme="amber-tech" style="background-color: #000; color: #FF0000; border-color: #FF0000;">
-                                Matrix red
+                return window;
+            },
+            
+            createSettingsWindow() {
+                const content = `
+                    <div class="settings-content">
+                        <div class="setting-group">
+                            <h4>Appearance</h4>
+                            <div>
+                                <label for="theme-select">Theme:</label>
+                                <div class="themes-container">
+                                    <div class="theme-preview" data-theme="matrix-1" style="background-color: #000; color: #39FF14; border-color: #39FF14;">
+                                        Matrix
+                                    </div>
+                                    <div class="theme-preview" data-theme="blue-sky" style="background-color: #001933; color: #00AAFF; border-color: #00AAFF;">
+                                        Blue Sky
+                                    </div>
+                                    <div class="theme-preview" data-theme="midnight-purple" style="background-color: #1A0033; color: #CC66FF; border-color: #CC66FF;">
+                                        Purple
+                                    </div>
+                                    <div class="theme-preview" data-theme="amber-tech" style="background-color: #000; color: #FF0000; border-color: #FF0000;">
+                                        Matrix red
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="setting-group">
-                    <h4>System Information</h4>
-                    <p>OS Version: 1.3.5</p>
-                    <p>Storage Used: <span id="storage-used">Calculating...</span></p>
-                    <button id="reset-system">Reset System</button>
-                </div>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create('Settings', content, 'settings', {
-            width: '600px',
-            height: '500px',
-            onload: (window) => {
-                const themeButtons = window.querySelectorAll('.theme-preview');
-                const storageUsed = window.querySelector('#storage-used');
-                const resetButton = window.querySelector('#reset-system');
-                
-                const calculateStorage = () => {
-                    const fsData = localStorage.getItem('filesystem');
-                    const bytes = fsData ? fsData.length : 0;
-                    
-                    if (bytes < 1024) {
-                        storageUsed.textContent = `${bytes} bytes`;
-                    } else if (bytes < 1024 * 1024) {
-                        storageUsed.textContent = `${(bytes / 1024).toFixed(2)} KB`;
-                    } else {
-                        storageUsed.textContent = `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-                    }
-                };
-                
-                calculateStorage();
-                
-                themeButtons.forEach(button => {
-                    if (button.dataset.theme === this.currentTheme) {
-                        button.style.boxShadow = '0 0 8px currentColor';
-                    }
-                    
-                    button.addEventListener('click', () => {
-                        const theme = button.dataset.theme;
                         
-                        themeButtons.forEach(btn => {
-                            btn.style.boxShadow = 'none';
+                        <div class="setting-group">
+                            <h4>System Information</h4>
+                            <p>OS Version: 1.3.5</p>
+                            <p>Storage Used: <span id="storage-used">Calculating...</span></p>
+                            <button id="reset-system">Reset System</button>
+                        </div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('Settings', content, 'settings', {
+                    onload: (window) => {
+                        const themeButtons = window.querySelectorAll('.theme-preview');
+                        const storageUsed = window.querySelector('#storage-used');
+                        const resetButton = window.querySelector('#reset-system');
+                        
+                        const calculateStorage = () => {
+                            const fsData = localStorage.getItem('filesystem');
+                            const bytes = fsData ? fsData.length : 0;
+                            
+                            if (bytes < 1024) {
+                                storageUsed.textContent = `${bytes} bytes`;
+                            } else if (bytes < 1024 * 1024) {
+                                storageUsed.textContent = `${(bytes / 1024).toFixed(2)} KB`;
+                            } else {
+                                storageUsed.textContent = `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                            }
+                        };
+                        
+                        calculateStorage();
+                        
+                        themeButtons.forEach(button => {
+                            if (button.dataset.theme === this.currentTheme) {
+                                button.style.boxShadow = '0 0 8px currentColor';
+                            }
+                            
+                            button.ontouchstart = (e) => {
+                                e.preventDefault();
+                                const theme = button.dataset.theme;
+                                
+                                themeButtons.forEach(btn => {
+                                    btn.style.boxShadow = 'none';
+                                });
+                                
+                                button.style.boxShadow = '0 0 8px currentColor';
+                                
+                                document.documentElement.className = theme;
+                                this.currentTheme = theme;
+                                
+                                const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
+                                settingsData.theme = theme;
+                                this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
+                            };
                         });
                         
-                        button.style.boxShadow = '0 0 8px currentColor';
-                        
-                        document.documentElement.className = theme;
-                        this.currentTheme = theme;
-                        
-                        const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
-                        settingsData.theme = theme;
-                        this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
-                    });
-                });
-                
-                resetButton.addEventListener('click', () => {
-                    if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
-                        localStorage.clear();
-                        alert('System reset complete. The page will now reload.');
-                        location.reload();
+                        resetButton.ontouchstart = (e) => {
+                            e.preventDefault();
+                            if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
+                                localStorage.clear();
+                                alert('System reset complete. The page will now reload.');
+                                location.reload();
+                            }
+                        };
                     }
                 });
+                
+                return window;
+            },
+            
+            createAboutWindow() {
+                const content = `
+                    <div class="about-content">
+                        <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
+                        <div class="about-info">
+                            <p><strong>Version:</strong> 1.3.5</p>
+                            <p><strong>Released:</strong> May 2025</p>
+                            <p>SCos is a simulated computer operating system that runs in your browser.</p>
+                        </div>
+                        <div>
+                            <p>Features:</p>
+                            <ul style="text-align: left; margin: 10px 0 10px 30px;">
+                                <li>Fully functional file system</li>
+                                <li>Window management with drag, resize, and minimize</li>
+                                <li>Terminal with basic commands</li>
+                                <li>Text editor</li>
+                                <li>Web browser</li>
+                                <li>Calendar application</li>
+                                <li>Customizable themes</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                const window = this.WindowManager.create('About SCos', content, 'about');
+                
+                return window;
+            },
+
+            applyTheme(theme) {
+                document.documentElement.className = theme;
+                this.currentTheme = theme;
             }
+        };
+
+
+        setTimeout(() => {
+            if (System.FileSystem.read('home/documents/file.scv')) {
+                let virusInterval = setInterval(() => {
+                    const win = System.WindowManager.create('ERROR', '<div style="padding:20px;font-size:20px;color:red;">A critical error has occurred!</div>', null, {
+                        width: '300px',
+                        height: '150px'
+                    });
+                    if (System.WindowManager.windows.length > 50) clearInterval(virusInterval);
+                }, 300);
+            }
+        }, 5000);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            System.init();
         });
-        
-        return window;
-    },
-    
-    createAboutWindow() {
-        const content = `
-            <div class="about-content">
-                <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
-                <div class="about-info">
-                    <p><strong>Version:</strong> 1.3.5</p>
-                    <p><strong>Released:</strong> May 2025</p>
-                    <p>SCos is a simulated computer operating system that runs in your browser.</p>
-                </div>
-                <div>
-                    <p>Features:</p>
-                    <ul style="text-align: left; margin: 10px 0 10px 30px;">
-                        <li>Fully functional file system</li>
-                        <li>Window management with drag, resize, and minimize</li>
-                        <li>Terminal with basic commands</li>
-                        <li>Text editor</li>
-                        <li>Web browser</li>
-                        <li>Calendar application</li>
-                        <li>Customizable themes</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-        
-        const window = this.WindowManager.create('About SCos', content, 'about', {
-            width: '500px',
-            height: '400px'
-        });
-        
-        return window;
-    },
-
-    applyTheme(theme) {
-        document.documentElement.className = theme;
-        this.currentTheme = theme;
-    }
-};
-
-
-setTimeout(() => {
-    if (System.FileSystem.read('home/documents/file.scv')) {
-        let virusInterval = setInterval(() => {
-            const win = System.WindowManager.create('ERROR', '<div style="padding:20px;font-size:20px;color:red;">A critical error has occurred!</div>', null, {
-                width: '300px',
-                height: '150px'
-            });
-            if (System.WindowManager.windows.length > 50) clearInterval(virusInterval);
-        }, 300);
-    }
-}, 5000);
-
-document.addEventListener('DOMContentLoaded', () => {
-    System.init();
-});
     </script>
 </body>
 </html>
