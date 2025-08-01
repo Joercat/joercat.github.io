@@ -980,15 +980,18 @@
                     
                     return window;
                 },
-
+                
                 closeActiveWindow() {
                     if (System.activeWindow) {
-                        const window = System.activeWindow;
-                        window.classList.remove('active');
+                        const windowToClose = System.activeWindow;
+                        const windowId = windowToClose.id;
+
+                        windowToClose.classList.remove('active');
                         document.getElementById('desktop').classList.remove('blurred');
+                        
                         setTimeout(() => {
-                            window.remove();
-                            System.runningApps = System.runningApps.filter(app => app.id !== window.id);
+                            windowToClose.remove();
+                            System.runningApps = System.runningApps.filter(app => app.id !== windowId);
                             System.activeWindow = null;
                             System.updateRecentsPanel();
                         }, 300);
@@ -996,26 +999,29 @@
                 },
 
                 closeWindow(windowId) {
-                    const window = document.getElementById(windowId);
-                    if (window) {
-                         window.classList.remove('active');
-                         if (System.activeWindow && System.activeWindow.id === windowId) {
+                    const windowToClose = document.getElementById(windowId);
+                    if (windowToClose) {
+                        windowToClose.classList.remove('active');
+                        
+                        if (System.activeWindow && System.activeWindow.id === windowId) {
                             document.getElementById('desktop').classList.remove('blurred');
-                         }
-                         setTimeout(() => {
-                            window.remove();
+                            System.activeWindow = null;
+                        }
+                        
+                        setTimeout(() => {
+                            windowToClose.remove();
                             System.runningApps = System.runningApps.filter(app => app.id !== windowId);
-                            if (System.activeWindow && System.activeWindow.id === windowId) {
-                                System.activeWindow = null;
-                            }
                             System.updateRecentsPanel();
-                         }, 300);
+                        }, 300);
                     }
                 },
 
                 showWindow(windowId) {
                     const window = document.getElementById(windowId);
                     if (window) {
+                        if (System.activeWindow) {
+                            System.activeWindow.classList.remove('active');
+                        }
                         System.activeWindow = window;
                         window.classList.add('active');
                         document.getElementById('desktop').classList.add('blurred');
