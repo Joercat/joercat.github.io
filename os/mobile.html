@@ -933,18 +933,21 @@
             WindowManager: {
                 windows: [],
                 windowIdCounter: 0,
-
+                
+                // --- NEW CODE START ---
+                // We're moving the touch handling for app icons to a more robust, separate function
+                // to avoid conflicts with the bottom navigation bar.
                 init() {
-                    document.addEventListener('touchstart', this.handleTouch.bind(this));
+                    const desktop = document.getElementById('desktop');
+                    desktop.addEventListener('touchstart', (e) => {
+                        const appIcon = e.target.closest('.icon');
+                        if (appIcon) {
+                            e.preventDefault();
+                            System.openApp(appIcon.dataset.app);
+                        }
+                    });
                 },
-
-                handleTouch(e) {
-                    const appIcon = e.target.closest('.icon');
-                    if (appIcon) {
-                        e.preventDefault();
-                        System.openApp(appIcon.dataset.app);
-                    }
-                },
+                // --- NEW CODE END ---
 
                 create(title, content, appId = null, options = {}) {
                     const windowId = `window-${++this.windowIdCounter}`;
@@ -985,7 +988,9 @@
                     if (System.activeWindow) {
                         const windowToClose = System.activeWindow;
                         const windowId = windowToClose.id;
-
+                        
+                        // --- NEW CODE START ---
+                        // Ensure the transition class is removed to avoid ghosting or incorrect state.
                         windowToClose.classList.remove('active');
                         document.getElementById('desktop').classList.remove('blurred');
                         
@@ -995,12 +1000,14 @@
                             System.activeWindow = null;
                             System.updateRecentsPanel();
                         }, 300);
+                        // --- NEW CODE END ---
                     }
                 },
 
                 closeWindow(windowId) {
                     const windowToClose = document.getElementById(windowId);
                     if (windowToClose) {
+                        // --- NEW CODE START ---
                         windowToClose.classList.remove('active');
                         
                         if (System.activeWindow && System.activeWindow.id === windowId) {
@@ -1013,6 +1020,7 @@
                             System.runningApps = System.runningApps.filter(app => app.id !== windowId);
                             System.updateRecentsPanel();
                         }, 300);
+                        // --- NEW CODE END ---
                     }
                 },
 
@@ -1030,37 +1038,43 @@
             },
 
             initDesktop() {
-                const icons = document.querySelectorAll('.icon');
-                icons.forEach(icon => {
-                    icon.ontouchstart = (e) => {
-                        e.preventDefault();
-                        this.openApp(icon.dataset.app);
-                    };
-                });
+                // --- NEW CODE START ---
+                // We're handling this in WindowManager.init now to consolidate touch handling.
+                // const icons = document.querySelectorAll('.icon');
+                // icons.forEach(icon => {
+                //     icon.ontouchstart = (e) => {
+                //         e.preventDefault();
+                //         this.openApp(icon.dataset.app);
+                //     };
+                // });
+                // --- NEW CODE END ---
             },
 
             initNavigation() {
-                document.getElementById('home-button').ontouchstart = (e) => {
+                document.getElementById('home-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
+                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
                     if (this.activeWindow) {
                         this.WindowManager.closeActiveWindow();
                     }
                     document.getElementById('recents-panel').style.display = 'none';
-                };
+                });
                 
-                document.getElementById('back-button').ontouchstart = (e) => {
+                document.getElementById('back-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
+                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
                     if (document.getElementById('recents-panel').style.display === 'flex') {
                         document.getElementById('recents-panel').style.display = 'none';
                     } else if (this.activeWindow) {
                         this.WindowManager.closeActiveWindow();
                     }
-                };
+                });
 
-                document.getElementById('recents-button').ontouchstart = (e) => {
+                document.getElementById('recents-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
+                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
                     this.toggleRecentsPanel();
-                };
+                });
             },
 
             updateRecentsPanel() {
@@ -1071,11 +1085,12 @@
                     appCard.className = 'recent-app-card';
                     appCard.textContent = app.title;
                     appCard.dataset.windowId = app.id;
-                    appCard.ontouchstart = (e) => {
+                    appCard.addEventListener('touchstart', (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         this.WindowManager.showWindow(app.id);
                         recentsPanel.style.display = 'none';
-                    };
+                    });
                     const closeBtn = document.createElement('button');
                     closeBtn.textContent = '×';
                     closeBtn.style.background = 'transparent';
@@ -1083,10 +1098,10 @@
                     closeBtn.style.color = 'red';
                     closeBtn.style.fontSize = '1.5em';
                     closeBtn.style.cursor = 'pointer';
-                    closeBtn.ontouchstart = (e) => {
+                    closeBtn.addEventListener('touchstart', (e) => {
                         e.stopPropagation();
                         this.WindowManager.closeWindow(app.id);
-                    };
+                    });
                     appCard.appendChild(closeBtn);
                     recentsPanel.appendChild(appCard);
                 });
@@ -1158,7 +1173,7 @@
                                     <span>${file}</span>
                                 `;
                                 
-                                fileItem.ontouchstart = (e) => {
+                                fileItem.addEventListener('touchstart', (e) => {
                                     e.preventDefault();
                                     if (isDir) {
                                         loadDirectory(currentPath + file);
@@ -1174,43 +1189,43 @@
                                             this.createNotepadWindow(file, String(content), filePath);
                                         }
                                     }
-                                };
+                                });
                                 
                                 filesList.appendChild(fileItem);
                             });
                         };
                         
-                        backBtn.ontouchstart = (e) => {
+                        backBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             const parts = currentPath.split('/').filter(p => p);
                             if (parts.length > 0) {
                                 parts.pop();
                                 loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
                             }
-                        };
+                        });
                         
-                        upBtn.ontouchstart = (e) => {
+                        upBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             const parts = currentPath.split('/').filter(p => p);
                             if (parts.length > 0) {
                                 parts.pop();
                                 loadDirectory('/' + parts.join('/') + (parts.length > 0 ? '/' : ''));
                             }
-                        };
+                        });
                         
-                        refreshBtn.ontouchstart = (e) => {
+                        refreshBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             loadDirectory(currentPath);
-                        };
+                        });
                         
-                        newFolderBtn.ontouchstart = (e) => {
+                        newFolderBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             const folderName = prompt('Enter folder name:');
                             if (folderName && !folderName.includes('/')) {
                                 this.FileSystem.mkdir(currentPath + folderName + '/');
                                 loadDirectory(currentPath);
                             }
-                        };
+                        });
                         
                         loadDirectory(currentPath);
                     }
@@ -1266,9 +1281,9 @@
                             }, 10); 
                         };
 
-                        terminalContent.ontouchstart = () => {
+                        terminalContent.addEventListener('touchstart', () => {
                             terminalInput.focus();
-                        };
+                        });
                         
                         terminalInput.focus();
                         
@@ -1694,7 +1709,7 @@ Current Time: ${new Date().toLocaleString()}`;
                         
                         editor.focus();
                         
-                        saveBtn.ontouchstart = (e) => {
+                        saveBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             if (filepath) {
                                 this.FileSystem.write(filepath, editor.value);
@@ -1708,9 +1723,9 @@ Current Time: ${new Date().toLocaleString()}`;
                                     window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
                                 }
                             }
-                        };
+                        });
                         
-                        saveAsBtn.ontouchstart = (e) => {
+                        saveAsBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             const newFilepath = prompt('Enter file path to save:', filepath || 'home/documents/untitled.txt');
                             if (newFilepath) {
@@ -1719,7 +1734,7 @@ Current Time: ${new Date().toLocaleString()}`;
                                 filepath = newFilepath;
                                 window.querySelector('.window-header span').textContent = `Notepad - ${newFilepath.split('/').pop()}`;
                             }
-                        };
+                        });
                     }
                 });
                 
@@ -1747,24 +1762,24 @@ Current Time: ${new Date().toLocaleString()}`;
                         const backBtn = window.querySelector('#browser-back');
                         const forwardBtn = window.querySelector('#browser-forward');
             
-                        goBtn.ontouchstart = (e) => {
+                        goBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             let url = urlInput.value;
                             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                                 url = 'https://' + url;
                             }
                             iframe.src = url;
-                        };
+                        });
                         
-                        backBtn.ontouchstart = (e) => {
+                        backBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             iframe.contentWindow.history.back();
-                        };
+                        });
             
-                        forwardBtn.ontouchstart = (e) => {
+                        forwardBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             iframe.contentWindow.history.forward();
-                        };
+                        });
                     }
                 });
             
@@ -1836,17 +1851,17 @@ Current Time: ${new Date().toLocaleString()}`;
                                     dayCell.classList.add('today');
                                 }
                                 
-                                dayCell.ontouchstart = (e) => {
+                                dayCell.addEventListener('touchstart', (e) => {
                                     e.preventDefault();
                                     const selectedDate = new Date(currentYear, currentMonth, i);
                                     alert(`Selected date: ${selectedDate.toDateString()}`);
-                                };
+                                });
                                 
                                 calendarGrid.appendChild(dayCell);
                             }
                         };
                         
-                        prevMonthBtn.ontouchstart = (e) => {
+                        prevMonthBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             currentMonth--;
                             if (currentMonth < 0) {
@@ -1854,9 +1869,9 @@ Current Time: ${new Date().toLocaleString()}`;
                                 currentYear--;
                             }
                             renderCalendar();
-                        };
+                        });
                         
-                        nextMonthBtn.ontouchstart = (e) => {
+                        nextMonthBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             currentMonth++;
                             if (currentMonth > 11) {
@@ -1864,15 +1879,15 @@ Current Time: ${new Date().toLocaleString()}`;
                                 currentYear++;
                             }
                             renderCalendar();
-                        };
+                        });
                         
-                        todayBtn.ontouchstart = (e) => {
+                        todayBtn.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             const today = new Date();
                             currentMonth = today.getMonth();
                             currentYear = today.getFullYear();
                             renderCalendar();
-                        };
+                        });
                         
                         renderCalendar();
                     }
@@ -1940,7 +1955,7 @@ Current Time: ${new Date().toLocaleString()}`;
                                 button.style.boxShadow = '0 0 8px currentColor';
                             }
                             
-                            button.ontouchstart = (e) => {
+                            button.addEventListener('touchstart', (e) => {
                                 e.preventDefault();
                                 const theme = button.dataset.theme;
                                 
@@ -1956,17 +1971,17 @@ Current Time: ${new Date().toLocaleString()}`;
                                 const settingsData = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
                                 settingsData.theme = theme;
                                 this.FileSystem.write('system/settings.json', JSON.stringify(settingsData));
-                            };
+                            });
                         });
                         
-                        resetButton.ontouchstart = (e) => {
+                        resetButton.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             if (confirm('Are you sure you want to reset the system? All data will be lost.')) {
                                 localStorage.clear();
                                 alert('System reset complete. The page will now reload.');
                                 location.reload();
                             }
-                        };
+                        });
                     }
                 });
                 
@@ -2038,10 +2053,10 @@ Current Time: ${new Date().toLocaleString()}`;
                             addMessage(assistantResponse, 'assistant');
                         };
 
-                        sendButton.ontouchstart = (e) => {
+                        sendButton.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             handleSend();
-                        };
+                        });
                         input.addEventListener('keydown', (e) => {
                             if (e.key === 'Enter') {
                                 handleSend();
@@ -2092,3 +2107,4 @@ AI:`
     </script>
 </body>
 </html>
+
