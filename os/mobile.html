@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
-    <title>SCos 1.3.5 Mobile</title>
+    <title>SCos 1.2 Mobile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Mobile-only styles */
         @media (hover: none) and (pointer: coarse) {
             :root {
                 --main-color: #39FF14;
@@ -31,13 +30,13 @@
                 overscroll-behavior: none;
                 display: flex;
                 flex-direction: column;
+                font-family: 'Roboto', sans-serif;
             }
 
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-                font-family: 'Segoe UI', Arial, sans-serif;
             }
 
             #loading-screen {
@@ -61,7 +60,6 @@
                 margin-bottom: 20px;
             }
 
-            
             .spinning-o {
                 display: inline-block;
                 animation: spin 1s ease-in-out infinite;
@@ -74,7 +72,6 @@
                 50% { transform: rotate(180deg) scale(1.5); }
                 100% { transform: rotate(360deg) scale(1); }
             }
-
 
             @keyframes spin {
                 0% { transform: rotate(0deg); }
@@ -114,6 +111,7 @@
                 align-content: flex-start;
                 gap: 10px;
                 transition: filter 0.3s ease;
+                padding-bottom: 50px;
             }
 
             #desktop.blurred {
@@ -182,6 +180,7 @@
                 align-items: center;
                 touch-action: none;
                 cursor: grab;
+                display: none;
             }
             
             .window-controls {
@@ -202,6 +201,7 @@
                 padding: 10px;
                 display: flex;
                 flex-direction: column;
+                padding-bottom: 50px;
             }
             
             .terminal-content {
@@ -238,7 +238,7 @@
             .terminal-input {
                 background: transparent;
                 border: none;
-                color: transparent; /* Hide the native input text */
+                color: transparent;
                 font-family: 'Courier New', monospace;
                 width: 1px;
                 height: 1px;
@@ -616,7 +616,6 @@
                 --text-color: var(--main-color);
             }
 
-            /* Android-style navigation bar */
             #bottom-nav {
                 display: flex;
                 justify-content: space-around;
@@ -658,6 +657,7 @@
                 display: none;
                 flex-direction: column;
                 padding: 10px;
+                overflow-y: auto;
             }
 
             .recent-app-card {
@@ -672,7 +672,6 @@
             }
         }
 
-        /* Styles for desktop/laptop that hide the entire page */
         @media (hover: hover) and (pointer: fine) {
             body {
                 display: none;
@@ -746,19 +745,18 @@
             currentTheme: 'matrix-1',
             currentDate: new Date(),
             bootComplete: false,
-            taskbarApps: {},
             terminalAliases: {},
             aiAPIKey: "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",
             runningApps: [],
             activeWindow: null,
             
             async init() {
-                await this.startBootSequence();
                 this.FileSystem.init();
+                this.applyTheme(this.loadTheme());
+                await this.startBootSequence();
                 this.WindowManager.init();
                 this.initDesktop();
                 this.initNavigation();
-                this.applyTheme(this.loadTheme());
             },
 
             async startBootSequence() {
@@ -795,8 +793,12 @@
             },
 
             loadTheme() {
-                const settings = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
-                return settings.theme || 'matrix-1';
+                try {
+                    const settings = JSON.parse(this.FileSystem.read('system/settings.json') || '{}');
+                    return settings.theme || 'matrix-1';
+                } catch (e) {
+                    return 'matrix-1';
+                }
             },
 
             FileSystem: {
@@ -808,7 +810,7 @@
                         'home/': {
                             'documents/': {
                                 'welcome.txt': 'Welcome to SCos!\nThis is your personal computer system.',
-                                'changelog.txt': 'SCos 1.3.5 Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
+                                'changelog.txt': 'SCos 1.2 Mobile Changelog:\n- Improved file system stability\n- Added theme support\n- Fixed window manager bugs\n- Enhanced terminal functionality'
                             },
                             'downloads/': {},
                             'desktop/': {}
@@ -816,9 +818,9 @@
                         'system/': {
                             'settings.json': JSON.stringify({
                                 theme: 'matrix-1',
-                                version: '1.3.5'
+                                version: '1.2 Mobile'
                             }),
-                            'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.3.5\nDeveloped with ♥ by the SCos team',
+                            'about.txt': 'SCos - Simulated Computer Operating System\nVersion 1.2 Mobile\nDeveloped with ♥ by the SCos team',
                             'network.json': JSON.stringify({
                                 'google.com': { ip: '172.217.160.142', status: 'online', latency: '45ms' },
                                 'example.com': { ip: '93.184.216.34', status: 'online', latency: '60ms' },
@@ -937,7 +939,6 @@
                 },
 
                 handleTouch(e) {
-                    // Check if the touch is on an app icon
                     const appIcon = e.target.closest('.icon');
                     if (appIcon) {
                         e.preventDefault();
@@ -947,6 +948,12 @@
 
                 create(title, content, appId = null, options = {}) {
                     const windowId = `window-${++this.windowIdCounter}`;
+                    const existingWindow = System.runningApps.find(app => app.appId === appId);
+                    if (existingWindow) {
+                        this.showWindow(existingWindow.id);
+                        return document.getElementById(existingWindow.id);
+                    }
+                    
                     const window = document.createElement('div');
                     window.className = 'window';
                     window.id = windowId;
@@ -965,7 +972,7 @@
                         document.getElementById('desktop').classList.add('blurred');
                         System.runningApps.push({id: windowId, title: title, appId: appId});
                         System.updateRecentsPanel();
-                    }, 10); // Small delay to allow transition
+                    }, 10);
 
                     if (options.onload) {
                         options.onload(window);
@@ -984,7 +991,7 @@
                             System.runningApps = System.runningApps.filter(app => app.id !== window.id);
                             System.activeWindow = null;
                             System.updateRecentsPanel();
-                        }, 300); // Wait for transition
+                        }, 300);
                     }
                 },
 
@@ -1209,7 +1216,7 @@
             createTerminalWindow() {
                 const content = `
                     <div class="terminal-content" id="terminal-content">
-                        <div class="terminal-line">SCos Terminal v1.3.5</div>
+                        <div class="terminal-line">SCos Terminal v1.2 Mobile</div>
                         <div class="terminal-line">Type 'help' for available commands. Unrecognized commands will be processed by the AI.</div>
                         <div class="terminal-input-container">
                             <span class="terminal-prompt">user@scos:~$</span>
@@ -1461,7 +1468,7 @@ reboot   - Reboot the system`;
                                     break;
                                     
                                 case 'version':
-                                    response = 'SCos version 1.3.5, Terminal v1.3.5';
+                                    response = 'SCos version 1.2 Mobile, Terminal v1.2 Mobile';
                                     break;
 
                                 case 'calc':
@@ -1532,7 +1539,7 @@ reboot   - Reboot the system`;
                                     const freeMem = (Math.random() * 1024 + 1024).toFixed(2);
                                     response = `SCos System Information:
 OS Version: ${System.FileSystem.read('system/settings.json') ? JSON.parse(System.FileSystem.read('system/settings.json')).version : 'Unknown'}
-Kernel: SCos-1.3.5-alpha
+Kernel: SCos-1.2-alpha
 Architecture: x86_64 (simulated)
 Uptime: ${Math.floor(performance.now() / 1000 / 60)} minutes
 Total Memory: ${totalMem} MB
@@ -1894,7 +1901,7 @@ Current Time: ${new Date().toLocaleString()}`;
                         
                         <div class="setting-group">
                             <h4>System Information</h4>
-                            <p>OS Version: 1.3.5</p>
+                            <p>OS Version: 1.2 Mobile</p>
                             <p>Storage Used: <span id="storage-used">Calculating...</span></p>
                             <button id="reset-system">Reset System</button>
                         </div>
@@ -1965,7 +1972,7 @@ Current Time: ${new Date().toLocaleString()}`;
                     <div class="about-content">
                         <div class="about-logo">SC<span class="spinning-o">o</span>s</div>
                         <div class="about-info">
-                            <p><strong>Version:</strong> 1.3.5</p>
+                            <p><strong>Version:</strong> 1.2 Mobile</p>
                             <p><strong>Released:</strong> May 2025</p>
                             <p>SCos is a simulated computer operating system that runs in your browser.</p>
                         </div>
