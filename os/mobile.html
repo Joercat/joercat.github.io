@@ -934,9 +934,6 @@
                 windows: [],
                 windowIdCounter: 0,
                 
-                // --- NEW CODE START ---
-                // We're moving the touch handling for app icons to a more robust, separate function
-                // to avoid conflicts with the bottom navigation bar.
                 init() {
                     const desktop = document.getElementById('desktop');
                     desktop.addEventListener('touchstart', (e) => {
@@ -947,7 +944,6 @@
                         }
                     });
                 },
-                // --- NEW CODE END ---
 
                 create(title, content, appId = null, options = {}) {
                     const windowId = `window-${++this.windowIdCounter}`;
@@ -989,8 +985,6 @@
                         const windowToClose = System.activeWindow;
                         const windowId = windowToClose.id;
                         
-                        // --- NEW CODE START ---
-                        // Ensure the transition class is removed to avoid ghosting or incorrect state.
                         windowToClose.classList.remove('active');
                         document.getElementById('desktop').classList.remove('blurred');
                         
@@ -1000,14 +994,12 @@
                             System.activeWindow = null;
                             System.updateRecentsPanel();
                         }, 300);
-                        // --- NEW CODE END ---
                     }
                 },
 
                 closeWindow(windowId) {
                     const windowToClose = document.getElementById(windowId);
                     if (windowToClose) {
-                        // --- NEW CODE START ---
                         windowToClose.classList.remove('active');
                         
                         if (System.activeWindow && System.activeWindow.id === windowId) {
@@ -1020,7 +1012,6 @@
                             System.runningApps = System.runningApps.filter(app => app.id !== windowId);
                             System.updateRecentsPanel();
                         }, 300);
-                        // --- NEW CODE END ---
                     }
                 },
 
@@ -1038,22 +1029,14 @@
             },
 
             initDesktop() {
-                // --- NEW CODE START ---
-                // We're handling this in WindowManager.init now to consolidate touch handling.
-                // const icons = document.querySelectorAll('.icon');
-                // icons.forEach(icon => {
-                //     icon.ontouchstart = (e) => {
-                //         e.preventDefault();
-                //         this.openApp(icon.dataset.app);
-                //     };
-                // });
-                // --- NEW CODE END ---
+                // The touch event for icons is now handled in WindowManager.init to avoid conflicts.
             },
 
             initNavigation() {
+                // --- MODIFIED CODE START ---
                 document.getElementById('home-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
+                    e.stopPropagation(); 
                     if (this.activeWindow) {
                         this.WindowManager.closeActiveWindow();
                     }
@@ -1062,7 +1045,7 @@
                 
                 document.getElementById('back-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
+                    e.stopPropagation();
                     if (document.getElementById('recents-panel').style.display === 'flex') {
                         document.getElementById('recents-panel').style.display = 'none';
                     } else if (this.activeWindow) {
@@ -1072,9 +1055,10 @@
 
                 document.getElementById('recents-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    e.stopPropagation(); // Prevents touch from bubbling up and affecting the window.
+                    e.stopPropagation();
                     this.toggleRecentsPanel();
                 });
+                // --- MODIFIED CODE END ---
             },
 
             updateRecentsPanel() {
@@ -1085,12 +1069,15 @@
                     appCard.className = 'recent-app-card';
                     appCard.textContent = app.title;
                     appCard.dataset.windowId = app.id;
+                    
+                    // --- MODIFIED CODE START ---
                     appCard.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
                         e.stopPropagation();
                         this.WindowManager.showWindow(app.id);
                         recentsPanel.style.display = 'none';
                     });
+                    // --- MODIFIED CODE END ---
+
                     const closeBtn = document.createElement('button');
                     closeBtn.textContent = '×';
                     closeBtn.style.background = 'transparent';
@@ -1098,10 +1085,14 @@
                     closeBtn.style.color = 'red';
                     closeBtn.style.fontSize = '1.5em';
                     closeBtn.style.cursor = 'pointer';
+
+                    // --- MODIFIED CODE START ---
                     closeBtn.addEventListener('touchstart', (e) => {
                         e.stopPropagation();
                         this.WindowManager.closeWindow(app.id);
                     });
+                    // --- MODIFIED CODE END ---
+
                     appCard.appendChild(closeBtn);
                     recentsPanel.appendChild(appCard);
                 });
@@ -2107,3 +2098,4 @@ AI:`
     </script>
 </body>
 </html>
+
