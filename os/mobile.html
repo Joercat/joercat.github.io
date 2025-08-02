@@ -12,7 +12,7 @@
             :root {
                 --main-color: #39FF14;
                 --bg-dark: black;
-                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --bg-image: url('https://i.imgur.com/8Q5tG4U.gif') no-repeat center center / cover;
                 --window-bg: #1a1a1a;
                 --text-color: var(--main-color);
             }
@@ -599,28 +599,28 @@
         
             .matrix-1 {
                 --main-color: #39FF14;
-                --bg-image: url('green.jpg') no-repeat center center / cover;
+                --bg-image: url('https://i.imgur.com/8Q5tG4U.gif') no-repeat center center / cover;
                 --window-bg: #1a1a1a;
                 --text-color: var(--main-color);
             }
         
             .blue-sky {
                 --main-color: #00AAFF;
-                --bg-image: url('blue.jpg') no-repeat center center / cover;
+                --bg-image: url('https://i.imgur.com/JtzA32T.gif') no-repeat center center / cover;
                 --window-bg: #002B4D;
                 --text-color: var(--main-color);
             }
         
             .midnight-purple {
                 --main-color: #CC66FF;
-                --bg-image: url('purple.jpg') no-repeat center center / cover;
+                --bg-image: url('https://i.imgur.com/GfsXfIW.gif') no-repeat center center / cover;
                 --window-bg: #330066;
                 --text-color: var(--main-color);
             }
         
             .amber-tech {
                 --main-color: #FF0000;
-                --bg-image: url('red.jpg') no-repeat center center / cover;
+                --bg-image: url('https://i.imgur.com/4l0i3gC.gif') no-repeat center center / cover;
                 --window-bg: #4D0000;
                 --text-color: var(--main-color);
             }
@@ -685,6 +685,7 @@
                 align-items: center;
                 padding: 10px;
                 border-bottom: 1px solid var(--main-color);
+                position: relative;
             }
         
             .appstore-app-icon {
@@ -719,28 +720,32 @@
                 background-color: black;
                 color: var(--main-color);
                 text-align: right;
-                padding: 10px;
-                font-size: 2em;
+                padding: 20px 10px;
+                font-size: 2.5em;
                 overflow-x: auto;
                 white-space: nowrap;
                 border-bottom: 1px solid var(--main-color);
+                 flex-shrink: 0;
             }
         
             .calculator-buttons {
                 flex-grow: 1;
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
-                gap: 5px;
-                padding: 10px;
+                gap: 1px;
+                background-color: #111;
             }
         
             .calc-button {
-                padding: 20px;
+                padding: 0;
                 font-size: 1.5em;
                 background: #333;
-                border: 1px solid var(--main-color);
+                border: 1px solid #111;
                 color: var(--main-color);
                 cursor: pointer;
+                 display: flex;
+                justify-content: center;
+                align-items: center;
             }
         
             .calc-button:active {
@@ -765,19 +770,22 @@
                 justify-content: center;
                 height: 100%;
                 gap: 10px;
+                 padding: 20px;
             }
         
             .file-input-container {
                 display: flex;
                 gap: 10px;
                 align-items: center;
+                margin-bottom: 20px;
             }
         
             .file-input-container label {
-                padding: 10px;
+                padding: 10px 15px;
                 background: var(--main-color);
                 color: var(--bg-dark);
                 cursor: pointer;
+                border-radius: 5px;
             }
         
             .file-input-container input {
@@ -786,8 +794,9 @@
         
             .image-viewer-content img {
                 max-width: 100%;
-                max-height: 100%;
+                max-height: 70vh;
                 object-fit: contain;
+                border: 2px solid var(--main-color);
             }
         
             .media-player-content video {
@@ -800,6 +809,14 @@
                 flex-direction: column;
                 height: 100%;
             }
+            
+            .notes-toolbar {
+                padding: 10px;
+                background: rgba(57, 255, 20, 0.1);
+                display: flex;
+                gap: 10px;
+                flex-shrink: 0;
+            }
         
             #notes-list {
                 list-style: none;
@@ -811,8 +828,12 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 10px;
+                padding: 15px 10px;
                 border-bottom: 1px solid var(--main-color);
+                cursor: pointer;
+            }
+            .note-item:active {
+                background-color: rgba(57, 255, 20, 0.2);
             }
         
             .notes-editor {
@@ -825,6 +846,7 @@
                 font-family: 'Courier New', monospace;
                 outline: none;
                 font-size: 14px;
+                height: 100%;
             }
         
             .timer-stopwatch-content {
@@ -833,20 +855,27 @@
                 align-items: center;
                 justify-content: center;
                 height: 100%;
+                gap: 20px;
             }
         
             #timer-stopwatch-display {
                 font-size: 3em;
                 margin-bottom: 20px;
+                font-family: 'Courier New', monospace;
             }
         
             .timer-stopwatch-controls {
                 display: flex;
                 gap: 10px;
             }
+            .timer-stopwatch-controls button {
+                padding: 10px 20px;
+                font-size: 1.2em;
+            }
         
             #weather-app-container {
                 text-align: center;
+                padding: 20px;
             }
         
             #weather-city-input {
@@ -854,6 +883,9 @@
                 font-size: 16px;
                 margin-bottom: 10px;
                 width: 80%;
+                background: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
             }
         
             #weather-data {
@@ -876,6 +908,7 @@
             #weather-description {
                 font-size: 1.5em;
                 margin-top: 10px;
+                text-transform: capitalize;
             }
         
             .tic-tac-toe-content {
@@ -883,8 +916,10 @@
                 grid-template-columns: repeat(3, 1fr);
                 grid-template-rows: repeat(3, 1fr);
                 gap: 5px;
-                width: 300px;
-                height: 300px;
+                max-width: 300px;
+                max-height: 300px;
+                width: 80vw;
+                height: 80vw;
                 margin: auto;
             }
         
@@ -892,27 +927,30 @@
                 width: 100%;
                 height: 100%;
                 background: var(--window-bg);
-                border: 1px solid var(--main-color);
+                border: 2px solid var(--main-color);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 2em;
+                font-size: 3em;
                 cursor: pointer;
             }
 
             .install-progress-bar {
-                width: 100%;
+                width: 80px;
                 height: 10px;
                 background-color: #333;
                 border: 1px solid var(--main-color);
-                margin-top: 10px;
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
             }
 
             .install-progress {
                 height: 100%;
                 width: 0;
                 background-color: var(--main-color);
-                transition: width 0.3s ease;
+                transition: width 0.1s ease-out;
             }
         }
         
@@ -994,7 +1032,6 @@
             bootComplete: false,
             terminalAliases: {},
             aiAPIKey: "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",
-            openWeatherMapAPIKey: "YOUR_OPENWEATHERMAP_API_KEY", // This is not needed anymore
             runningApps: [],
             activeWindow: null,
             installedApps: [
@@ -1382,36 +1419,39 @@
             },
 
             async installApp(app, installButton) {
-                if (!this.installedApps.some(a => a.name === app.name)) {
-                    const appSize = app.size || 1000; // Default size for simulation
-                    const installTime = appSize / 100; // Simulate install time
-                    let progress = 0;
+                if (this.installedApps.some(a => a.name === app.name)) return;
+                
+                const appSize = app.size || 2000;
+                const installDuration = appSize; 
+                let progress = 0;
 
-                    const progressBarContainer = document.createElement('div');
-                    progressBarContainer.className = 'install-progress-bar';
-                    const progressBar = document.createElement('div');
-                    progressBar.className = 'install-progress';
-                    progressBarContainer.appendChild(progressBar);
-                    installButton.replaceWith(progressBarContainer);
+                const progressBarContainer = document.createElement('div');
+                progressBarContainer.className = 'install-progress-bar';
+                const progressBar = document.createElement('div');
+                progressBar.className = 'install-progress';
+                progressBarContainer.appendChild(progressBar);
+                
+                const originalButtonContainer = installButton.parentElement;
+                installButton.replaceWith(progressBarContainer);
 
-                    const interval = setInterval(() => {
-                        progress += 1;
-                        if (progress > 100) {
-                            clearInterval(interval);
-                            progressBarContainer.remove();
-                            this.installedApps.push(app);
-                            localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
-                            this.initDesktop();
-                            const newButton = document.createElement('button');
-                            newButton.textContent = 'Installed';
-                            newButton.disabled = true;
-                            newButton.classList.add('installed-button');
-                            installButton.parentElement.appendChild(newButton);
-                        } else {
-                            progressBar.style.width = `${progress}%`;
-                        }
-                    }, installTime / 100);
-                }
+                const interval = setInterval(() => {
+                    progress += 50; 
+                    const percent = Math.min(100, (progress / installDuration) * 100);
+                    progressBar.style.width = `${percent}%`;
+
+                    if (progress >= installDuration) {
+                        clearInterval(interval);
+                        this.installedApps.push(app);
+                        localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
+                        this.initDesktop();
+                        
+                        progressBarContainer.remove();
+                        const newButton = document.createElement('button');
+                        newButton.textContent = 'Installed';
+                        newButton.disabled = true;
+                        originalButtonContainer.appendChild(newButton);
+                    }
+                }, 50);
             },
 
             openApp(appName) {
@@ -2037,7 +2077,7 @@ Current Time: ${new Date().toLocaleString()}`;
                             <input type="text" id="browser-url" value="https://whatever-you-want-here.global.ssl.fastly.net/">
                             <button id="browser-go"><i class="fas fa-arrow-right"></i></button>
                         </div>
-                        <iframe id="browser-iframe" src="https://whatever-you-want-here.global.ssl.fastly.net/"></iframe>
+                        <iframe id="browser-iframe" sandbox="allow-scripts allow-same-origin" src="https://whatever-you-want-here.global.ssl.fastly.net/"></iframe>
                     </div>
                 `;
 
@@ -2357,16 +2397,17 @@ Current Time: ${new Date().toLocaleString()}`;
 
             createAppStoreWindow() {
                 const apps = [
-                    { name: 'calculator', title: 'Calculator', icon: 'fas fa-calculator', description: 'A scientific calculator using math.js.', size: 2500 },
-                    { name: 'imageviewer', title: 'Image Viewer', icon: 'fas fa-image', description: 'View local image files.', size: 1000 },
-                    { name: 'weather', title: 'Weather', icon: 'fas fa-cloud-sun', description: 'Check live weather for any city.', size: 3000 },
-                    { name: 'notes', title: 'Notes', icon: 'fas fa-sticky-note', description: 'Create and save notes to local storage.', size: 500 },
-                    { name: 'timerstopwatch', title: 'Timer/Stopwatch', icon: 'fas fa-stopwatch', description: 'A utility for timing and counting down.', size: 800 },
-                    { name: 'tictactoe', title: 'Tic-Tac-Toe', icon: 'fas fa-gamepad', description: 'The classic game of Tic-Tac-Toe.', size: 1500 }
+                    { name: 'calculator', title: 'Calculator', icon: 'fas fa-calculator', description: 'A scientific calculator for your daily calculations.', size: 1200 },
+                    { name: 'imageviewer', title: 'Image Viewer', icon: 'fas fa-image', description: 'View local image files from your device.', size: 800 },
+                    { name: 'weather', title: 'Weather', icon: 'fas fa-cloud-sun', description: 'Check live weather for any city.', size: 1500 },
+                    { name: 'notes', title: 'Notes', icon: 'fas fa-sticky-note', description: 'Create and save personal notes.', size: 600 },
+                    { name: 'timerstopwatch', title: 'Timer/Stopwatch', icon: 'fas fa-stopwatch', description: 'A utility for timing and counting down.', size: 700 },
+                    { name: 'tictactoe', title: 'Tic-Tac-Toe', icon: 'fas fa-gamepad', description: 'The classic game of Tic-Tac-Toe.', size: 900 }
                 ];
 
                 const content = `
                     <div class="appstore-content">
+                        <h3>Available Apps</h3>
                         ${apps.map(app => {
                             const isInstalled = this.installedApps.some(a => a.name === app.name);
                             return `
@@ -2377,8 +2418,8 @@ Current Time: ${new Date().toLocaleString()}`;
                                         <p>${app.description}</p>
                                     </div>
                                     ${isInstalled
-                                        ? `<button disabled class="installed-button">Installed</button>`
-                                        : `<button class="install-button" data-app-name="${app.name}" data-app-size="${app.size}">Install</button>`
+                                        ? `<button disabled>Installed</button>`
+                                        : `<button class="install-button" data-app-name="${app.name}">Install</button>`
                                     }
                                 </div>
                             `;
@@ -2388,12 +2429,10 @@ Current Time: ${new Date().toLocaleString()}`;
 
                 const window = this.WindowManager.create('App Store', content, 'appstore', {
                     onload: (window) => {
-                        const installButtons = window.querySelectorAll('.install-button');
-                        installButtons.forEach(button => {
+                        window.querySelectorAll('.install-button').forEach(button => {
                             button.addEventListener('touchstart', async (e) => {
                                 e.preventDefault();
                                 const appName = e.target.dataset.appName;
-                                const appSize = parseInt(e.target.dataset.appSize);
                                 const appToInstall = apps.find(app => app.name === appName);
                                 if (appToInstall) {
                                     await this.installApp(appToInstall, e.target);
@@ -2410,7 +2449,7 @@ Current Time: ${new Date().toLocaleString()}`;
                     <div class="calculator-content">
                         <div class="calculator-display" id="calc-display">0</div>
                         <div class="calculator-buttons">
-                            <button class="calc-button clear">AC</button>
+                            <button class="calc-button operator">AC</button>
                             <button class="calc-button operator">+/-</button>
                             <button class="calc-button operator">%</button>
                             <button class="calc-button operator">/</button>
@@ -2426,8 +2465,8 @@ Current Time: ${new Date().toLocaleString()}`;
                             <button class="calc-button number">2</button>
                             <button class="calc-button number">3</button>
                             <button class="calc-button operator">+</button>
-                            <button class="calc-button number zero">0</button>
-                            <button class="calc-button dot">.</button>
+                            <button class="calc-button number" style="grid-column: span 2;">0</button>
+                            <button class="calc-button number">.</button>
                             <button class="calc-button equals">=</button>
                         </div>
                     </div>
@@ -2435,45 +2474,92 @@ Current Time: ${new Date().toLocaleString()}`;
                 this.WindowManager.create('Calculator', content, 'calculator', {
                     onload: (window) => {
                         const display = window.querySelector('#calc-display');
-                        const buttons = window.querySelectorAll('.calc-button');
-                        let expression = '';
+                        let currentInput = '0';
+                        let operator = null;
+                        let previousInput = null;
+                        let waitingForSecondOperand = false;
 
                         const updateDisplay = () => {
-                            display.textContent = expression || '0';
+                            display.textContent = currentInput;
                         };
 
-                        const evaluateExpression = () => {
-                            try {
-                                let result = math.evaluate(expression);
-                                expression = String(result);
-                                updateDisplay();
-                            } catch (e) {
-                                display.textContent = 'Error';
-                                expression = '';
+                        const inputDigit = (digit) => {
+                            if (waitingForSecondOperand) {
+                                currentInput = digit;
+                                waitingForSecondOperand = false;
+                            } else {
+                                currentInput = currentInput === '0' ? digit : currentInput + digit;
                             }
                         };
+                        
+                        const inputDecimal = () => {
+                            if (!currentInput.includes('.')) {
+                                currentInput += '.';
+                            }
+                        };
+                        
+                        const handleOperator = (nextOperator) => {
+                            const inputValue = parseFloat(currentInput);
 
-                        buttons.forEach(button => {
+                            if (operator && previousInput !== null) {
+                                const result = calculate();
+                                currentInput = String(result);
+                                previousInput = result;
+                            } else {
+                                previousInput = inputValue;
+                            }
+                            
+                            waitingForSecondOperand = true;
+                            operator = nextOperator;
+                        };
+
+                        const calculate = () => {
+                            const prev = previousInput;
+                            const current = parseFloat(currentInput);
+                            if (operator === '+') return prev + current;
+                            if (operator === '-') return prev - current;
+                            if (operator === '*') return prev * current;
+                            if (operator === '/') return prev / current;
+                            if (operator === '%') return prev % current;
+                            return current;
+                        };
+
+                        const resetCalculator = () => {
+                            currentInput = '0';
+                            operator = null;
+                            previousInput = null;
+                            waitingForSecondOperand = false;
+                        };
+
+                        window.querySelectorAll('.calc-button').forEach(button => {
                             button.addEventListener('touchstart', (e) => {
                                 e.preventDefault();
                                 const value = e.target.textContent;
 
-                                if (value === 'AC') {
-                                    expression = '';
-                                } else if (value === '=') {
-                                    evaluateExpression();
+                                if (e.target.classList.contains('number')) {
+                                    inputDigit(value);
+                                } else if (value === '.') {
+                                    inputDecimal();
+                                } else if (value === 'AC') {
+                                    resetCalculator();
                                 } else if (value === '+/-') {
-                                    if (expression !== '') {
-                                        expression = `(-1)*(${expression})`;
+                                    currentInput = String(parseFloat(currentInput) * -1);
+                                } else if (e.target.classList.contains('operator')) {
+                                    handleOperator(value);
+                                } else if (value === '=') {
+                                    if(operator && previousInput !== null){
+                                        const result = calculate();
+                                        currentInput = String(result);
+                                        operator = null;
+                                        previousInput = null;
+                                        waitingForSecondOperand = false;
                                     }
-                                } else if (value === 'C') {
-                                    expression = expression.slice(0, -1);
-                                } else {
-                                    expression += value;
                                 }
                                 updateDisplay();
                             });
                         });
+                        
+                        updateDisplay();
                     }
                 });
             },
@@ -2513,16 +2599,16 @@ Current Time: ${new Date().toLocaleString()}`;
             createNotesAppWindow() {
                 const content = `
                     <div class="notes-content">
-                        <div class="notes-toolbar">
+                        <div class="notes-toolbar" id="notes-list-toolbar">
                             <button id="add-note"><i class="fas fa-plus"></i> Add Note</button>
                         </div>
                         <ul id="notes-list"></ul>
-                        <div id="note-editor-container" style="display:none; flex-direction:column; flex-grow:1;">
+                        <div id="note-editor-container" style="display:none; flex-direction:column; flex-grow:1; height: 100%;">
                             <textarea id="note-editor" class="notes-editor"></textarea>
                             <div class="notes-toolbar">
                                 <button id="save-note">Save</button>
                                 <button id="delete-note">Delete</button>
-                                <button id="close-note">Close</button>
+                                <button id="close-editor">Close</button>
                             </div>
                         </div>
                     </div>
@@ -2530,17 +2616,18 @@ Current Time: ${new Date().toLocaleString()}`;
                 this.WindowManager.create('Notes', content, 'notes', {
                     onload: (window) => {
                         const notesList = window.querySelector('#notes-list');
+                        const listToolbar = window.querySelector('#notes-list-toolbar');
                         const addNoteBtn = window.querySelector('#add-note');
                         const editorContainer = window.querySelector('#note-editor-container');
                         const editor = window.querySelector('#note-editor');
                         const saveNoteBtn = window.querySelector('#save-note');
                         const deleteNoteBtn = window.querySelector('#delete-note');
-                        const closeNoteBtn = window.querySelector('#close-note');
+                        const closeEditorBtn = window.querySelector('#close-editor');
                         let currentNoteId = null;
 
                         const loadNotes = () => {
                             notesList.innerHTML = '';
-                            const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+                            const notes = JSON.parse(localStorage.getItem('scos_notes') || '[]');
                             notes.forEach(note => {
                                 const li = document.createElement('li');
                                 li.className = 'note-item';
@@ -2551,22 +2638,36 @@ Current Time: ${new Date().toLocaleString()}`;
                             });
                         };
 
+                        const showEditor = () => {
+                            notesList.style.display = 'none';
+                            listToolbar.style.display = 'none';
+                            editorContainer.style.display = 'flex';
+                            editor.focus();
+                        }
+                        
+                        const showList = () => {
+                            notesList.style.display = 'block';
+                            listToolbar.style.display = 'flex';
+                            editorContainer.style.display = 'none';
+                        }
+                        
                         const openNote = (id) => {
-                            const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+                            const notes = JSON.parse(localStorage.getItem('scos_notes') || '[]');
                             const note = notes.find(n => n.id === id);
                             if (note) {
                                 currentNoteId = id;
-                                notesList.style.display = 'none';
-                                addNoteBtn.style.display = 'none';
-                                editorContainer.style.display = 'flex';
                                 editor.value = note.content;
-                                editor.focus();
+                                showEditor();
                             }
                         };
 
                         const saveNote = () => {
-                            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+                            let notes = JSON.parse(localStorage.getItem('scos_notes') || '[]');
                             const content = editor.value;
+                            if (!content.trim()) {
+                                alert("Cannot save an empty note.");
+                                return;
+                            }
                             const title = content.split('\n')[0].substring(0, 30) || 'Untitled Note';
 
                             if (currentNoteId) {
@@ -2578,40 +2679,35 @@ Current Time: ${new Date().toLocaleString()}`;
                                 const newId = Date.now();
                                 notes.push({ id: newId, title: title, content: content });
                             }
-                            localStorage.setItem('notes', JSON.stringify(notes));
+                            localStorage.setItem('scos_notes', JSON.stringify(notes));
                             loadNotes();
-                            closeNote();
+                            closeEditor();
                         };
 
                         const deleteNote = () => {
                             if (currentNoteId && confirm('Are you sure you want to delete this note?')) {
-                                let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+                                let notes = JSON.parse(localStorage.getItem('scos_notes') || '[]');
                                 notes = notes.filter(n => n.id !== currentNoteId);
-                                localStorage.setItem('notes', JSON.stringify(notes));
+                                localStorage.setItem('scos_notes', JSON.stringify(notes));
                                 loadNotes();
-                                closeNote();
+                                closeEditor();
                             }
                         };
 
-                        const closeNote = () => {
+                        const closeEditor = () => {
                             currentNoteId = null;
                             editor.value = '';
-                            notesList.style.display = 'block';
-                            addNoteBtn.style.display = 'block';
-                            editorContainer.style.display = 'none';
+                            showList();
                         };
 
                         addNoteBtn.addEventListener('touchstart', () => {
                             currentNoteId = null;
                             editor.value = '';
-                            notesList.style.display = 'none';
-                            addNoteBtn.style.display = 'none';
-                            editorContainer.style.display = 'flex';
-                            editor.focus();
+                            showEditor();
                         });
                         saveNoteBtn.addEventListener('touchstart', saveNote);
                         deleteNoteBtn.addEventListener('touchstart', deleteNote);
-                        closeNoteBtn.addEventListener('touchstart', closeNote);
+                        closeEditorBtn.addEventListener('touchstart', closeEditor);
 
                         loadNotes();
                     }
@@ -2641,12 +2737,13 @@ Current Time: ${new Date().toLocaleString()}`;
                         let timerInterval;
 
                         const formatTime = (ms) => {
-                            const hours = Math.floor(ms / (1000 * 60 * 60));
-                            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+                            const totalSeconds = Math.floor(ms / 1000);
+                            const hours = Math.floor(totalSeconds / 3600);
+                            const minutes = Math.floor((totalSeconds % 3600) / 60);
+                            const seconds = totalSeconds % 60;
 
                             return [hours, minutes, seconds]
-                                .map(v => v < 10 ? '0' + v : v)
+                                .map(v => String(v).padStart(2, '0'))
                                 .join(':');
                         };
 
@@ -2695,10 +2792,11 @@ Current Time: ${new Date().toLocaleString()}`;
             createWeatherAppWindow() {
                 const content = `
                     <div id="weather-app-container" class="weather-app-content">
-                        <h2 id="weather-city-name">Weather App</h2>
+                        <h2>Weather</h2>
                         <input type="text" id="weather-city-input" placeholder="Enter city name...">
                         <button id="get-weather-btn">Get Weather</button>
                         <div id="weather-data" style="display:none;">
+                            <h3 id="weather-city"></h3>
                             <i id="weather-icon" class="fas fa-question weather-icon"></i>
                             <div id="weather-temp" class="weather-temp"></div>
                             <p id="weather-description"></p>
@@ -2710,14 +2808,16 @@ Current Time: ${new Date().toLocaleString()}`;
                         const cityInput = window.querySelector('#weather-city-input');
                         const getWeatherBtn = window.querySelector('#get-weather-btn');
                         const weatherDataEl = window.querySelector('#weather-data');
-                        const cityNameEl = window.querySelector('#weather-city-name');
+                        const cityNameEl = window.querySelector('#weather-city');
                         const tempEl = window.querySelector('#weather-temp');
                         const descEl = window.querySelector('#weather-description');
                         const iconEl = window.querySelector('#weather-icon');
 
                         const fetchWeather = async (city) => {
-                            // Using a free API from a public source to avoid key issues
-                            const url = `https://goweather.herokuapp.com/weather/${city}`;
+                            const url = `https://goweather.herokuapp.com/weather/${encodeURIComponent(city)}`;
+                            
+                            getWeatherBtn.textContent = 'Loading...';
+                            getWeatherBtn.disabled = true;
 
                             try {
                                 const response = await fetch(url);
@@ -2725,28 +2825,33 @@ Current Time: ${new Date().toLocaleString()}`;
 
                                 if (data.temperature) {
                                     cityNameEl.textContent = city;
-                                    tempEl.textContent = `${data.temperature}`;
+                                    tempEl.textContent = data.temperature;
                                     descEl.textContent = data.description;
-                                    weatherDataEl.style.display = 'block';
-
-                                    // Mapping descriptions to font awesome icons
+                                    
                                     const description = data.description.toLowerCase();
-                                    let iconClass = "fa-question"; // Default icon
+                                    let iconClass = "fa-question-circle";
 
-                                    if (description.includes("sunny")) iconClass = "fa-sun";
+                                    if (description.includes("sunny") || description.includes("clear")) iconClass = "fa-sun";
                                     else if (description.includes("rain")) iconClass = "fa-cloud-showers-heavy";
-                                    else if (description.includes("cloud")) iconClass = "fa-cloud";
+                                    else if (description.includes("partly cloudy")) iconClass = "fa-cloud-sun";
+                                    else if (description.includes("cloudy")) iconClass = "fa-cloud";
                                     else if (description.includes("storm")) iconClass = "fa-bolt";
                                     else if (description.includes("snow")) iconClass = "fa-snowflake";
                                     else if (description.includes("wind")) iconClass = "fa-wind";
 
                                     iconEl.className = `fas ${iconClass} weather-icon`;
+                                    weatherDataEl.style.display = 'block';
                                 } else {
                                     alert('City not found. Please try again.');
+                                    weatherDataEl.style.display = 'none';
                                 }
                             } catch (error) {
                                 console.error(error);
                                 alert('Error fetching weather data.');
+                                weatherDataEl.style.display = 'none';
+                            } finally {
+                                getWeatherBtn.textContent = 'Get Weather';
+                                getWeatherBtn.disabled = false;
                             }
                         };
 
@@ -2763,22 +2868,19 @@ Current Time: ${new Date().toLocaleString()}`;
 
             createTicTacToeWindow() {
                 const content = `
+                    <div style="text-align:center; margin-bottom: 10px;" id="tictactoe-status">Player X's turn</div>
                     <div class="tic-tac-toe-content" id="tictactoe-board">
-                        <div class="tic-tac-toe-cell" data-index="0"></div>
-                        <div class="tic-tac-toe-cell" data-index="1"></div>
-                        <div class="tic-tac-toe-cell" data-index="2"></div>
-                        <div class="tic-tac-toe-cell" data-index="3"></div>
-                        <div class="tic-tac-toe-cell" data-index="4"></div>
-                        <div class="tic-tac-toe-cell" data-index="5"></div>
-                        <div class="tic-tac-toe-cell" data-index="6"></div>
-                        <div class="tic-tac-toe-cell" data-index="7"></div>
-                        <div class="tic-tac-toe-cell" data-index="8"></div>
+                        ${Array(9).fill('').map((_, i) => `<div class="tic-tac-toe-cell" data-index="${i}"></div>`).join('')}
                     </div>
+                    <button id="tictactoe-restart" style="width: 100px; margin: 20px auto 0;">Restart</button>
                 `;
                 this.WindowManager.create('Tic-Tac-Toe', content, 'tictactoe', {
                     onload: (window) => {
                         const board = window.querySelector('#tictactoe-board');
                         const cells = board.querySelectorAll('.tic-tac-toe-cell');
+                        const statusDisplay = window.querySelector('#tictactoe-status');
+                        const restartButton = window.querySelector('#tictactoe-restart');
+
                         let currentPlayer = 'X';
                         let gameActive = true;
                         let gameState = ['', '', '', '', '', '', '', '', ''];
@@ -2789,47 +2891,64 @@ Current Time: ${new Date().toLocaleString()}`;
                             [0, 4, 8], [2, 4, 6]
                         ];
 
-                        const checkWin = () => {
+                        const handleResultValidation = () => {
                             let roundWon = false;
                             for (let i = 0; i < winningConditions.length; i++) {
-                                const [a, b, c] = winningConditions[i];
-                                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                                const winCondition = winningConditions[i];
+                                let a = gameState[winCondition[0]];
+                                let b = gameState[winCondition[1]];
+                                let c = gameState[winCondition[2]];
+                                if (a === '' || b === '' || c === '') continue;
+                                if (a === b && b === c) {
                                     roundWon = true;
                                     break;
                                 }
                             }
 
                             if (roundWon) {
-                                alert(`Player ${currentPlayer} has won!`);
+                                statusDisplay.textContent = `Player ${currentPlayer} has won!`;
                                 gameActive = false;
                                 return;
                             }
 
                             if (!gameState.includes('')) {
-                                alert('Game is a draw!');
+                                statusDisplay.textContent = 'Game is a draw!';
                                 gameActive = false;
-                            }
-                        };
-
-                        const handleCellClick = (event) => {
-                            const clickedCell = event.target;
-                            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
-
-                            if (gameState[clickedCellIndex] !== '' || !gameActive) {
                                 return;
                             }
+                            
+                            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                            statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
+                        };
+
+                        const handleCellClick = (e) => {
+                            const clickedCell = e.target;
+                            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+                            if (gameState[clickedCellIndex] !== '' || !gameActive) return;
 
                             gameState[clickedCellIndex] = currentPlayer;
                             clickedCell.textContent = currentPlayer;
-
-                            checkWin();
-                            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                            
+                            handleResultValidation();
+                        };
+                        
+                        const handleRestartGame = () => {
+                            gameActive = true;
+                            currentPlayer = 'X';
+                            gameState = ['', '', '', '', '', '', '', '', ''];
+                            statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
+                            cells.forEach(cell => cell.textContent = '');
                         };
 
                         cells.forEach(cell => cell.addEventListener('touchstart', (e) => {
                             e.preventDefault();
                             handleCellClick(e);
                         }));
+                        restartButton.addEventListener('touchstart', (e) => {
+                             e.preventDefault();
+                             handleRestartGame();
+                        });
                     }
                 });
             },
