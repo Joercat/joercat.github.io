@@ -64,7 +64,7 @@
         
             .spinning-o {
                 display: inline-block;
-                animation: spin 1s ease-in-out infinite;
+                animation: spin 1s linear infinite;
                 color: #39FF14;
                 font-weight: bold;
                 text-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14;
@@ -72,15 +72,11 @@
         
             @keyframes spin {
                 0% {
-                    transform: rotate(0deg) scale(1);
-                }
-        
-                50% {
-                    transform: rotate(180deg) scale(1.5);
+                    transform: rotate(0deg);
                 }
         
                 100% {
-                    transform: rotate(360deg) scale(1);
+                    transform: rotate(360deg);
                 }
             }
         
@@ -730,21 +726,6 @@
                 border-bottom: 1px solid var(--main-color);
             }
         
-            .calculator-input-area {
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-            }
-        
-            .calculator-input-area input {
-                background: transparent;
-                border: none;
-                color: var(--main-color);
-                font-size: 1.5em;
-                padding: 5px;
-                outline: none;
-            }
-        
             .calculator-buttons {
                 flex-grow: 1;
                 display: grid;
@@ -918,6 +899,21 @@
                 font-size: 2em;
                 cursor: pointer;
             }
+
+            .install-progress-bar {
+                width: 100%;
+                height: 10px;
+                background-color: #333;
+                border: 1px solid var(--main-color);
+                margin-top: 10px;
+            }
+
+            .install-progress {
+                height: 100%;
+                width: 0;
+                background-color: var(--main-color);
+                transition: width 0.3s ease;
+            }
         }
         
         @media (hover: hover) and (pointer: fine) {
@@ -998,7 +994,7 @@
             bootComplete: false,
             terminalAliases: {},
             aiAPIKey: "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",
-            openWeatherMapAPIKey: "YOUR_OPENWEATHERMAP_API_KEY", // Replace with your key
+            openWeatherMapAPIKey: "YOUR_OPENWEATHERMAP_API_KEY", // This is not needed anymore
             runningApps: [],
             activeWindow: null,
             installedApps: [
@@ -1385,12 +1381,36 @@
                 }
             },
 
-            installApp(app) {
+            async installApp(app, installButton) {
                 if (!this.installedApps.some(a => a.name === app.name)) {
-                    this.installedApps.push(app);
-                    localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
-                    this.initDesktop();
-                    this.WindowManager.closeActiveWindow();
+                    const appSize = app.size || 1000; // Default size for simulation
+                    const installTime = appSize / 100; // Simulate install time
+                    let progress = 0;
+
+                    const progressBarContainer = document.createElement('div');
+                    progressBarContainer.className = 'install-progress-bar';
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'install-progress';
+                    progressBarContainer.appendChild(progressBar);
+                    installButton.replaceWith(progressBarContainer);
+
+                    const interval = setInterval(() => {
+                        progress += 1;
+                        if (progress > 100) {
+                            clearInterval(interval);
+                            progressBarContainer.remove();
+                            this.installedApps.push(app);
+                            localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
+                            this.initDesktop();
+                            const newButton = document.createElement('button');
+                            newButton.textContent = 'Installed';
+                            newButton.disabled = true;
+                            newButton.classList.add('installed-button');
+                            installButton.parentElement.appendChild(newButton);
+                        } else {
+                            progressBar.style.width = `${progress}%`;
+                        }
+                    }, installTime / 100);
                 }
             },
 
@@ -2337,26 +2357,32 @@ Current Time: ${new Date().toLocaleString()}`;
 
             createAppStoreWindow() {
                 const apps = [
-                    { name: 'calculator', title: 'Calculator', icon: 'fas fa-calculator', description: 'A scientific calculator using math.js.' },
-                    { name: 'imageviewer', title: 'Image Viewer', icon: 'fas fa-image', description: 'View local image files.' },
-                    { name: 'weather', title: 'Weather', icon: 'fas fa-cloud-sun', description: 'Check live weather for any city.' },
-                    { name: 'notes', title: 'Notes', icon: 'fas fa-sticky-note', description: 'Create and save notes to local storage.' },
-                    { name: 'timerstopwatch', title: 'Timer/Stopwatch', icon: 'fas fa-stopwatch', description: 'A utility for timing and counting down.' },
-                    { name: 'tictactoe', title: 'Tic-Tac-Toe', icon: 'fas fa-gamepad', description: 'The classic game of Tic-Tac-Toe.' }
+                    { name: 'calculator', title: 'Calculator', icon: 'fas fa-calculator', description: 'A scientific calculator using math.js.', size: 2500 },
+                    { name: 'imageviewer', title: 'Image Viewer', icon: 'fas fa-image', description: 'View local image files.', size: 1000 },
+                    { name: 'weather', title: 'Weather', icon: 'fas fa-cloud-sun', description: 'Check live weather for any city.', size: 3000 },
+                    { name: 'notes', title: 'Notes', icon: 'fas fa-sticky-note', description: 'Create and save notes to local storage.', size: 500 },
+                    { name: 'timerstopwatch', title: 'Timer/Stopwatch', icon: 'fas fa-stopwatch', description: 'A utility for timing and counting down.', size: 800 },
+                    { name: 'tictactoe', title: 'Tic-Tac-Toe', icon: 'fas fa-gamepad', description: 'The classic game of Tic-Tac-Toe.', size: 1500 }
                 ];
 
                 const content = `
                     <div class="appstore-content">
-                        ${apps.map(app => `
-                            <div class="appstore-app" data-app="${app.name}">
-                                <i class="${app.icon} appstore-app-icon"></i>
-                                <div class="appstore-app-details">
-                                    <h4>${app.title}</h4>
-                                    <p>${app.description}</p>
+                        ${apps.map(app => {
+                            const isInstalled = this.installedApps.some(a => a.name === app.name);
+                            return `
+                                <div class="appstore-app" data-app="${app.name}">
+                                    <i class="${app.icon} appstore-app-icon"></i>
+                                    <div class="appstore-app-details">
+                                        <h4>${app.title}</h4>
+                                        <p>${app.description}</p>
+                                    </div>
+                                    ${isInstalled
+                                        ? `<button disabled class="installed-button">Installed</button>`
+                                        : `<button class="install-button" data-app-name="${app.name}" data-app-size="${app.size}">Install</button>`
+                                    }
                                 </div>
-                                <button class="install-button" data-app-name="${app.name}">Install</button>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 `;
 
@@ -2364,25 +2390,15 @@ Current Time: ${new Date().toLocaleString()}`;
                     onload: (window) => {
                         const installButtons = window.querySelectorAll('.install-button');
                         installButtons.forEach(button => {
-                            if (this.installedApps.some(a => a.name === button.dataset.appName)) {
-                                button.textContent = 'Installed';
-                                button.disabled = true;
-                            } else {
-                                button.addEventListener('touchstart', (e) => {
-                                    e.preventDefault();
-                                    const appName = e.target.dataset.appName;
-                                    const appToInstall = apps.find(app => app.name === appName);
-                                    if (appToInstall) {
-                                        this.installApp({
-                                            name: appToInstall.name,
-                                            title: appToInstall.title,
-                                            icon: appToInstall.icon
-                                        });
-                                        e.target.textContent = 'Installed';
-                                        e.target.disabled = true;
-                                    }
-                                });
-                            }
+                            button.addEventListener('touchstart', async (e) => {
+                                e.preventDefault();
+                                const appName = e.target.dataset.appName;
+                                const appSize = parseInt(e.target.dataset.appSize);
+                                const appToInstall = apps.find(app => app.name === appName);
+                                if (appToInstall) {
+                                    await this.installApp(appToInstall, e.target);
+                                }
+                            });
                         });
                     }
                 });
@@ -2700,36 +2716,31 @@ Current Time: ${new Date().toLocaleString()}`;
                         const iconEl = window.querySelector('#weather-icon');
 
                         const fetchWeather = async (city) => {
-                            const apiKey = System.openWeatherMapAPIKey;
-                            if (apiKey === "YOUR_OPENWEATHERMAP_API_KEY") {
-                                alert("Please get a free API key from OpenWeatherMap and replace the placeholder in the code.");
-                                return;
-                            }
-                            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`;
+                            // Using a free API from a public source to avoid key issues
+                            const url = `https://goweather.herokuapp.com/weather/${city}`;
 
                             try {
                                 const response = await fetch(url);
                                 const data = await response.json();
 
-                                if (data.cod === 200) {
-                                    cityNameEl.textContent = data.name;
-                                    tempEl.textContent = `${Math.round(data.main.temp)}°F`;
-                                    descEl.textContent = data.weather[0].description;
+                                if (data.temperature) {
+                                    cityNameEl.textContent = city;
+                                    tempEl.textContent = `${data.temperature}`;
+                                    descEl.textContent = data.description;
                                     weatherDataEl.style.display = 'block';
 
-                                    const iconCode = data.weather[0].icon;
-                                    const iconMap = {
-                                        "01d": "fa-sun", "01n": "fa-moon",
-                                        "02d": "fa-cloud-sun", "02n": "fa-cloud-moon",
-                                        "03d": "fa-cloud", "03n": "fa-cloud",
-                                        "04d": "fa-cloud-meatball", "04n": "fa-cloud-meatball",
-                                        "09d": "fa-cloud-showers-heavy", "09n": "fa-cloud-showers-heavy",
-                                        "10d": "fa-cloud-sun-rain", "10n": "fa-cloud-moon-rain",
-                                        "11d": "fa-bolt", "11n": "fa-bolt",
-                                        "13d": "fa-snowflake", "13n": "fa-snowflake",
-                                        "50d": "fa-smog", "50n": "fa-smog"
-                                    };
-                                    iconEl.className = `fas ${iconMap[iconCode]} weather-icon`;
+                                    // Mapping descriptions to font awesome icons
+                                    const description = data.description.toLowerCase();
+                                    let iconClass = "fa-question"; // Default icon
+
+                                    if (description.includes("sunny")) iconClass = "fa-sun";
+                                    else if (description.includes("rain")) iconClass = "fa-cloud-showers-heavy";
+                                    else if (description.includes("cloud")) iconClass = "fa-cloud";
+                                    else if (description.includes("storm")) iconClass = "fa-bolt";
+                                    else if (description.includes("snow")) iconClass = "fa-snowflake";
+                                    else if (description.includes("wind")) iconClass = "fa-wind";
+
+                                    iconEl.className = `fas ${iconClass} weather-icon`;
                                 } else {
                                     alert('City not found. Please try again.');
                                 }
