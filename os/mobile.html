@@ -670,6 +670,146 @@
                 align-items: center;
                 cursor: pointer;
             }
+
+            .appstore-app {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid var(--main-color);
+            }
+
+            .appstore-app-icon {
+                font-size: 2.5em;
+                margin-right: 15px;
+            }
+
+            .appstore-app-details {
+                flex-grow: 1;
+            }
+
+            .appstore-app-details h4 {
+                margin-bottom: 5px;
+            }
+
+            .appstore-app-details p {
+                font-size: 12px;
+                color: #888;
+            }
+
+            .appstore-app button {
+                padding: 5px 10px;
+            }
+
+            .calculator-content {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+                padding: 10px;
+            }
+
+            #calc-display {
+                grid-column: 1 / -1;
+                background: #000;
+                color: var(--main-color);
+                font-size: 2em;
+                text-align: right;
+                padding: 10px;
+                overflow: hidden;
+            }
+
+            .calc-button {
+                padding: 20px;
+                font-size: 1.5em;
+                background: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
+                cursor: pointer;
+            }
+
+            .calc-button:active {
+                background: var(--main-color);
+                color: var(--bg-dark);
+            }
+
+            .calc-button.operator {
+                background: rgba(57, 255, 20, 0.3);
+            }
+
+            .calc-button.equals {
+                grid-column: span 2;
+            }
+            
+            .image-viewer-content {
+                text-align: center;
+            }
+
+            .image-viewer-content img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+
+            .todo-list-content {
+                padding: 10px;
+            }
+
+            .todo-list-input {
+                display: flex;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+
+            .todo-list-input input {
+                flex-grow: 1;
+                background: #333;
+                border: 1px solid var(--main-color);
+                color: var(--main-color);
+                padding: 5px;
+                outline: none;
+            }
+
+            .todo-list-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px;
+                border-bottom: 1px solid rgba(57, 255, 20, 0.2);
+            }
+
+            .todo-list-item:last-child {
+                border-bottom: none;
+            }
+
+            .media-player-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .media-player-controls {
+                display: flex;
+                gap: 15px;
+            }
+
+            .weather-app-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                text-align: center;
+            }
+
+            .weather-icon {
+                font-size: 5em;
+            }
+
+            .weather-temp {
+                font-size: 3em;
+            }
         }
 
         @media (hover: hover) and (pointer: fine) {
@@ -723,6 +863,10 @@
                 <i class="fas fa-info-circle fa-2x"></i>
                 <span>About</span>
             </div>
+            <div class="icon" data-app="appstore">
+                <i class="fas fa-store fa-2x"></i>
+                <span>App Store</span>
+            </div>
         </div>
     </div>
 
@@ -749,9 +893,21 @@
             aiAPIKey: "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",
             runningApps: [],
             activeWindow: null,
+            installedApps: [
+                { name: 'files', title: 'Files', icon: 'fas fa-folder' },
+                { name: 'terminal', title: 'Terminal', icon: 'fas fa-terminal' },
+                { name: 'notepad', title: 'Notepad', icon: 'fas fa-edit' },
+                { name: 'browser', title: 'Browser', icon: 'fas fa-globe' },
+                { name: 'calendar', title: 'Calendar', icon: 'fas fa-calendar' },
+                { name: 'settings', title: 'Settings', icon: 'fas fa-cog' },
+                { name: 'ai', title: 'AI', icon: 'fas fa-brain' },
+                { name: 'about', title: 'About', icon: 'fas fa-info-circle' },
+                { name: 'appstore', title: 'App Store', icon: 'fas fa-store' }
+            ],
             
             async init() {
                 this.FileSystem.init();
+                this.loadInstalledApps();
                 this.applyTheme(this.loadTheme());
                 await this.startBootSequence();
                 this.WindowManager.init();
@@ -1029,11 +1185,21 @@
             },
 
             initDesktop() {
-                // The touch event for icons is now handled in WindowManager.init to avoid conflicts.
+                const desktopIcons = document.querySelector('.desktop-icons');
+                desktopIcons.innerHTML = '';
+                this.installedApps.forEach(app => {
+                    const icon = document.createElement('div');
+                    icon.className = 'icon';
+                    icon.dataset.app = app.name;
+                    icon.innerHTML = `
+                        <i class="${app.icon} fa-2x"></i>
+                        <span>${app.title}</span>
+                    `;
+                    desktopIcons.appendChild(icon);
+                });
             },
 
             initNavigation() {
-                // --- MODIFIED CODE START ---
                 document.getElementById('home-button').addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     e.stopPropagation(); 
@@ -1058,7 +1224,6 @@
                     e.stopPropagation();
                     this.toggleRecentsPanel();
                 });
-                // --- MODIFIED CODE END ---
             },
 
             updateRecentsPanel() {
@@ -1070,13 +1235,11 @@
                     appCard.textContent = app.title;
                     appCard.dataset.windowId = app.id;
                     
-                    // --- MODIFIED CODE START ---
                     appCard.addEventListener('touchstart', (e) => {
                         e.stopPropagation();
                         this.WindowManager.showWindow(app.id);
                         recentsPanel.style.display = 'none';
                     });
-                    // --- MODIFIED CODE END ---
 
                     const closeBtn = document.createElement('button');
                     closeBtn.textContent = '×';
@@ -1086,12 +1249,10 @@
                     closeBtn.style.fontSize = '1.5em';
                     closeBtn.style.cursor = 'pointer';
 
-                    // --- MODIFIED CODE START ---
                     closeBtn.addEventListener('touchstart', (e) => {
                         e.stopPropagation();
                         this.WindowManager.closeWindow(app.id);
                     });
-                    // --- MODIFIED CODE END ---
 
                     appCard.appendChild(closeBtn);
                     recentsPanel.appendChild(appCard);
@@ -1107,6 +1268,24 @@
                 }
             },
 
+            loadInstalledApps() {
+                const storedApps = JSON.parse(localStorage.getItem('installedApps'));
+                if (storedApps) {
+                    this.installedApps = storedApps;
+                } else {
+                    localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
+                }
+            },
+
+            installApp(app) {
+                if (!this.installedApps.some(a => a.name === app.name)) {
+                    this.installedApps.push(app);
+                    localStorage.setItem('installedApps', JSON.stringify(this.installedApps));
+                    this.initDesktop();
+                    this.WindowManager.closeActiveWindow();
+                }
+            },
+
             openApp(appName) {
                 const apps = {
                     files: () => this.createFilesWindow(),
@@ -1116,7 +1295,13 @@
                     calendar: () => this.createCalendarWindow(),
                     settings: () => this.createSettingsWindow(),
                     ai: () => this.createAIWindow(),
-                    about: () => this.createAboutWindow()
+                    about: () => this.createAboutWindow(),
+                    appstore: () => this.createAppStoreWindow(),
+                    calculator: () => this.createCalculatorWindow(),
+                    imageviewer: () => this.createImageViewerWindow(),
+                    todolist: () => this.createTodoListWindow(),
+                    mediaplayer: () => this.createMediaPlayerWindow(),
+                    weather: () => this.createWeatherAppWindow()
                 };
 
                 if (apps[appName]) {
@@ -2058,6 +2243,323 @@ Current Time: ${new Date().toLocaleString()}`;
                 return window;
             },
 
+            createAppStoreWindow() {
+                const apps = [
+                    { name: 'calculator', title: 'Calculator', icon: 'fas fa-calculator', description: 'A simple calculator for basic arithmetic.' },
+                    { name: 'imageviewer', title: 'Image Viewer', icon: 'fas fa-image', description: 'View and appreciate beautiful imagery.' },
+                    { name: 'todolist', title: 'To-Do List', icon: 'fas fa-list', description: 'Keep track of your tasks and stay organized.' },
+                    { name: 'mediaplayer', title: 'Media Player', icon: 'fas fa-play-circle', description: 'A simple player for media files.' },
+                    { name: 'weather', title: 'Weather', icon: 'fas fa-cloud-sun', description: 'A simulated weather app to check the forecast.' }
+                ];
+                
+                const content = `
+                    <div class="appstore-content">
+                        ${apps.map(app => `
+                            <div class="appstore-app" data-app="${app.name}">
+                                <i class="${app.icon} appstore-app-icon"></i>
+                                <div class="appstore-app-details">
+                                    <h4>${app.title}</h4>
+                                    <p>${app.description}</p>
+                                </div>
+                                <button class="install-button" data-app-name="${app.name}">Install</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                const window = this.WindowManager.create('App Store', content, 'appstore', {
+                    onload: (window) => {
+                        const installButtons = window.querySelectorAll('.install-button');
+                        installButtons.forEach(button => {
+                            if (this.installedApps.some(a => a.name === button.dataset.appName)) {
+                                button.textContent = 'Installed';
+                                button.disabled = true;
+                            } else {
+                                button.addEventListener('touchstart', (e) => {
+                                    e.preventDefault();
+                                    const appName = e.target.dataset.appName;
+                                    const appToInstall = apps.find(app => app.name === appName);
+                                    if (appToInstall) {
+                                        this.installApp({
+                                            name: appToInstall.name,
+                                            title: appToInstall.title,
+                                            icon: appToInstall.icon
+                                        });
+                                        e.target.textContent = 'Installed';
+                                        e.target.disabled = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                return window;
+            },
+
+            createCalculatorWindow() {
+                const content = `
+                    <div class="calculator-content">
+                        <div id="calc-display">0</div>
+                        <button class="calc-button clear">C</button>
+                        <button class="calc-button operator">+/-</button>
+                        <button class="calc-button operator">%</button>
+                        <button class="calc-button operator">/</button>
+                        <button class="calc-button number">7</button>
+                        <button class="calc-button number">8</button>
+                        <button class="calc-button number">9</button>
+                        <button class="calc-button operator">*</button>
+                        <button class="calc-button number">4</button>
+                        <button class="calc-button number">5</button>
+                        <button class="calc-button number">6</button>
+                        <button class="calc-button operator">-</button>
+                        <button class="calc-button number">1</button>
+                        <button class="calc-button number">2</button>
+                        <button class="calc-button number">3</button>
+                        <button class="calc-button operator">+</button>
+                        <button class="calc-button number zero">0</button>
+                        <button class="calc-button dot">.</button>
+                        <button class="calc-button equals">=</button>
+                    </div>
+                `;
+                this.WindowManager.create('Calculator', content, 'calculator', {
+                    onload: (window) => {
+                        const display = window.querySelector('#calc-display');
+                        let currentInput = '';
+                        let operator = null;
+                        let firstOperand = null;
+                        let waitingForSecondOperand = false;
+
+                        const handleNumber = (number) => {
+                            if (waitingForSecondOperand) {
+                                currentInput = number;
+                                waitingForSecondOperand = false;
+                            } else {
+                                currentInput = currentInput === '0' ? number : currentInput + number;
+                            }
+                            display.textContent = currentInput;
+                        };
+
+                        const handleOperator = (nextOperator) => {
+                            const inputValue = parseFloat(currentInput);
+                            if (operator && waitingForSecondOperand) {
+                                operator = nextOperator;
+                                return;
+                            }
+                            if (firstOperand === null) {
+                                firstOperand = inputValue;
+                            } else if (operator) {
+                                const result = performCalculation(operator, firstOperand, inputValue);
+                                display.textContent = String(result);
+                                firstOperand = result;
+                            }
+                            waitingForSecondOperand = true;
+                            operator = nextOperator;
+                        };
+
+                        const performCalculation = (op, first, second) => {
+                            if (op === '+') return first + second;
+                            if (op === '-') return first - second;
+                            if (op === '*') return first * second;
+                            if (op === '/') return first / second;
+                            if (op === '%') return first % second;
+                            return second;
+                        };
+
+                        const handleEquals = () => {
+                            const inputValue = parseFloat(currentInput);
+                            if (operator && firstOperand !== null) {
+                                const result = performCalculation(operator, firstOperand, inputValue);
+                                display.textContent = String(result);
+                                firstOperand = result;
+                                operator = null;
+                                waitingForSecondOperand = false;
+                            }
+                        };
+                        
+                        const handleClear = () => {
+                            currentInput = '0';
+                            operator = null;
+                            firstOperand = null;
+                            waitingForSecondOperand = false;
+                            display.textContent = currentInput;
+                        };
+
+                        const handlePlusMinus = () => {
+                            currentInput = String(parseFloat(currentInput) * -1);
+                            display.textContent = currentInput;
+                        };
+
+                        const handleDot = () => {
+                            if (!currentInput.includes('.')) {
+                                currentInput += '.';
+                                display.textContent = currentInput;
+                            }
+                        };
+
+                        window.querySelectorAll('.calc-button').forEach(button => {
+                            button.addEventListener('touchstart', (e) => {
+                                e.preventDefault();
+                                const value = e.target.textContent;
+                                if (e.target.classList.contains('number')) {
+                                    handleNumber(value);
+                                } else if (e.target.classList.contains('operator')) {
+                                    if (value === '+/-') {
+                                        handlePlusMinus();
+                                    } else if (value === 'C') {
+                                        handleClear();
+                                    } else {
+                                        handleOperator(value);
+                                    }
+                                } else if (e.target.classList.contains('equals')) {
+                                    handleEquals();
+                                } else if (e.target.classList.contains('clear')) {
+                                    handleClear();
+                                } else if (e.target.classList.contains('dot')) {
+                                    handleDot();
+                                }
+                            });
+                        });
+                    }
+                });
+            },
+
+            createImageViewerWindow() {
+                const content = `
+                    <div class="image-viewer-content">
+                        <img src="https://picsum.photos/800/600" alt="Random Image">
+                    </div>
+                `;
+                this.WindowManager.create('Image Viewer', content, 'imageviewer');
+            },
+
+            createTodoListWindow() {
+                const content = `
+                    <div class="todo-list-content">
+                        <div class="todo-list-input">
+                            <input type="text" id="new-todo" placeholder="Add a new task...">
+                            <button id="add-todo">Add</button>
+                        </div>
+                        <ul id="todo-list"></ul>
+                    </div>
+                `;
+                this.WindowManager.create('To-Do List', content, 'todolist', {
+                    onload: (window) => {
+                        const newTodoInput = window.querySelector('#new-todo');
+                        const addTodoButton = window.querySelector('#add-todo');
+                        const todoList = window.querySelector('#todo-list');
+
+                        const loadTodos = () => {
+                            const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+                            todoList.innerHTML = '';
+                            todos.forEach(todo => addTodoItem(todo, false));
+                        };
+
+                        const saveTodos = () => {
+                            const todos = [];
+                            todoList.querySelectorAll('li span').forEach(span => todos.push(span.textContent));
+                            localStorage.setItem('todos', JSON.stringify(todos));
+                        };
+
+                        const addTodoItem = (text, save = true) => {
+                            const listItem = document.createElement('li');
+                            listItem.className = 'todo-list-item';
+                            listItem.innerHTML = `
+                                <span>${text}</span>
+                                <button class="delete-todo">Delete</button>
+                            `;
+                            
+                            listItem.querySelector('.delete-todo').addEventListener('touchstart', (e) => {
+                                e.preventDefault();
+                                listItem.remove();
+                                saveTodos();
+                            });
+                            
+                            todoList.appendChild(listItem);
+                            if (save) saveTodos();
+                        };
+
+                        addTodoButton.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            const newTodo = newTodoInput.value.trim();
+                            if (newTodo) {
+                                addTodoItem(newTodo);
+                                newTodoInput.value = '';
+                            }
+                        });
+
+                        loadTodos();
+                    }
+                });
+            },
+
+            createMediaPlayerWindow() {
+                const content = `
+                    <div class="media-player-content">
+                        <h3>SCos Music Player</h3>
+                        <div class="media-player-controls">
+                            <button id="play-pause-btn"><i class="fas fa-play"></i></button>
+                        </div>
+                    </div>
+                `;
+                this.WindowManager.create('Media Player', content, 'mediaplayer', {
+                    onload: (window) => {
+                        const playPauseBtn = window.querySelector('#play-pause-btn');
+                        let isPlaying = false;
+                        
+                        playPauseBtn.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            isPlaying = !isPlaying;
+                            if (isPlaying) {
+                                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                                alert('Playing some good ol\' tunes...');
+                            } else {
+                                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                                alert('Music paused.');
+                            }
+                        });
+                    }
+                });
+            },
+
+            createWeatherAppWindow() {
+                const content = `
+                    <div class="weather-app-content">
+                        <h2 id="weather-city">East Haven, CT</h2>
+                        <i id="weather-icon" class="fas fa-sun weather-icon"></i>
+                        <div id="weather-temp" class="weather-temp">75°F</div>
+                        <p id="weather-desc">Sunny</p>
+                    </div>
+                `;
+                this.WindowManager.create('Weather', content, 'weather', {
+                    onload: (window) => {
+                        const iconElement = window.querySelector('#weather-icon');
+                        const tempElement = window.querySelector('#weather-temp');
+                        const descElement = window.querySelector('#weather-desc');
+                        
+                        const getWeather = () => {
+                            const temps = ['75°F', '80°F', '68°F', '72°F', '85°F'];
+                            const conditions = [
+                                { icon: 'fa-sun', desc: 'Sunny' },
+                                { icon: 'fa-cloud-sun', desc: 'Partly Cloudy' },
+                                { icon: 'fa-cloud-showers-heavy', desc: 'Rainy' },
+                                { icon: 'fa-bolt', desc: 'Thunderstorm' },
+                                { icon: 'fa-cloud', desc: 'Overcast' }
+                            ];
+                            
+                            const randomTemp = temps[Math.floor(Math.random() * temps.length)];
+                            const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+                            
+                            iconElement.className = `fas ${randomCondition.icon} weather-icon`;
+                            tempElement.textContent = randomTemp;
+                            descElement.textContent = randomCondition.desc;
+                        };
+                        
+                        getWeather();
+                        setInterval(getWeather, 60000); // Update every minute
+                    }
+                });
+            },
+
             async getAIResponse(prompt) {
                 try {
                     const response = await fetch("https://api-inference.huggingface.co/models/deepseek-ai/deepseek-coder-v2-instruct", {
@@ -2098,4 +2600,3 @@ AI:`
     </script>
 </body>
 </html>
-
