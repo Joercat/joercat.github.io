@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoerAI User Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #c0c0c0;
+        }
+
+        .header {
+            background-color: #0078d4;
+            color: white;
+            padding: 15px 25px;
+            text-align: center;
+            border-bottom: 1px solid #005a9e;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            background-color: #f0f0f0;
+            padding: 10px 25px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        @media (min-width: 768px) {
+            .content-area {
+                flex-direction: row;
+            }
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f8f8f8;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .sidebar {
+                display: block;
+            }
+        }
+
+        .sidebar h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .main-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .main-panel {
+                flex-direction: row;
+            }
+        }
+
+        .file-system-panel, .add-data-panel {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #d0d0d0;
+            border-radius: 5px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .file-system-panel {
+            min-height: 350px;
+        }
+
+        .file-system-panel h2, .add-data-panel h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .file-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .file-entry {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.1s ease, border 0.1s ease;
+            border: 1px solid transparent;
+        }
+
+        .file-entry:hover {
+            background-color: #e6f2fa;
+            border-color: #a8d9f5;
+        }
+
+        .file-entry.selected {
+            background-color: #cce8ff;
+            border-color: #0078d4;
+        }
+
+        .file-icon {
+            margin-right: 10px;
+            font-size: 1.1em;
+            color: #0078d4;
+        }
+
+        .file-name {
+            font-weight: 400;
+            color: #333;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-content-display {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-size: 0.85em;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .file-content-display.hidden {
+            display: none;
+        }
+
+        .file-content-display h3 {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #0078d4;
+        }
+
+        .file-content-display pre {
+            font-size: 0.8em;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid #e0e0e0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .add-data-panel form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .add-data-panel label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .add-data-panel input[type="text"],
+        .add-data-panel textarea {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #c0c0c0;
+            border-radius: 3px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .add-data-panel input[type="text"]:focus,
+        .add-data-panel textarea:focus {
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
+        }
+
+        .button-primary {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 16px;
+            border: 1px solid #0078d4;
+            border-radius: 3px;
+            color: white;
+            background-color: #0078d4;
+            cursor: pointer;
+            transition: background-color 0.1s ease, border-color 0.1s ease;
+            outline: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .button-primary:hover {
+            background-color: #005a9e;
+            border-color: #005a9e;
+        }
+
+        .button-primary:active {
+            background-color: #004578;
+            border-color: #004578;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-danger {
+            background-color: #e81123;
+            border-color: #e81123;
+        }
+
+        .button-danger:hover {
+            background-color: #c40a1d;
+            border-color: #c40a1d;
+        }
+
+        .button-danger:active {
+            background-color: #a00717;
+            border-color: #a00717;
+        }
+
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #c0c0c0;
+        }
+
+        .button-secondary:hover {
+            background-color: #e0e0e0;
+            border-color: #a0a0a0;
+        }
+
+        .button-secondary:active {
+            background-color: #d0d0d0;
+            border-color: #909090;
+        }
+
+        .form-message {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 8px;
+            border-radius: 3px;
+        }
+
+        .form-message.success {
+            color: #1a7a2e;
+            background-color: #e6ffe6;
+            border: 1px solid #99cc99;
+        }
+
+        .form-message.error {
+            color: #a00a1d;
+            background-color: #ffe6e6;
+            border: 1px solid #cc9999;
+        }
+
+        .form-message.info {
+            color: #005a9e;
+            background-color: #e6f2fa;
+            border: 1px solid #99ccff;
+        }
+
+        .message-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+            border: 1px solid #c0c0c0;
+            text-align: center;
+            max-width: 350px;
+        }
+
+        .message-box p {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .message-box button {
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: white;
+            border: 1px solid #0078d4;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.1s ease, border-color 0.1s ease;
+            font-size: 0.9rem;
+        }
+
+        .message-box button:hover {
+            background-color: #005a9e;
+            border-color: #005a9e;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JoerAI User Database</h1>
+            <p>Your personal data storage, inspired by Windows.</p>
+        </div>
+
+        <div class="toolbar">
+            <button id="export-json-button" class="button-secondary">Export as JSON</button>
+            <button id="export-csv-button" class="button-secondary">Export as CSV</button>
+            <button id="export-zip-button" class="button-secondary">Export as ZIP</button>
+        </div>
+
+        <div class="content-area">
+            <div class="sidebar">
+                <h3>Navigation</h3>
+                <div class="file-entry selected">
+                    <span class="file-icon">&#128187;</span>
+                    <span class="file-name">This PC</span>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="file-system-panel">
+                    <h2>Files</h2>
+                    <div id="file-list" class="file-list">
+                        <p id="loading-files-message">Loading files...</p>
+                    </div>
+                    <div id="file-content-display" class="file-content-display hidden">
+                        <h3>Content of <span id="selected-file-name"></span>:</h3>
+                        <pre id="file-content-text"></pre>
+                        <button id="delete-file-button" class="button-primary button-danger">
+                            Delete File
+                        </button>
+                    </div>
+                </div>
+
+                <div class="add-data-panel">
+                    <h2>Add New File</h2>
+                    <form id="add-file-form">
+                        <div>
+                            <label for="file-name-input">File Name:</label>
+                            <input type="text" id="file-name-input" placeholder="e.g., my_notes.txt" required>
+                        </div>
+                        <div>
+                            <label for="file-content-input">File Content:</label>
+                            <textarea id="file-content-input" rows="6" placeholder="Enter file content here..." required></textarea>
+                        </div>
+                        <button type="submit" class="button-primary">
+                            Add File
+                        </button>
+                    </form>
+                    <div id="form-message" class="form-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box" class="message-box">
+        <p id="message-text"></p>
+        <button onclick="document.getElementById('message-box').style.display = 'none';">OK</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        const fileListDiv = document.getElementById('file-list');
+        const addFileForm = document.getElementById('add-file-form');
+        const fileNameInput = document.getElementById('file-name-input');
+        const fileContentInput = document.getElementById('file-content-input');
+        const formMessage = document.getElementById('form-message');
+        const loadingFilesMessage = document.getElementById('loading-files-message');
+        const fileContentDisplay = document.getElementById('file-content-display');
+        const selectedFileNameSpan = document.getElementById('selected-file-name');
+        const fileContentTextPre = document.getElementById('file-content-text');
+        const deleteFileButton = document.getElementById('delete-file-button');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const exportJsonButton = document.getElementById('export-json-button');
+        const exportCsvButton = document.getElementById('export-csv-button');
+        const exportZipButton = document.getElementById('export-zip-button');
+
+        const DB_NAME = 'joeraiUserDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'files';
+
+        let db;
+        let currentlySelectedFileId = null;
+
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.style.display = 'block';
+        }
+
+        function updateFormMessage(message, type = 'info') {
+            formMessage.textContent = message;
+            formMessage.className = 'form-message ' + type;
+        }
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+
+                request.onerror = (event) => {
+                    console.error("IndexedDB error:", event.target.errorCode, event.target.error);
+                    showMessage("Failed to open database: " + event.target.error.message);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function renderFiles() {
+            fileListDiv.innerHTML = '';
+            loadingFilesMessage.style.display = 'block';
+
+            try {
+                const files = await window.getAllFiles();
+                loadingFilesMessage.style.display = 'none';
+
+                if (files.length === 0) {
+                    fileListDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No files yet. Add one!</p>';
+                    fileContentDisplay.classList.add('hidden');
+                    return;
+                }
+
+                files.sort((a, b) => b.timestamp - a.timestamp);
+
+                files.forEach(file => {
+                    const fileEntry = document.createElement('div');
+                    fileEntry.className = 'file-entry';
+                    fileEntry.innerHTML = `
+                        <span class="file-icon">&#128196;</span>
+                        <span class="file-name">${escapeHTML(file.name)}</span>
+                    `;
+                    fileEntry.addEventListener('click', () => {
+                        const currentSelected = document.querySelector('.file-entry.selected');
+                        if (currentSelected) {
+                            currentSelected.classList.remove('selected');
+                        }
+                        fileEntry.classList.add('selected');
+                        displayFileContent(file);
+                    });
+                    fileListDiv.appendChild(fileEntry);
+                });
+            } catch (error) {
+                console.error("Error rendering files:", error);
+                showMessage("Error loading files: " + error.message);
+                fileListDiv.innerHTML = '<p class="text-red-500 text-center py-4">Failed to load files.</p>';
+            }
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        function displayFileContent(file) {
+            currentlySelectedFileId = file.id;
+            selectedFileNameSpan.textContent = escapeHTML(file.name);
+            try {
+                fileContentTextPre.textContent = atob(file.content);
+            } catch (e) {
+                fileContentTextPre.textContent = "Error decoding content.";
+                console.error("Decoding error:", e);
+            }
+            fileContentDisplay.classList.remove('hidden');
+        }
+
+        window.addFile = async function(name, content) {
+            if (!db) {
+                showMessage("Database not initialized. Please refresh.");
+                return null;
+            }
+            if (typeof name !== 'string' || name.trim() === '') {
+                showMessage("File name must be a non-empty string.");
+                return null;
+            }
+            if (typeof content !== 'string') {
+                showMessage("File content must be a string.");
+                return null;
+            }
+
+            const newFile = {
+                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+                name: name.trim(),
+                content: btoa(content),
+                timestamp: Date.now()
+            };
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.add(newFile);
+
+                request.onsuccess = () => {
+                    updateFormMessage(`File '${newFile.name}' added successfully!`, 'success');
+                    renderFiles();
+                    resolve(newFile);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error adding file:", event.target.error);
+                    showMessage("Failed to add file: " + event.target.error.message);
+                    updateFormMessage("Failed to add file.", 'error');
+                    reject(event.target.error);
+                };
+            });
+        };
+
+        window.viewFile = async function(name) {
+            if (typeof name !== 'string' || name.trim() === '') {
+                showMessage("File name must be a non-empty string to view.");
+                return null;
+            }
+            const files = await window.getAllFiles();
+            const file = files.find(f => f.name === name.trim());
+            if (file) {
+                displayFileContent(file);
+                showMessage(`Viewing file: '${file.name}'`);
+                return file;
+            } else {
+                showMessage(`File '${name}' not found.`);
+                return null;
+            }
+        };
+
+        window.deleteFileById = async function(fileId) {
+            if (!db) {
+                showMessage("Database not initialized. Please refresh.");
+                return false;
+            }
+            if (typeof fileId !== 'string' || fileId.trim() === '') {
+                showMessage("File ID must be a non-empty string to delete.");
+                return false;
+            }
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(fileId.trim());
+
+                request.onsuccess = () => {
+                    if (currentlySelectedFileId === fileId) {
+                        fileContentDisplay.classList.add('hidden');
+                        currentlySelectedFileId = null;
+                    }
+                    showMessage("File deleted successfully!");
+                    renderFiles();
+                    resolve(true);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error deleting file:", event.target.error);
+                    showMessage("Failed to delete file: " + event.target.error.message);
+                    reject(event.target.error);
+                };
+            });
+        };
+
+        window.deleteFileByName = async function(name) {
+            if (typeof name !== 'string' || name.trim() === '') {
+                showMessage("File name must be a non-empty string to delete.");
+                return false;
+            }
+            const files = await window.getAllFiles();
+            const fileToDelete = files.find(f => f.name === name.trim());
+            if (fileToDelete) {
+                return window.deleteFileById(fileToDelete.id);
+            } else {
+                showMessage(`File '${name}' not found for deletion.`);
+                return false;
+            }
+        };
+
+        window.getAllFiles = async function() {
+            if (!db) {
+                showMessage("Database not initialized. Please refresh.");
+                return [];
+            }
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+
+                request.onsuccess = (event) => {
+                    const files = event.target.result;
+                    const decodedFiles = files.map(file => ({
+                        ...file,
+                        content: file.content ? atob(file.content) : ''
+                    }));
+                    resolve(decodedFiles);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error getting all files:", event.target.error);
+                    showMessage("Failed to retrieve files: " + event.target.error.message);
+                    reject(event.target.error);
+                };
+            });
+        };
+
+        window.updateFile = async function(fileId, updates) {
+            if (!db) {
+                showMessage("Database not initialized. Please refresh.");
+                return null;
+            }
+            if (typeof fileId !== 'string' || fileId.trim() === '') {
+                showMessage("File ID must be a non-empty string to update.");
+                return null;
+            }
+            if (typeof updates !== 'object' || updates === null) {
+                showMessage("Updates must be a non-null object.");
+                return null;
+            }
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const getRequest = store.get(fileId.trim());
+
+                getRequest.onsuccess = () => {
+                    const file = getRequest.result;
+                    if (!file) {
+                        showMessage(`File with ID '${fileId}' not found for update.`);
+                        resolve(null);
+                        return;
+                    }
+
+                    const updatedFile = { ...file, ...updates };
+                    updatedFile.id = file.id;
+                    updatedFile.timestamp = Date.now();
+
+                    if (updates.content !== undefined) {
+                        updatedFile.content = btoa(updates.content);
+                    }
+
+                    const putRequest = store.put(updatedFile);
+
+                    putRequest.onsuccess = () => {
+                        showMessage(`File '${updatedFile.name}' updated successfully!`);
+                        renderFiles();
+                        if (currentlySelectedFileId === updatedFile.id) {
+                            displayFileContent(updatedFile);
+                        }
+                        resolve(updatedFile);
+                    };
+
+                    putRequest.onerror = (event) => {
+                        console.error("Error updating file:", event.target.error);
+                        showMessage("Failed to update file: " + event.target.error.message);
+                        reject(event.target.error);
+                    };
+                };
+
+                getRequest.onerror = (event) => {
+                    console.error("Error getting file for update:", event.target.error);
+                    showMessage("Failed to retrieve file for update: " + event.target.error.message);
+                    reject(event.target.error);
+                };
+            });
+        };
+
+        async function exportDataAsJson() {
+            try {
+                const files = await window.getAllFiles();
+                const jsonString = JSON.stringify(files, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'joerai_database.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showMessage("Data exported as JSON!");
+            } catch (error) {
+                console.error("Error exporting JSON:", error);
+                showMessage("Failed to export JSON: " + error.message);
+            }
+        }
+
+        async function exportDataAsCsv() {
+            try {
+                const files = await window.getAllFiles();
+                if (files.length === 0) {
+                    showMessage("No data to export to CSV.");
+                    return;
+                }
+
+                const headers = ["id", "name", "content", "timestamp"];
+                const csvRows = [headers.join(',')];
+
+                files.forEach(file => {
+                    const values = headers.map(header => {
+                        let value = file[header];
+                        if (header === "content") {
+                            value = JSON.stringify(value);
+                        } else if (header === "timestamp") {
+                            value = new Date(value).toISOString();
+                        }
+                        return `"${String(value).replace(/"/g, '""')}"`;
+                    });
+                    csvRows.push(values.join(','));
+                });
+
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'joerai_database.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showMessage("Data exported as CSV!");
+            } catch (error) {
+                console.error("Error exporting CSV:", error);
+                showMessage("Failed to export CSV: " + error.message);
+            }
+        }
+
+        async function exportDataAsZip() {
+            try {
+                const files = await window.getAllFiles();
+                if (files.length === 0) {
+                    showMessage("No data to export to ZIP.");
+                    return;
+                }
+
+                const zip = new JSZip();
+                const folder = zip.folder("joerai_database_files");
+
+                files.forEach(file => {
+                    folder.file(`${file.name.replace(/[\\/:*?"<>|]/g, '_')}_${file.id}.txt`, file.content);
+                });
+
+                zip.generateAsync({ type: "blob" })
+                    .then(function(content) {
+                        const url = URL.createObjectURL(content);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'joerai_database.zip';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showMessage("Data exported as ZIP!");
+                    })
+                    .catch(error => {
+                        console.error("Error generating ZIP:", error);
+                        showMessage("Failed to generate ZIP: " + error.message);
+                    });
+            } catch (error) {
+                console.error("Error preparing ZIP export:", error);
+                showMessage("Failed to prepare ZIP export: " + error.message);
+            }
+        }
+
+        addFileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileName = fileNameInput.value.trim();
+            const fileContent = fileContentInput.value;
+            updateFormMessage('Adding file...', 'info');
+            try {
+                const addedFile = await window.addFile(fileName, fileContent);
+                if (addedFile) {
+                    fileNameInput.value = '';
+                    fileContentInput.value = '';
+                } else {
+                    updateFormMessage('Failed to add file.', 'error');
+                }
+            } catch (error) {
+                updateFormMessage('Failed to add file.', 'error');
+                console.error("Form submission error:", error);
+            }
+        });
+
+        deleteFileButton.addEventListener('click', async () => {
+            if (currentlySelectedFileId) {
+                await window.deleteFileById(currentlySelectedFileId);
+            } else {
+                showMessage("No file selected to delete.");
+            }
+        });
+
+        exportJsonButton.addEventListener('click', exportDataAsJson);
+        exportCsvButton.addEventListener('click', exportDataAsCsv);
+        exportZipButton.addEventListener('click', exportDataAsZip);
+
+        window.onload = async () => {
+            try {
+                await openDB();
+                renderFiles();
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                showMessage("Application failed to initialize. Check console for details.");
+            }
+        };
+    </script>
+</body>
+</html>
