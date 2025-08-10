@@ -1,15 +1,16 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Trainer (Tokenizer & JSON)</title>
+    <title>AI Trainer (BPE & Live View)</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         :root {
             --primary-bg: #1e1e2f; --secondary-bg: #27293d; --text-color: #d9e0ee;
             --accent-color: #89b4fa; --green-color: #a6e3a1; --red-color: #f38ba8;
             --border-color: #45475a; --warn-color: #fab387; --purple-color: #cba6f7;
+            --modal-backdrop: rgba(0, 0, 0, 0.6);
         }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; margin: 0; background-color: var(--primary-bg); color: var(--text-color); }
         .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; background-color: var(--primary-bg); overflow: hidden; }
@@ -25,216 +26,212 @@
         .tab-content.active { display: flex; flex-direction: column; }
         #message-list { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
         .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; word-wrap: break-word; }
-        .user-message { background-color: var(--accent-color); color: var(--primary-bg); align-self: flex-end; border-bottom-right-radius: 5px; }
-        .ai-message { background-color: var(--secondary-bg); align-self: flex-start; border-bottom-left-radius: 5px; }
-        .message-feedback { display: flex; gap: 8px; margin-top: 8px; }
-        .feedback-btn { cursor: pointer; opacity: 0.5; transition: opacity 0.2s; }
         #chat-form { display: flex; padding-top: 15px; border-top: 1px solid var(--border-color); }
         #chat-input { flex-grow: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--secondary-bg); color: var(--text-color); margin-right: 10px; }
-        #chat-form button { padding: 10px 15px; border-radius: 5px; border: none; background-color: var(--accent-color); color: var(--primary-bg); cursor: pointer; }
         #console-log { flex-grow: 1; background-color: #11111b; color: #cdd6f4; font-family: 'Courier New', monospace; font-size: 0.9em; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; overflow-y: auto; }
         .log-error { color: var(--red-color); } .log-warn { color: var(--warn-color); } .log-info { color: var(--green-color); } .log-db { color: var(--accent-color); } .log-ai { color: var(--purple-color); }
         #training-data-view-controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .data-table-container { flex-grow: 1; overflow: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; font-size: 0.9em; }
-        .data-table th { background-color: var(--secondary-bg); }
-        .tokens-cell { max-width: 200px; word-wrap: break-word; color: var(--purple-color); font-size: 0.8em !important; }
+        .data-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
+        .data-table tbody tr:hover { background-color: var(--secondary-bg); }
+        .tokens-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Modal Styles */
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-backdrop); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--secondary-bg); padding: 25px; border-radius: 8px; max-width: 90%; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.4); position: relative; }
+        .modal-close { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; border: none; background: none; color: var(--text-color); }
+        .modal-content h3 { margin-top: 0; color: var(--accent-color); }
+        .detail-group { margin-bottom: 15px; }
+        .detail-group p { background: var(--primary-bg); padding: 10px; border-radius: 5px; word-wrap: break-word; font-size: 0.95em; }
+        .detail-group strong { color: var(--text-color); opacity: 0.8; }
     </style>
 </head>
 <body></body>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    puter.ui.showAppWindow({ name: 'AI Trainer (Tokenizer & JSON)', width: 900, height: 700 }).then(appWindow => {
-        appWindow.getBody().innerHTML = `
-            <div class="app-container">
-                <div class="header">
-                    <button id="start-gen-btn" class="start-btn">Start Data Generation</button>
-                    <button id="stop-gen-btn" class="stop-btn">Stop Data Generation</button>
-                    <div id="status-indicator">Status: Idle</div>
+    // Wrap main logic in a try-catch to debug blank screen issues.
+    try {
+        puter.ui.showAppWindow({ name: 'AI Trainer (BPE & Live View)', width: 900, height: 700 }).then(appWindow => {
+            const body = appWindow.getBody();
+            body.innerHTML = `
+                <div class="app-container">
+                    <div class="header"></div>
+                    <div class="tab-nav"></div>
+                    <div id="chat-container" class="tab-content active"></div>
+                    <div id="training-data-view" class="tab-content"></div>
+                    <div id="console-container" class="tab-content"></div>
                 </div>
-                <div class="tab-nav">
-                    <button class="tab-button active" data-tab="chat-container">Chat</button>
-                    <button class="tab-button" data-tab="training-data-view">View Training Data</button>
-                    <button class="tab-button" data-tab="console-container">Console</button>
-                </div>
-                <div id="chat-container" class="tab-content active">
-                    <div id="message-list"><div class="message ai-message">Hello! This version tokenizes data and allows JSON export. Start data generation (requires a logged-in Puter account), then ask a question.</div></div>
-                    <form id="chat-form"><input type="text" id="chat-input" placeholder="Type a prompt..." autocomplete="off"><button type="submit">Send</button></form>
-                </div>
-                <div id="training-data-view" class="tab-content">
-                    <div id="training-data-view-controls">
-                        <button id="refresh-data-btn">Refresh View</button>
-                        <button id="export-json-btn" class="export-btn">Export to JSON</button>
-                    </div>
-                    <div class="data-table-container">
-                        <table class="data-table">
-                            <thead><tr><th>ID</th><th>Prompt</th><th>Response</th><th>Prompt Tokens</th><th>Response Tokens</th><th>Rating</th></tr></thead>
-                            <tbody id="data-table-body"></tbody>
-                        </table>
+                <div id="detail-modal" class="modal-backdrop">
+                    <div class="modal-content">
+                        <button class="modal-close">&times;</button>
+                        <div id="modal-body"></div>
                     </div>
                 </div>
-                <div id="console-container" class="tab-content"><div id="console-log"></div></div>
-            </div>`;
+            `;
+            // Inject full HTML content here... (omitted for brevity, see previous versions)
+            // For stability, let's rebuild the HTML injection string carefully.
+            body.querySelector('.header').innerHTML = `<button id="start-gen-btn" class="start-btn">Start Data Generation</button><button id="stop-gen-btn" class="stop-btn">Stop Data Generation</button><div id="status-indicator">Status: Idle</div>`;
+            body.querySelector('.tab-nav').innerHTML = `<button class="tab-button active" data-tab="chat-container">Chat</button><button class="tab-button" data-tab="training-data-view">View Training Data</button><button class="tab-button" data-tab="console-container">Console</button>`;
+            body.querySelector('#chat-container').innerHTML = `<div id="message-list"><div class="message ai-message">Welcome! This version uses an advanced BPE tokenizer and a live data view. Start data generation to begin.</div></div><form id="chat-form"><input type="text" id="chat-input" placeholder="Type a prompt..." autocomplete="off"><button type="submit">Send</button></form>`;
+            body.querySelector('#training-data-view').innerHTML = `<div id="training-data-view-controls"><button id="export-json-btn" class="export-btn">Export to JSON</button></div><p>Click any row to see details. Table updates in real-time.</p><div class="data-table-container"><table class="data-table"><thead><tr><th>ID</th><th>Prompt</th><th>Response</th><th>Prompt Tokens</th><th>Response Tokens</th><th>Rating</th></tr></thead><tbody id="data-table-body"></tbody></table></div>`;
+            body.querySelector('#console-container').innerHTML = `<div id="console-log"></div>`;
 
-        // --- GLOBAL STATE & UI ELEMENTS ---
-        let generationInterval = null;
-        const ui = {
-            startBtn: appWindow.getBody().querySelector('#start-gen-btn'),
-            stopBtn: appWindow.getBody().querySelector('#stop-gen-btn'),
-            statusIndicator: appWindow.getBody().querySelector('#status-indicator'),
-            messageList: appWindow.getBody().querySelector('#message-list'),
-            chatForm: appWindow.getBody().querySelector('#chat-form'),
-            chatInput: appWindow.getBody().querySelector('#chat-input'),
-            consoleLog: appWindow.getBody().querySelector('#console-log'),
-            dataTableBody: appWindow.getBody().querySelector('#data-table-body'),
-            refreshBtn: appWindow.getBody().querySelector('#refresh-data-btn'),
-            exportBtn: appWindow.getBody().querySelector('#export-json-btn'),
-        };
 
-        // --- UTILITIES (Logger, Tokenizer, DB) ---
-        const Logger = {
-            log: (message, type = '') => {
-                const entry = document.createElement('div');
-                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-                if(type) entry.classList.add(`log-${type}`);
-                ui.consoleLog.appendChild(entry);
-                ui.consoleLog.scrollTop = ui.consoleLog.scrollHeight;
-            },
-            info: (msg) => Logger.log(msg, 'info'), warn: (msg) => Logger.log(msg, 'warn'),
-            error: (msg) => Logger.log(msg, 'error'), db: (msg) => Logger.log(msg, 'db'),
-            ai: (msg) => Logger.log(msg, 'ai'),
-        };
+            const ui = {
+                startBtn: body.querySelector('#start-gen-btn'), stopBtn: body.querySelector('#stop-gen-btn'),
+                statusIndicator: body.querySelector('#status-indicator'), chatForm: body.querySelector('#chat-form'),
+                chatInput: body.querySelector('#chat-input'), consoleLog: body.querySelector('#console-log'),
+                dataTableBody: body.querySelector('#data-table-body'), exportBtn: body.querySelector('#export-json-btn'),
+                tabNav: body.querySelector('.tab-nav'), modal: body.querySelector('#detail-modal'),
+                modalBody: body.querySelector('#modal-body'), modalClose: body.querySelector('.modal-close'),
+            };
 
-        class SimpleTokenizer {
-            constructor() { this.vocab = new Map(); this.inverseVocab = new Map(); this.nextId = 0; }
-            tokenize(text) { return text.toLowerCase().match(/\w+|\s+|[^\s\w]+/g) || []; }
-            fitOnText(text) {
-                for (const token of this.tokenize(text)) {
-                    if (!this.vocab.has(token)) {
-                        this.vocab.set(token, this.nextId); this.inverseVocab.set(this.nextId, token); this.nextId++;
+            let generationInterval = null;
+            let currentTab = 'chat-container';
+
+            const Logger = {
+                log: (message, type = '') => {
+                    const entry = document.createElement('div');
+                    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                    if(type) entry.classList.add(`log-${type}`);
+                    if(ui.consoleLog) { ui.consoleLog.appendChild(entry); ui.consoleLog.scrollTop = ui.consoleLog.scrollHeight; }
+                },
+                info: (msg) => Logger.log(msg, 'info'), warn: (msg) => Logger.log(msg, 'warn'),
+                error: (msg) => Logger.log(msg, 'error'), db: (msg) => Logger.log(msg, 'db'),
+                ai: (msg) => Logger.log(msg, 'ai'),
+            };
+
+            /**
+             * A more advanced Subword BPE Tokenizer (simulation).
+             * In a real scenario, the vocab and merges would be learned from a large corpus.
+             * Here, we pre-define them to demonstrate the subword principle.
+             */
+            class SubwordBPETokenizer {
+                constructor() {
+                    // Pre-trained vocabulary and merge rules (simulated)
+                    this.vocab = this._create_initial_vocab();
+                    this.merges = new Map([
+                        ['t h', 'th'], ['i n', 'in'], ['e r', 'er'], ['th e', 'the'],
+                        ['a n', 'an'], ['o n', 'on'], ['i s', 'is'], ['i ng', 'ing'],
+                        ['a t', 'at'], ['a tion', 'ation'], ['tok en', 'token'],
+                        ['token ization', 'tokenization']
+                    ]);
+                }
+
+                _create_initial_vocab() {
+                    const chars = "abcdefghijklmnopqrstuvwxyz .,!?".split('');
+                    const vocab = new Map();
+                    chars.forEach((c, i) => vocab.set(c, i));
+                    vocab.set('<unk>', chars.length);
+                    // Add some pre-made words/subwords
+                    let id = chars.length + 1;
+                    ['the', 'is', 'in', 'on', 'at', 'ing', 'ation', 'token', 'tokenization'].forEach(w => vocab.set(w, id++));
+                    return vocab;
+                }
+
+                _get_pairs(tokens) {
+                    const pairs = new Set();
+                    for (let i = 0; i < tokens.length - 1; i++) {
+                        pairs.add(`${tokens[i]} ${tokens[i+1]}`);
+                    }
+                    return pairs;
+                }
+
+                encode(text) {
+                    text = text.toLowerCase();
+                    let tokens = text.split('');
+
+                    while (true) {
+                        const pairs = this._get_pairs(tokens);
+                        const mergeable = [...pairs].filter(p => this.merges.has(p));
+                        
+                        if (mergeable.length === 0) break;
+
+                        // For this demo, just pick the first mergeable pair.
+                        // A real BPE would use merge priority.
+                        const to_merge = this.merges.get(mergeable[0]);
+                        const [p1, p2] = mergeable[0].split(' ');
+                        
+                        let new_tokens = [];
+                        let i = 0;
+                        while(i < tokens.length) {
+                            if(i < tokens.length - 1 && tokens[i] === p1 && tokens[i+1] === p2) {
+                                new_tokens.push(to_merge);
+                                i += 2;
+                            } else {
+                                new_tokens.push(tokens[i]);
+                                i += 1;
+                            }
+                        }
+                        tokens = new_tokens;
+                    }
+                    return tokens.map(t => this.vocab.get(t) || this.vocab.get('<unk>'));
+                }
+            }
+            const tokenizer = new SubwordBPETokenizer();
+
+            const DB = {
+                db: null,
+                init: () => new Promise((resolve, reject) => {
+                    const request = indexedDB.open('aiTrainerDB_BPE', 1);
+                    request.onerror = e => { Logger.error(`DB Error: ${e.target.errorCode}`); reject(); };
+                    request.onsuccess = e => { DB.db = e.target.result; Logger.db('Database initialized.'); resolve(); };
+                    request.onupgradeneeded = e => { e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true }); };
+                }),
+                addEntry: (entry) => new Promise(resolve => {
+                    const tx = DB.db.transaction(['training_data'], 'readwrite');
+                    tx.objectStore('training_data').add(entry);
+                    tx.oncomplete = resolve;
+                }),
+                getEntry: (id) => new Promise(resolve => {
+                    DB.db.transaction('training_data').objectStore('training_data').get(id).onsuccess = e => resolve(e.target.result);
+                }),
+                getAll: () => new Promise(resolve => {
+                    DB.db.transaction('training_data').objectStore('training_data').getAll().onsuccess = e => resolve(e.target.result);
+                }),
+            };
+
+            const DataGenerator = {
+                prompts: [
+                    "Explain tokenization for large language models.", "Write a short story about a city powered by starlight.",
+                    "How does photosynthesis work, explained simply?", "Create a recipe for spicy ramen.",
+                    "What is the historical significance of the Silk Road?", `The current date is ${new Date().toLocaleDateString()}. Summarize today's top news headline.`
+                ],
+                generatePair: async () => {
+                    const randomPrompt = DataGenerator.prompts[Math.floor(Math.random() * DataGenerator.prompts.length)];
+                    Logger.ai(`Sending prompt to GPT-4: "${randomPrompt.substring(0, 50)}..."`);
+                    try {
+                        const result = await puter.ai.run({ model: 'gpt-4', prompt: `You are an AI generating training data. Keep your response to 1-2 paragraphs. Respond to the following prompt: ${randomPrompt}` });
+                        const newEntry = {
+                            prompt: randomPrompt, response: result.output, rating: 'none', timestamp: new Date().toISOString(),
+                            prompt_tokens: tokenizer.encode(randomPrompt),
+                            response_tokens: tokenizer.encode(result.output)
+                        };
+                        await DB.addEntry(newEntry);
+                        Logger.info(`Tokenized and added data.`);
+                        if(currentTab === 'training-data-view') {
+                            renderTrainingData(); // Auto-refresh table if visible
+                        }
+                    } catch (error) {
+                        Logger.error(`AI call failed. Are you logged into Puter.com with active credits? Details: ${error.message}`);
+                        if(ui.stopBtn) ui.stopBtn.click();
                     }
                 }
-            }
-            encode(text) { this.fitOnText(text); return this.tokenize(text).map(token => this.vocab.get(token)); }
-            decode(tokenIds) { return tokenIds.map(id => this.inverseVocab.get(id) || '').join(''); }
-        }
-        const tokenizer = new SimpleTokenizer();
-
-        const DB = {
-            db: null,
-            init: () => new Promise((resolve, reject) => {
-                const request = indexedDB.open('aiTrainingDB_Tokenizer', 1);
-                request.onerror = e => { Logger.error(`DB Error: ${e.target.errorCode}`); reject(); };
-                request.onsuccess = e => { DB.db = e.target.result; Logger.db('Database initialized.'); resolve(); };
-                request.onupgradeneeded = e => {
-                    e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true })
-                                  .createIndex('prompt', 'prompt', { unique: false });
-                };
-            }),
-            addEntry: (prompt, response) => new Promise((resolve, reject) => {
-                const newEntry = {
-                    prompt,
-                    response,
-                    prompt_tokens: tokenizer.encode(prompt),
-                    response_tokens: tokenizer.encode(response),
-                    rating: 'none',
-                    timestamp: new Date()
-                };
-                const tx = DB.db.transaction(['training_data'], 'readwrite');
-                const req = tx.objectStore('training_data').add(newEntry);
-                req.onsuccess = () => { Logger.info(`Tokenized and added data for prompt: "${prompt.substring(0, 30)}..."`); resolve(); };
-                req.onerror = e => { Logger.error(`Failed to add data: ${e.target.error}`); reject(); };
-            }),
-            findResponse: (prompt) => new Promise(resolve => {
-                const req = DB.db.transaction(['training_data'], 'readonly').objectStore('training_data').index('prompt').getAll(prompt);
-                req.onsuccess = () => {
-                    if (!req.result || req.result.length === 0) return resolve(null);
-                    const liked = req.result.find(r => r.rating === 'like');
-                    resolve(liked || req.result.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))[0]);
-                };
-                req.onerror = () => resolve(null);
-            }),
-            updateRating: (id, rating) => new Promise((resolve, reject) => { /* ... unchanged ... */ }),
-            getAll: () => new Promise(resolve => {
-                const req = DB.db.transaction(['training_data'], 'readonly').objectStore('training_data').getAll();
-                req.onsuccess = () => resolve(req.result || []);
-                req.onerror = () => resolve([]);
-            }),
-        };
-        // Stub for brevity, full implementation below in event listeners
-        DB.updateRating = (id, rating) => new Promise((resolve, reject) => {
-            const store = DB.db.transaction(['training_data'], 'readwrite').objectStore('training_data');
-            const req = store.get(id);
-            req.onsuccess = () => {
-                const data = req.result;
-                if (!data) return reject('ID not found');
-                data.rating = rating;
-                store.put(data).onsuccess = () => { Logger.info(`Updated rating for ID ${id} to "${rating}"`); resolve(); };
             };
-            req.onerror = e => reject(e.target.error);
-        });
-
-        // --- LIVE GPT-4 DATA GENERATOR ---
-        const DataGenerator = {
-            prompts: [ /* ... unchanged ... */ ],
-            generatePair: async () => { /* ... unchanged ... */ }
-        };
-        DataGenerator.prompts = [
-            "Generate a short, creative story about a robot who discovers music.", "Explain the concept of zero-knowledge proofs in simple terms.",
-            "Write a python function that finds the nth Fibonacci number and explain the code.", "What were the primary motivations behind the Apollo space program?",
-            "Describe three potential real-world applications of quantum computing in the next decade.", "Create a recipe for a vegan lasagna.",
-            "Summarize the philosophical concept of Stoicism.", `The current date is ${new Date().toLocaleDateString()}. What are some interesting historical events that happened on this day?`
-        ];
-        DataGenerator.generatePair = async () => {
-            const randomPrompt = DataGenerator.prompts[Math.floor(Math.random() * DataGenerator.prompts.length)];
-            Logger.ai(`Sending prompt to GPT-4: "${randomPrompt.substring(0, 50)}..."`);
-            try {
-                const result = await puter.ai.run({ model: 'gpt-4', prompt: `You are an AI generating training data. Keep your response to 1-2 paragraphs. Respond to the following prompt: ${randomPrompt}` });
-                await DB.addEntry(randomPrompt, result.output);
-            } catch (error) {
-                Logger.error(`AI call failed. Are you logged into Puter.com with active credits? Details: ${error.message}`);
-                ui.stopBtn.click();
-            }
-        };
-
-        // --- UI & EVENT LISTENERS ---
-        const setupEventListeners = () => {
-            ui.startBtn.addEventListener('click', () => {
-                if (generationInterval) { Logger.warn('Generation already running.'); return; }
-                Logger.info('Starting LIVE data generation...');
-                ui.statusIndicator.textContent = 'Status: Running';
-                DataGenerator.generatePair();
-                generationInterval = setInterval(DataGenerator.generatePair, 20000); // 20s to be safe on costs
-            });
-
-            ui.stopBtn.addEventListener('click', () => {
-                if (!generationInterval) { Logger.warn('Generation not running.'); return; }
-                Logger.info('Stopping data generation.');
-                ui.statusIndicator.textContent = 'Status: Idle';
-                clearInterval(generationInterval);
-                generationInterval = null;
-            });
-            
-            appWindow.getBody().querySelector('.tab-nav').addEventListener('click', e => {
-                if (e.target.matches('.tab-button')) {
-                    appWindow.getBody().querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-                    appWindow.getBody().querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    e.target.classList.add('active');
-                    appWindow.getBody().querySelector(`#${e.target.dataset.tab}`).classList.add('active');
-                    if (e.target.dataset.tab === 'training-data-view') renderTrainingData();
-                }
-            });
 
             const renderTrainingData = async () => {
                 const data = await DB.getAll();
                 ui.dataTableBody.innerHTML = '';
+                if (!data) return;
                 data.sort((a,b) => b.id - a.id).forEach(item => {
                     const row = document.createElement('tr');
+                    row.dataset.id = item.id;
                     row.innerHTML = `
                         <td>${item.id}</td>
                         <td>${item.prompt}</td>
-                        <td>${item.response}</td>
+                        <td>${item.response.substring(0, 100)}...</td>
                         <td class="tokens-cell">${item.prompt_tokens.join(', ')}</td>
                         <td class="tokens-cell">${item.response_tokens.join(', ')}</td>
                         <td>${item.rating}</td>`;
@@ -242,8 +239,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             };
 
-            ui.refreshBtn.addEventListener('click', renderTrainingData);
+            const showModal = async (id) => {
+                const entry = await DB.getEntry(id);
+                if (!entry) return;
+                ui.modalBody.innerHTML = `
+                    <h3>Details for Entry #${entry.id}</h3>
+                    <div class="detail-group"><strong>Timestamp:</strong><p>${new Date(entry.timestamp).toLocaleString()}</p></div>
+                    <div class="detail-group"><strong>Prompt:</strong><p>${entry.prompt}</p></div>
+                    <div class="detail-group"><strong>Response:</strong><p>${entry.response.replace(/\n/g, '<br>')}</p></div>
+                    <div class="detail-group"><strong>Prompt Tokens:</strong><p>${entry.prompt_tokens.join(', ')}</p></div>
+                    <div class="detail-group"><strong>Response Tokens:</strong><p>${entry.response_tokens.join(', ')}</p></div>
+                    <div class="detail-group"><strong>Rating:</strong><p>${entry.rating}</p></div>`;
+                ui.modal.style.display = 'flex';
+            };
 
+            // --- EVENT LISTENERS ---
+            ui.startBtn.addEventListener('click', () => {
+                if (generationInterval) { Logger.warn('Generation already running.'); return; }
+                Logger.info('Starting LIVE data generation...');
+                ui.statusIndicator.textContent = 'Status: Running';
+                DataGenerator.generatePair();
+                generationInterval = setInterval(DataGenerator.generatePair, 30000); // 30s to manage cost
+            });
+            ui.stopBtn.addEventListener('click', () => {
+                if (!generationInterval) { Logger.warn('Generation not running.'); return; }
+                Logger.info('Stopping data generation.');
+                ui.statusIndicator.textContent = 'Status: Idle';
+                clearInterval(generationInterval);
+                generationInterval = null;
+            });
+            ui.tabNav.addEventListener('click', e => {
+                if (e.target.matches('.tab-button')) {
+                    currentTab = e.target.dataset.tab;
+                    body.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    body.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    e.target.classList.add('active');
+                    body.querySelector(`#${currentTab}`).classList.add('active');
+                    if (currentTab === 'training-data-view') renderTrainingData();
+                }
+            });
+            ui.dataTableBody.addEventListener('click', e => {
+                const row = e.target.closest('tr');
+                if (row && row.dataset.id) {
+                    showModal(parseInt(row.dataset.id));
+                }
+            });
+            ui.modalClose.addEventListener('click', () => ui.modal.style.display = 'none');
+            ui.modal.addEventListener('click', (e) => {
+                if (e.target === ui.modal) ui.modal.style.display = 'none';
+            });
             ui.exportBtn.addEventListener('click', async () => {
                 Logger.info('Exporting data to JSON...');
                 const data = await DB.getAll();
@@ -252,49 +296,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'training_data.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                a.download = `training_data_${new Date().getTime()}.json`;
+                body.appendChild(a); a.click(); body.removeChild(a);
                 URL.revokeObjectURL(url);
                 Logger.info('JSON file download initiated.');
             });
 
-            ui.chatForm.addEventListener('submit', async (e) => { /* ... unchanged ... */ });
-            const addMessage = (text, sender, dbId) => { /* ... unchanged ... */ };
-            ui.messageList.addEventListener('click', e => { /* ... unchanged ... */ });
-
-            // Full implementation of listeners from previous version
-            ui.chatForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const userInput = ui.chatInput.value.trim();
-                if (!userInput) return;
-                addMessage(userInput, 'user');
-                ui.chatInput.value = '';
-                const storedResponse = await DB.findResponse(userInput);
-                addMessage(storedResponse ? storedResponse.response : "I haven't been trained on that specific prompt yet.", 'ai', storedResponse ? storedResponse.id : null);
+            // Initialize the database and then render initial data
+            DB.init().then(() => {
+                Logger.info("Application Ready.");
+                if(currentTab === 'training-data-view') renderTrainingData();
+            }).catch(err => {
+                Logger.error("Fatal Error during initialization.");
+                console.error(err);
             });
-            const addMessage = (text, sender, dbId) => {
-                const messageEl = document.createElement('div');
-                messageEl.className = `message ${sender}-message`;
-                messageEl.innerHTML = `<div>${text.replace(/\n/g, '<br>')}</div>`;
-                if (sender === 'ai' && dbId) {
-                    messageEl.innerHTML += `<div class="message-feedback"><span class="feedback-btn" data-id="${dbId}" data-rating="like">👍</span> <span class="feedback-btn" data-id="${dbId}" data-rating="dislike">👎</span></div>`;
-                }
-                ui.messageList.appendChild(messageEl);
-                ui.messageList.scrollTop = ui.messageList.scrollHeight;
-            };
-            ui.messageList.addEventListener('click', e => {
-                if (e.target.matches('.feedback-btn')) {
-                    DB.updateRating(parseInt(e.target.dataset.id), e.target.dataset.rating)
-                      .catch(err => Logger.error(err));
-                }
-            });
-        };
-
-        // --- INITIALIZE APP ---
-        DB.init().then(setupEventListeners).catch(err => Logger.error("App failed to initialize."));
-    });
+        });
+    } catch (e) {
+        // Fallback for critical errors
+        document.body.innerHTML = `<div style="color: white; padding: 20px;">A critical error occurred: ${e.message}. Check the browser console (F12) for details.</div>`;
+        console.error(e);
+    }
 });
 </script>
 </html>
