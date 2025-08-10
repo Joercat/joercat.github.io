@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Trainer (BPE & Live View)</title>
+    <title>AI Trainer (Complete Multi-Model)</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         :root {
@@ -15,122 +15,140 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; margin: 0; background-color: var(--primary-bg); color: var(--text-color); }
         .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; background-color: var(--primary-bg); overflow: hidden; }
         .header { padding: 10px; background-color: var(--secondary-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .header button { padding: 8px 12px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s ease; }
+        .header-group { display: flex; align-items: center; gap: 10px; }
+        .header button, .header select { padding: 8px 12px; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; font-weight: bold; background-color: var(--primary-bg); color: var(--text-color); font-size: 14px; }
+        .header button { border: none; }
         .start-btn { background-color: var(--green-color); color: var(--primary-bg); }
         .stop-btn { background-color: var(--red-color); color: var(--primary-bg); }
-        .export-btn { background-color: var(--accent-color); color: var(--primary-bg); }
+        #token-counter { font-size: 0.9em; font-weight: bold; color: var(--purple-color); background-color: var(--primary-bg); padding: 8px; border-radius: 5px; }
         .tab-nav { display: flex; background-color: var(--secondary-bg); }
         .tab-button { padding: 10px 15px; cursor: pointer; border: none; background: none; color: var(--text-color); opacity: 0.7; border-bottom: 2px solid transparent; }
         .tab-button.active { opacity: 1; border-bottom: 2px solid var(--accent-color); font-weight: bold; }
         .tab-content { display: none; flex-grow: 1; overflow-y: auto; padding: 15px; }
         .tab-content.active { display: flex; flex-direction: column; }
         #message-list { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
-        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; word-wrap: break-word; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--accent-color); color: var(--primary-bg); align-self: flex-end; border-bottom-right-radius: 5px; }
+        .ai-message { background-color: var(--secondary-bg); align-self: flex-start; border-bottom-left-radius: 5px; }
         #chat-form { display: flex; padding-top: 15px; border-top: 1px solid var(--border-color); }
         #chat-input { flex-grow: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--secondary-bg); color: var(--text-color); margin-right: 10px; }
+        #chat-form button { padding: 10px 15px; border-radius: 5px; border: none; background-color: var(--accent-color); color: var(--primary-bg); cursor: pointer; }
         #console-log { flex-grow: 1; background-color: #11111b; color: #cdd6f4; font-family: 'Courier New', monospace; font-size: 0.9em; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-break: break-all; overflow-y: auto; }
         .log-error { color: var(--red-color); } .log-warn { color: var(--warn-color); } .log-info { color: var(--green-color); } .log-db { color: var(--accent-color); } .log-ai { color: var(--purple-color); }
-        #training-data-view-controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .data-table-container { flex-grow: 1; overflow: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; font-size: 0.9em; }
         .data-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
         .data-table tbody tr:hover { background-color: var(--secondary-bg); }
-        .tokens-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Modal Styles */
-        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-backdrop); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: var(--secondary-bg); padding: 25px; border-radius: 8px; max-width: 90%; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.4); position: relative; }
         .modal-close { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; border: none; background: none; color: var(--text-color); }
-        .modal-content h3 { margin-top: 0; color: var(--accent-color); }
         .detail-group { margin-bottom: 15px; }
-        .detail-group p { background: var(--primary-bg); padding: 10px; border-radius: 5px; word-wrap: break-word; font-size: 0.95em; }
+        .detail-group p { background: var(--primary-bg); padding: 10px; border-radius: 5px; word-wrap: break-word; font-size: 0.95em; white-space: pre-wrap; line-height: 1.6; }
         .detail-group strong { color: var(--text-color); opacity: 0.8; }
     </style>
 </head>
 <body></body>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Wrap main logic in a try-catch to debug blank screen issues.
+puter.ready(() => {
     try {
-        puter.ui.showAppWindow({ name: 'AI Trainer (BPE & Live View)', width: 900, height: 700 }).then(appWindow => {
+        puter.ui.showAppWindow({ name: 'AI Trainer (Multi-Model, Complete)', width: 1000, height: 700 }).then(appWindow => {
             const body = appWindow.getBody();
+            // --- Complete HTML Structure ---
             body.innerHTML = `
                 <div class="app-container">
-                    <div class="header"></div>
-                    <div class="tab-nav"></div>
-                    <div id="chat-container" class="tab-content active"></div>
-                    <div id="training-data-view" class="tab-content"></div>
-                    <div id="console-container" class="tab-content"></div>
+                    <div class="header">
+                        <div class="header-group">
+                            <button id="start-gen-btn" class="start-btn">Start</button>
+                            <button id="stop-gen-btn" class="stop-btn">Stop</button>
+                        </div>
+                        <div class="header-group">
+                            <label for="model-selector">Model:</label>
+                            <select id="model-selector">
+                                <option value="gpt-4">GPT-4</option>
+                                <option value="claude-4.1-opus-20250805">Claude Opus 4.1</option>
+                                <option value="gemini-2.5-pro-latest">Gemini 2.5 Pro</option>
+                            </select>
+                        </div>
+                        <div id="status-indicator">Status: Idle</div>
+                        <div id="token-counter">Total Tokens: 0</div>
+                    </div>
+                    <div class="tab-nav">
+                         <button class="tab-button active" data-tab="chat-container">Chat</button>
+                         <button class="tab-button" data-tab="training-data-view">View Training Data</button>
+                         <button class="tab-button" data-tab="console-container">Console</button>
+                    </div>
+                    <div id="chat-container" class="tab-content active">
+                        <div id="message-list"><div class="message ai-message">Welcome! Select a model, then start data generation.</div></div>
+                        <form id="chat-form"><input type="text" id="chat-input" placeholder="Type a prompt..." autocomplete="off"><button type="submit">Send</button></form>
+                    </div>
+                    <div id="training-data-view" class="tab-content">
+                        <div id="training-data-view-controls" style="margin-bottom: 15px;">
+                            <button id="export-json-btn" style="background-color: var(--accent-color); color: var(--primary-bg); border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Export to JSON</button>
+                        </div>
+                        <p>Click any row for details. Table updates live.</p>
+                        <div class="data-table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Model</th><th>Prompt</th><th>Response</th><th>Tokens</th><th>Rating</th></tr></thead>
+                                <tbody id="data-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="console-container" class="tab-content"><div id="console-log"></div></div>
                 </div>
                 <div id="detail-modal" class="modal-backdrop">
                     <div class="modal-content">
                         <button class="modal-close">&times;</button>
                         <div id="modal-body"></div>
                     </div>
-                </div>
-            `;
-            // Inject full HTML content here... (omitted for brevity, see previous versions)
-            // For stability, let's rebuild the HTML injection string carefully.
-            body.querySelector('.header').innerHTML = `<button id="start-gen-btn" class="start-btn">Start Data Generation</button><button id="stop-gen-btn" class="stop-btn">Stop Data Generation</button><div id="status-indicator">Status: Idle</div>`;
-            body.querySelector('.tab-nav').innerHTML = `<button class="tab-button active" data-tab="chat-container">Chat</button><button class="tab-button" data-tab="training-data-view">View Training Data</button><button class="tab-button" data-tab="console-container">Console</button>`;
-            body.querySelector('#chat-container').innerHTML = `<div id="message-list"><div class="message ai-message">Welcome! This version uses an advanced BPE tokenizer and a live data view. Start data generation to begin.</div></div><form id="chat-form"><input type="text" id="chat-input" placeholder="Type a prompt..." autocomplete="off"><button type="submit">Send</button></form>`;
-            body.querySelector('#training-data-view').innerHTML = `<div id="training-data-view-controls"><button id="export-json-btn" class="export-btn">Export to JSON</button></div><p>Click any row to see details. Table updates in real-time.</p><div class="data-table-container"><table class="data-table"><thead><tr><th>ID</th><th>Prompt</th><th>Response</th><th>Prompt Tokens</th><th>Response Tokens</th><th>Rating</th></tr></thead><tbody id="data-table-body"></tbody></table></div>`;
-            body.querySelector('#console-container').innerHTML = `<div id="console-log"></div>`;
-
-
+                </div>`;
+            
+            // --- UI Elements ---
             const ui = {
                 startBtn: body.querySelector('#start-gen-btn'), stopBtn: body.querySelector('#stop-gen-btn'),
-                statusIndicator: body.querySelector('#status-indicator'), chatForm: body.querySelector('#chat-form'),
-                chatInput: body.querySelector('#chat-input'), consoleLog: body.querySelector('#console-log'),
+                modelSelector: body.querySelector('#model-selector'), statusIndicator: body.querySelector('#status-indicator'),
+                tokenCounter: body.querySelector('#token-counter'), tabNav: body.querySelector('.tab-nav'),
                 dataTableBody: body.querySelector('#data-table-body'), exportBtn: body.querySelector('#export-json-btn'),
-                tabNav: body.querySelector('.tab-nav'), modal: body.querySelector('#detail-modal'),
-                modalBody: body.querySelector('#modal-body'), modalClose: body.querySelector('.modal-close'),
+                modal: body.querySelector('#detail-modal'), modalBody: body.querySelector('#modal-body'),
+                modalClose: body.querySelector('.modal-close'), consoleLog: body.querySelector('#console-log')
             };
 
             let generationInterval = null;
             let currentTab = 'chat-container';
 
+            // --- Full Logger Implementation ---
             const Logger = {
                 log: (message, type = '') => {
-                    const entry = document.createElement('div');
-                    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-                    if(type) entry.classList.add(`log-${type}`);
-                    if(ui.consoleLog) { ui.consoleLog.appendChild(entry); ui.consoleLog.scrollTop = ui.consoleLog.scrollHeight; }
+                    if(ui.consoleLog) {
+                        const entry = document.createElement('div');
+                        entry.className = `log-${type}`;
+                        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                        ui.consoleLog.appendChild(entry);
+                        ui.consoleLog.scrollTop = ui.consoleLog.scrollHeight;
+                    }
                 },
-                info: (msg) => Logger.log(msg, 'info'), warn: (msg) => Logger.log(msg, 'warn'),
-                error: (msg) => Logger.log(msg, 'error'), db: (msg) => Logger.log(msg, 'db'),
+                info: (msg) => Logger.log(msg, 'info'),
+                warn: (msg) => Logger.log(msg, 'warn'),
+                error: (msg) => Logger.log(msg, 'error'),
+                db: (msg) => Logger.log(msg, 'db'),
                 ai: (msg) => Logger.log(msg, 'ai'),
             };
 
-            /**
-             * A more advanced Subword BPE Tokenizer (simulation).
-             * In a real scenario, the vocab and merges would be learned from a large corpus.
-             * Here, we pre-define them to demonstrate the subword principle.
-             */
-            class SubwordBPETokenizer {
-                constructor() {
-                    // Pre-trained vocabulary and merge rules (simulated)
-                    this.vocab = this._create_initial_vocab();
+            // --- Full BPE Tokenizer Implementation ---
+            const tokenizer = new class SubwordBPETokenizer {
+                 constructor() {
+                    const initial = "abcdefghijklmnopqrstuvwxyz .,!?\"'$%&/()[]{}=*+-:;".split('');
+                    const vocab = new Map(initial.map((c, i) => [c, i]));
+                    let id = vocab.size;
+                    vocab.set('<unk>', id++);
                     this.merges = new Map([
-                        ['t h', 'th'], ['i n', 'in'], ['e r', 'er'], ['th e', 'the'],
-                        ['a n', 'an'], ['o n', 'on'], ['i s', 'is'], ['i ng', 'ing'],
-                        ['a t', 'at'], ['a tion', 'ation'], ['tok en', 'token'],
-                        ['token ization', 'tokenization']
+                        ['t h', 'th'], ['i n', 'in'], ['e r', 'er'], ['th e', 'the'], ['a n', 'an'], ['o n', 'on'],
+                        ['i s', 'is'], ['i ng', 'ing'], ['a t', 'at'], ['a tion', 'ation'], ['tok en', 'token'],
+                        ['token ization', 'tokenization'], ['java script', 'javascript']
                     ]);
+                    this.merges.forEach(v => vocab.set(v, id++));
+                    this.vocab = vocab;
                 }
-
-                _create_initial_vocab() {
-                    const chars = "abcdefghijklmnopqrstuvwxyz .,!?".split('');
-                    const vocab = new Map();
-                    chars.forEach((c, i) => vocab.set(c, i));
-                    vocab.set('<unk>', chars.length);
-                    // Add some pre-made words/subwords
-                    let id = chars.length + 1;
-                    ['the', 'is', 'in', 'on', 'at', 'ing', 'ation', 'token', 'tokenization'].forEach(w => vocab.set(w, id++));
-                    return vocab;
-                }
-
                 _get_pairs(tokens) {
                     const pairs = new Set();
                     for (let i = 0; i < tokens.length - 1; i++) {
@@ -138,27 +156,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return pairs;
                 }
-
                 encode(text) {
-                    text = text.toLowerCase();
-                    let tokens = text.split('');
-
+                    let tokens = text.toLowerCase().split('');
                     while (true) {
                         const pairs = this._get_pairs(tokens);
-                        const mergeable = [...pairs].filter(p => this.merges.has(p));
-                        
-                        if (mergeable.length === 0) break;
-
-                        // For this demo, just pick the first mergeable pair.
-                        // A real BPE would use merge priority.
-                        const to_merge = this.merges.get(mergeable[0]);
-                        const [p1, p2] = mergeable[0].split(' ');
-                        
-                        let new_tokens = [];
-                        let i = 0;
+                        const mergeable = [...pairs].find(p => this.merges.has(p));
+                        if (!mergeable) break;
+                        const [p1, p2] = mergeable.split(' ');
+                        let new_tokens = []; let i = 0;
                         while(i < tokens.length) {
                             if(i < tokens.length - 1 && tokens[i] === p1 && tokens[i+1] === p2) {
-                                new_tokens.push(to_merge);
+                                new_tokens.push(this.merges.get(mergeable));
                                 i += 2;
                             } else {
                                 new_tokens.push(tokens[i]);
@@ -169,16 +177,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return tokens.map(t => this.vocab.get(t) || this.vocab.get('<unk>'));
                 }
-            }
-            const tokenizer = new SubwordBPETokenizer();
+            };
 
+            // --- Full Database Handler Implementation ---
             const DB = {
                 db: null,
                 init: () => new Promise((resolve, reject) => {
-                    const request = indexedDB.open('aiTrainerDB_BPE', 1);
-                    request.onerror = e => { Logger.error(`DB Error: ${e.target.errorCode}`); reject(); };
+                    const request = indexedDB.open('aiTrainerDB_MultiModel_v2', 1);
+                    request.onerror = e => { Logger.error(`DB Error: ${e.target.errorCode}`); reject(e); };
                     request.onsuccess = e => { DB.db = e.target.result; Logger.db('Database initialized.'); resolve(); };
-                    request.onupgradeneeded = e => { e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true }); };
+                    request.onupgraden
+eede
+d = e => { e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true }); };
                 }),
                 addEntry: (entry) => new Promise(resolve => {
                     const tx = DB.db.transaction(['training_data'], 'readwrite');
@@ -189,39 +199,51 @@ document.addEventListener('DOMContentLoaded', () => {
                     DB.db.transaction('training_data').objectStore('training_data').get(id).onsuccess = e => resolve(e.target.result);
                 }),
                 getAll: () => new Promise(resolve => {
-                    DB.db.transaction('training_data').objectStore('training_data').getAll().onsuccess = e => resolve(e.target.result);
+                    DB.db.transaction('training_data').objectStore('training_data').getAll().onsuccess = e => resolve(e.target.result || []);
                 }),
             };
 
+            // --- Full Data Generator Implementation ---
             const DataGenerator = {
                 prompts: [
-                    "Explain tokenization for large language models.", "Write a short story about a city powered by starlight.",
-                    "How does photosynthesis work, explained simply?", "Create a recipe for spicy ramen.",
-                    "What is the historical significance of the Silk Road?", `The current date is ${new Date().toLocaleDateString()}. Summarize today's top news headline.`
+                    "Generate a JSON object for a new bicycle model. Include fields for 'modelName', 'frameType' (e.g., 'Road', 'Mountain', 'Hybrid'), 'wheelSize' in inches, and a boolean 'isElectric'.",
+                    "Explain the difference between TCP and UDP networking protocols in a simple analogy.",
+                    "Write a short, polite and firm email to a colleague who consistently misses deadlines, outlining the impact on the team.",
+                    "Summarize the main argument of Plato's Allegory of the Cave in a single paragraph.",
+                    "Create a bulleted list of four essential exercises for a full-body workout, with one sentence explaining the primary muscle group each targets.",
+                    "Write a JavaScript function `calculateTip(billAmount, tipPercentage)` that returns the total amount (bill + tip). Include error handling for non-numeric inputs.",
+                    `Today is ${new Date(2025, 7, 10).toLocaleDateString()}. Write a fictional but plausible news headline for today's top story in East Haven, Connecticut.`
                 ],
                 generatePair: async () => {
+                    const selectedModel = ui.modelSelector.value;
                     const randomPrompt = DataGenerator.prompts[Math.floor(Math.random() * DataGenerator.prompts.length)];
-                    Logger.ai(`Sending prompt to GPT-4: "${randomPrompt.substring(0, 50)}..."`);
+                    Logger.ai(`Sending prompt to ${selectedModel}: "${randomPrompt.substring(0, 40)}..."`);
                     try {
-                        const result = await puter.ai.run({ model: 'gpt-4', prompt: `You are an AI generating training data. Keep your response to 1-2 paragraphs. Respond to the following prompt: ${randomPrompt}` });
+                        const result = await puter.ai.run({ model: selectedModel, prompt: randomPrompt });
                         const newEntry = {
-                            prompt: randomPrompt, response: result.output, rating: 'none', timestamp: new Date().toISOString(),
-                            prompt_tokens: tokenizer.encode(randomPrompt),
-                            response_tokens: tokenizer.encode(result.output)
+                            prompt: randomPrompt, response: result.output, rating: 'none', timestamp: new Date().toISOString(), model: selectedModel,
+                            prompt_tokens: tokenizer.encode(randomPrompt), response_tokens: tokenizer.encode(result.output)
                         };
                         await DB.addEntry(newEntry);
-                        Logger.info(`Tokenized and added data.`);
+                        Logger.info(`Data received from ${selectedModel} and saved.`);
+                        await updateTokenCount();
                         if(currentTab === 'training-data-view') {
-                            renderTrainingData(); // Auto-refresh table if visible
+                            renderTrainingData();
                         }
                     } catch (error) {
-                        Logger.error(`AI call failed. Are you logged into Puter.com with active credits? Details: ${error.message}`);
+                        Logger.error(`AI call failed: ${error.message}. Is the model name correct and are you logged into Puter?`);
                         if(ui.stopBtn) ui.stopBtn.click();
                     }
                 }
             };
+            
+            async function updateTokenCount() {
+                const data = await DB.getAll();
+                const totalTokens = data.reduce((sum, entry) => sum + entry.prompt_tokens.length + entry.response_tokens.length, 0);
+                ui.tokenCounter.textContent = `Total Tokens: ${totalTokens.toLocaleString()}`;
+            }
 
-            const renderTrainingData = async () => {
+            async function renderTrainingData() {
                 const data = await DB.getAll();
                 ui.dataTableBody.innerHTML = '';
                 if (!data) return;
@@ -230,44 +252,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.dataset.id = item.id;
                     row.innerHTML = `
                         <td>${item.id}</td>
-                        <td>${item.prompt}</td>
-                        <td>${item.response.substring(0, 100)}...</td>
-                        <td class="tokens-cell">${item.prompt_tokens.join(', ')}</td>
-                        <td class="tokens-cell">${item.response_tokens.join(', ')}</td>
+                        <td>${item.model}</td>
+                        <td>${item.prompt.substring(0, 40)}...</td>
+                        <td>${item.response.substring(0, 60)}...</td>
+                        <td>${item.prompt_tokens.length + item.response_tokens.length}</td>
                         <td>${item.rating}</td>`;
                     ui.dataTableBody.appendChild(row);
                 });
-            };
+            }
 
-            const showModal = async (id) => {
+            async function showModal(id) {
                 const entry = await DB.getEntry(id);
                 if (!entry) return;
                 ui.modalBody.innerHTML = `
                     <h3>Details for Entry #${entry.id}</h3>
+                    <div class="detail-group"><strong>Model:</strong><p>${entry.model}</p></div>
                     <div class="detail-group"><strong>Timestamp:</strong><p>${new Date(entry.timestamp).toLocaleString()}</p></div>
                     <div class="detail-group"><strong>Prompt:</strong><p>${entry.prompt}</p></div>
-                    <div class="detail-group"><strong>Response:</strong><p>${entry.response.replace(/\n/g, '<br>')}</p></div>
-                    <div class="detail-group"><strong>Prompt Tokens:</strong><p>${entry.prompt_tokens.join(', ')}</p></div>
-                    <div class="detail-group"><strong>Response Tokens:</strong><p>${entry.response_tokens.join(', ')}</p></div>
+                    <div class="detail-group"><strong>Response:</strong><p>${entry.response}</p></div>
+                    <div class="detail-group"><strong>Tokens:</strong><p>Prompt: ${entry.prompt_tokens.length}, Response: ${entry.response_tokens.length}</p></div>
                     <div class="detail-group"><strong>Rating:</strong><p>${entry.rating}</p></div>`;
                 ui.modal.style.display = 'flex';
-            };
+            }
 
-            // --- EVENT LISTENERS ---
+            // --- Full Event Listeners Implementation ---
             ui.startBtn.addEventListener('click', () => {
                 if (generationInterval) { Logger.warn('Generation already running.'); return; }
-                Logger.info('Starting LIVE data generation...');
-                ui.statusIndicator.textContent = 'Status: Running';
+                Logger.info('Starting LIVE data generation...'); ui.statusIndicator.textContent = 'Status: Running';
                 DataGenerator.generatePair();
-                generationInterval = setInterval(DataGenerator.generatePair, 30000); // 30s to manage cost
+                generationInterval = setInterval(DataGenerator.generatePair, 30000); // 30s interval
             });
+
             ui.stopBtn.addEventListener('click', () => {
                 if (!generationInterval) { Logger.warn('Generation not running.'); return; }
-                Logger.info('Stopping data generation.');
-                ui.statusIndicator.textContent = 'Status: Idle';
+                Logger.info('Stopping data generation.'); ui.statusIndicator.textContent = 'Status: Idle';
                 clearInterval(generationInterval);
                 generationInterval = null;
             });
+
             ui.tabNav.addEventListener('click', e => {
                 if (e.target.matches('.tab-button')) {
                     currentTab = e.target.dataset.tab;
@@ -275,19 +297,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     body.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     e.target.classList.add('active');
                     body.querySelector(`#${currentTab}`).classList.add('active');
-                    if (currentTab === 'training-data-view') renderTrainingData();
+                    if (currentTab === 'training-data-view') {
+                        renderTrainingData();
+                    }
                 }
             });
+
             ui.dataTableBody.addEventListener('click', e => {
                 const row = e.target.closest('tr');
                 if (row && row.dataset.id) {
                     showModal(parseInt(row.dataset.id));
                 }
             });
+
             ui.modalClose.addEventListener('click', () => ui.modal.style.display = 'none');
             ui.modal.addEventListener('click', (e) => {
                 if (e.target === ui.modal) ui.modal.style.display = 'none';
             });
+
             ui.exportBtn.addEventListener('click', async () => {
                 Logger.info('Exporting data to JSON...');
                 const data = await DB.getAll();
@@ -302,18 +329,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 Logger.info('JSON file download initiated.');
             });
 
-            // Initialize the database and then render initial data
+            // --- Initialize App ---
             DB.init().then(() => {
                 Logger.info("Application Ready.");
-                if(currentTab === 'training-data-view') renderTrainingData();
+                updateTokenCount(); // Initial count on load
             }).catch(err => {
-                Logger.error("Fatal Error during initialization.");
+                Logger.error("Fatal Error during DB initialization.");
                 console.error(err);
             });
         });
     } catch (e) {
-        // Fallback for critical errors
-        document.body.innerHTML = `<div style="color: white; padding: 20px;">A critical error occurred: ${e.message}. Check the browser console (F12) for details.</div>`;
+        document.body.innerHTML = `<div style="font-family: sans-serif; color: white; padding: 20px;"><h1>A critical error occurred.</h1><p>${e.message}</p><p>This usually means the app is being run outside of the Puter environment, or the Puter script failed to load. Please check the browser console (F12) for details.</p></div>`;
         console.error(e);
     }
 });
