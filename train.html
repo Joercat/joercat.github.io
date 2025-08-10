@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://js.puter.com/v2/"></script>
     <style>
+        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -16,9 +17,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f0f4f8; /* A very light gray-blue background */
             min-height: 100vh;
-            color: #333;
+            color: #2c3e50; /* Darker text for better contrast */
         }
 
         .container {
@@ -28,23 +29,19 @@
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-top: 5px solid #2980b9; /* A clean, professional blue accent */
         }
 
         .header h1 {
             text-align: center;
-            color: #4a5568;
+            color: #2980b9;
             font-size: 2.5rem;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .nav-tabs {
@@ -56,34 +53,33 @@
         }
 
         .tab-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background-color: #ecf0f1; /* Light gray for non-active buttons */
+            color: #34495e;
             border: none;
             padding: 12px 24px;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .tab-btn:hover {
+            background-color: #bdc3c7; /* Darker gray on hover */
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #4c51bf, #553c9a);
-            transform: scale(1.05);
+            background-color: #2980b9; /* Professional blue for active tab */
+            color: white;
+            box-shadow: 0 2px 6px rgba(41, 128, 185, 0.3);
         }
 
         .tab-content {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             min-height: 500px;
         }
 
@@ -102,30 +98,30 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             margin-bottom: 20px;
-            background: #f8fafc;
+            background: #fdfefe;
         }
 
         .message {
             margin-bottom: 15px;
             padding: 12px 16px;
-            border-radius: 18px;
+            border-radius: 12px;
             max-width: 80%;
             word-wrap: break-word;
         }
 
         .user-message {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background-color: #e8f5e9; /* Light green for user messages */
+            color: #2c3e50;
             margin-left: auto;
             text-align: right;
         }
 
         .bot-message {
-            background: #e2e8f0;
-            color: #2d3748;
+            background-color: #f0f4f8; /* Light gray-blue for bot messages */
+            color: #2c3e50;
             margin-right: auto;
         }
 
@@ -138,7 +134,7 @@
         .chat-input {
             flex: 1;
             padding: 12px 16px;
-            border: 2px solid #e2e8f0;
+            border: 1px solid #dfe6e9;
             border-radius: 25px;
             font-size: 16px;
             outline: none;
@@ -146,11 +142,11 @@
         }
 
         .chat-input:focus {
-            border-color: #667eea;
+            border-color: #2980b9;
         }
 
         .send-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-color: #2980b9;
             color: white;
             border: none;
             padding: 12px 20px;
@@ -161,6 +157,7 @@
         }
 
         .send-btn:hover {
+            background-color: #3498db;
             transform: scale(1.05);
         }
 
@@ -172,8 +169,8 @@
         }
 
         .feedback-btn {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
+            background: #ecf0f1;
+            border: 1px solid #dfe6e9;
             border-radius: 20px;
             padding: 8px 16px;
             cursor: pointer;
@@ -182,34 +179,34 @@
         }
 
         .feedback-btn:hover {
-            background: #edf2f7;
+            background-color: #dfe6e9;
         }
 
         .feedback-btn.liked {
-            background: #48bb78;
+            background: #27ae60;
             color: white;
-            border-color: #48bb78;
+            border-color: #27ae60;
         }
 
         .feedback-btn.disliked {
-            background: #f56565;
+            background: #c0392b;
             color: white;
-            border-color: #f56565;
+            border-color: #c0392b;
         }
 
         /* Import/Export Interface */
         .import-section {
             margin-bottom: 30px;
             padding: 20px;
-            border: 2px dashed #cbd5e0;
-            border-radius: 15px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 12px;
             text-align: center;
             transition: all 0.3s ease;
         }
 
         .import-section:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+            border-color: #2980b9;
+            background: rgba(41, 128, 185, 0.05);
         }
 
         .file-input {
@@ -217,10 +214,10 @@
         }
 
         .file-label {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-color: #2980b9;
             color: white;
             padding: 12px 24px;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
             display: inline-block;
             font-weight: 600;
@@ -228,8 +225,9 @@
         }
 
         .file-label:hover {
+            background-color: #3498db;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(41, 128, 185, 0.3);
         }
 
         /* Data Display */
@@ -241,22 +239,22 @@
         }
 
         .data-item {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
+            background: #fdfefe;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             padding: 15px;
             position: relative;
         }
 
         .data-item h4 {
-            color: #4a5568;
+            color: #34495e;
             margin-bottom: 8px;
             font-size: 14px;
             font-weight: 600;
         }
 
         .data-item p {
-            color: #718096;
+            color: #7f8c8d;
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 10px;
@@ -266,7 +264,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #f56565;
+            background: #c0392b;
             color: white;
             border: none;
             border-radius: 50%;
@@ -278,15 +276,15 @@
         }
 
         .delete-btn:hover {
-            background: #e53e3e;
+            background: #e74c3c;
             transform: scale(1.1);
         }
 
         /* Console Interface */
         .console-container {
-            background: #1a202c;
-            color: #e2e8f0;
-            border-radius: 15px;
+            background: #2c3e50; /* Darker background for console */
+            color: #ecf0f1;
+            border-radius: 8px;
             padding: 20px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
@@ -298,27 +296,30 @@
         .console-entry {
             margin-bottom: 15px;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 4px;
             border-left: 4px solid;
         }
 
         .console-entry.api-call {
-            background: rgba(72, 187, 120, 0.1);
-            border-left-color: #48bb78;
+            background: rgba(46, 204, 113, 0.1);
+            border-left-color: #27ae60;
+            color: #ecf0f1;
         }
 
         .console-entry.error {
-            background: rgba(245, 101, 101, 0.1);
-            border-left-color: #f56565;
+            background: rgba(231, 76, 60, 0.1);
+            border-left-color: #c0392b;
+            color: #ecf0f1;
         }
 
         .console-entry.info {
-            background: rgba(66, 153, 225, 0.1);
-            border-left-color: #4299e1;
+            background: rgba(52, 152, 219, 0.1);
+            border-left-color: #2980b9;
+            color: #ecf0f1;
         }
 
         .timestamp {
-            color: #a0aec0;
+            color: #95a5a6;
             font-size: 12px;
             margin-bottom: 5px;
         }
@@ -330,29 +331,29 @@
         }
 
         .chat-session {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
+            background: #fdfefe;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
 
         .session-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #ecf0f1;
         }
 
         .session-title {
             font-weight: 600;
-            color: #4a5568;
+            color: #34495e;
         }
 
         .session-time {
-            color: #718096;
+            color: #7f8c8d;
             font-size: 14px;
         }
 
@@ -370,21 +371,21 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #4a5568;
+            color: #34495e;
         }
 
         .form-input, .form-textarea {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             font-size: 16px;
             outline: none;
             transition: border-color 0.3s;
         }
 
         .form-input:focus, .form-textarea:focus {
-            border-color: #667eea;
+            border-color: #2980b9;
         }
 
         .form-textarea {
@@ -393,11 +394,11 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-color: #2980b9;
             color: white;
             border: none;
             padding: 12px 24px;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             font-size: 16px;
@@ -407,18 +408,19 @@
         }
 
         .btn:hover {
+            background-color: #3498db;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(41, 128, 185, 0.3);
         }
 
         .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
+            background: #ecf0f1;
+            color: #34495e;
         }
 
         .btn-secondary:hover {
-            background: #cbd5e0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background: #bdc3c7;
+            box-shadow: none;
         }
 
         .stats-grid {
@@ -429,9 +431,9 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border: 2px solid rgba(102, 126, 234, 0.2);
-            border-radius: 15px;
+            background: #fdfefe;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             padding: 20px;
             text-align: center;
         }
@@ -439,12 +441,12 @@
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #667eea;
+            color: #2980b9;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            color: #718096;
+            color: #7f8c8d;
             font-size: 14px;
             font-weight: 600;
         }
@@ -484,6 +486,7 @@
             }
         }
 
+        /* Loading Spinner */
         .loading {
             display: inline-block;
             width: 20px;
@@ -498,26 +501,36 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Notification System */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
             padding: 15px 20px;
-            background: #48bb78;
+            background-color: #27ae60; /* Green for success */
             color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             transform: translateX(100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .notification.info {
+            background-color: #2980b9;
+        }
+
+        .notification.error {
+            background-color: #c0392b;
         }
 
         .notification.show {
             transform: translateX(0);
         }
 
+        /* AI Enhancement Panel */
         .btn-ai-enhance {
-            background: linear-gradient(135deg, #48bb78, #38a169);
+            background-color: #27ae60; /* Green for AI functions */
             color: white;
             border: none;
             padding: 8px 16px;
@@ -530,14 +543,15 @@
         }
 
         .btn-ai-enhance:hover {
+            background-color: #2ecc71;
             transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
         }
 
         .ai-enhancement-panel {
-            background: rgba(72, 187, 120, 0.1);
-            border: 2px solid rgba(72, 187, 120, 0.2);
-            border-radius: 15px;
+            background: #e8f5e9; /* Light green background */
+            border: 1px solid #d4edda;
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
@@ -552,11 +566,11 @@
         }
 
         .ai-status.connected {
-            color: #48bb78;
+            color: #27ae60;
         }
 
         .ai-status.error {
-            color: #f56565;
+            color: #c0392b;
         }
 
         .enhancement-options {
@@ -568,8 +582,8 @@
 
         .enhancement-card {
             background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
             padding: 15px;
             text-align: center;
             cursor: pointer;
@@ -577,14 +591,51 @@
         }
 
         .enhancement-card:hover {
-            border-color: #48bb78;
+            border-color: #27ae60;
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.2);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
         }
 
         .enhancement-card.active {
-            border-color: #48bb78;
-            background: rgba(72, 187, 120, 0.1);
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+        
+        /* New Styles for AI Generation */
+        .ai-generation-section {
+            padding: 20px;
+            background-color: #f0f4f8;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .ai-generation-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .ai-generation-options .enhancement-card {
+            width: 100%;
+        }
+
+        .model-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .param-counter-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            color: #7f8c8d;
         }
     </style>
 </head>
@@ -602,7 +653,6 @@
             </div>
         </div>
 
-        <!-- Chat Tab -->
         <div id="chat-tab" class="tab-content">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -616,6 +666,10 @@
                 <div class="stat-card">
                     <div class="stat-number" id="avg-response-time">0ms</div>
                     <div class="stat-label">Avg Response Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="parameter-count">~0</div>
+                    <div class="stat-label">Approx. Parameters</div>
                 </div>
             </div>
 
@@ -636,33 +690,31 @@
             </div>
         </div>
 
-        <!-- Training Tab -->
         <div id="training-tab" class="tab-content hidden">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">📚 Manual Training</h2>
+            <h2 style="margin-bottom: 20px; color: #34495e;">📚 Manual Training</h2>
             
-            <!-- AI Enhancement Panel -->
             <div class="ai-enhancement-panel">
                 <div class="ai-status" id="ai-status">
                     🤖 Connecting to AI enhancement models...
                 </div>
-                <p style="color: #4a5568; margin-bottom: 15px;">
-                    Use AI models to automatically improve your training data quality, generate variations, and enhance responses.
+                <p style="color: #34495e; margin-bottom: 15px;">
+                    Leverage powerful AI models to automatically improve your training data and generate new content.
                 </p>
                 <div class="enhancement-options">
                     <div class="enhancement-card" onclick="toggleEnhancement('autoImprove')" id="auto-improve-card">
                         <div style="font-size: 24px; margin-bottom: 8px;">✨</div>
-                        <div style="font-weight: 600; color: #4a5568;">Auto-Improve</div>
-                        <div style="font-size: 12px; color: #718096;">Enhance response quality</div>
-                    </div>
-                    <div class="enhancement-card" onclick="toggleEnhancement('generateVariations')" id="generate-variations-card">
-                        <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
-                        <div style="font-weight: 600; color: #4a5568;">Generate Variations</div>
-                        <div style="font-size: 12px; color: #718096;">Create similar training pairs</div>
+                        <div style="font-weight: 600; color: #34495e;">Auto-Improve</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">Enhance response quality</div>
                     </div>
                     <div class="enhancement-card" onclick="toggleEnhancement('smartCategories')" id="smart-categories-card">
                         <div style="font-size: 24px; margin-bottom: 8px;">🏷️</div>
-                        <div style="font-weight: 600; color: #4a5568;">Smart Categories</div>
-                        <div style="font-size: 12px; color: #718096;">Auto-categorize content</div>
+                        <div style="font-weight: 600; color: #34495e;">Smart Categories</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">Auto-categorize content</div>
+                    </div>
+                    <div class="enhancement-card" onclick="toggleEnhancement('generateVariations')" id="generate-variations-card">
+                        <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
+                        <div style="font-weight: 600; color: #34495e;">Generate Variations</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">Create similar training pairs</div>
                     </div>
                 </div>
             </div>
@@ -683,37 +735,53 @@
             </div>
             <button class="btn" onclick="addTrainingData()">Add Training Data</button>
             <button class="btn btn-secondary" onclick="trainModel()">🧠 Train Model</button>
-            <button class="btn-ai-enhance" onclick="generateTrainingVariations()">🔄 Generate AI Variations</button>
+
+            <div class="ai-generation-section">
+                <h3 style="margin-bottom: 15px; color: #34495e;">🤖 Automatic Data Generation</h3>
+                <p style="color: #7f8c8d; margin-bottom: 20px;">
+                    Use a powerful AI to generate new training data based on your existing dataset or a custom prompt. The generated data will automatically be added if it doesn't already exist.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">AI Model:</label>
+                    <select id="ai-model-select" class="model-select">
+                        <option value="gpt-4o-mini">gpt-4o-mini (Fastest, Cost-Effective)</option>
+                        <option value="llama-3.1-405b">Llama-3.1-405B (Powerful, Slower)</option>
+                        <option value="gemini-1.5-pro-flash">Gemini 1.5 Flash (Efficient, Strong)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Generation Prompt:</label>
+                    <textarea class="form-textarea" id="generation-prompt" placeholder="e.g., Generate 10 new training pairs about technical support."></textarea>
+                </div>
+                <button class="btn btn-ai-enhance" onclick="generateAndTrainData()">🚀 Generate & Train Data</button>
+            </div>
         </div>
 
-        <!-- Data View Tab -->
         <div id="data-tab" class="tab-content hidden">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">📊 Training Data Overview</h2>
+            <h2 style="margin-bottom: 20px; color: #34495e;">📊 Training Data Overview</h2>
             <div style="margin-bottom: 20px;">
                 <button class="btn btn-secondary" onclick="exportData()">📤 Export Data</button>
                 <button class="btn btn-secondary" onclick="clearAllData()" style="margin-left: 10px;">🗑️ Clear All Data</button>
             </div>
             <div class="data-grid" id="data-grid">
-                <!-- Training data will be displayed here -->
-            </div>
+                </div>
         </div>
 
-        <!-- Import/Export Tab -->
         <div id="import-tab" class="tab-content hidden">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">📥 Import Training Data</h2>
+            <h2 style="margin-bottom: 20px; color: #34495e;">📥 Import Training Data</h2>
             
             <div class="import-section">
-                <h3 style="margin-bottom: 15px; color: #4a5568;">Upload Training Data</h3>
-                <p style="margin-bottom: 20px; color: #718096;">Supported formats: ZIP, CSV, JSON</p>
+                <h3 style="margin-bottom: 15px; color: #34495e;">Upload Training Data</h3>
+                <p style="margin-bottom: 20px; color: #7f8c8d;">Supported formats: ZIP, CSV, JSON</p>
                 <label for="file-import" class="file-label">Choose File</label>
                 <input type="file" id="file-import" class="file-input" accept=".zip,.csv,.json" onchange="handleFileImport(event)">
             </div>
 
             <div style="margin-top: 30px;">
-                <h3 style="margin-bottom: 15px; color: #4a5568;">Sample Data Formats</h3>
-                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h4 style="color: #4a5568; margin-bottom: 10px;">JSON Format:</h4>
-                    <pre style="background: #e2e8f0; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 14px;">[
+                <h3 style="margin-bottom: 15px; color: #34495e;">Sample Data Formats</h3>
+                <div style="background: #f0f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="color: #34495e; margin-bottom: 10px;">JSON Format:</h4>
+                    <pre style="background: #ecf0f1; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 14px;">[
   {
     "input": "Hello",
     "response": "Hi there! How can I help you?",
@@ -721,18 +789,17 @@
   }
 ]</pre>
                 </div>
-                <div style="background: #f8fafc; padding: 20px; border-radius: 10px;">
-                    <h4 style="color: #4a5568; margin-bottom: 10px;">CSV Format:</h4>
-                    <pre style="background: #e2e8f0; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 14px;">input,response,category
+                <div style="background: #f0f4f8; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #34495e; margin-bottom: 10px;">CSV Format:</h4>
+                    <pre style="background: #ecf0f1; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 14px;">input,response,category
 "Hello","Hi there! How can I help you?","greeting"
 "What's the weather?","I don't have access to weather data.","information"</pre>
                 </div>
             </div>
         </div>
 
-        <!-- Console Tab -->
         <div id="console-tab" class="tab-content hidden">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">🖥️ System Console</h2>
+            <h2 style="margin-bottom: 20px; color: #34495e;">🖥️ System Console</h2>
             <button class="btn btn-secondary" onclick="clearConsole()" style="margin-bottom: 20px;">Clear Console</button>
             <div class="console-container" id="console-output">
                 <div class="console-entry info">
@@ -742,16 +809,14 @@
             </div>
         </div>
 
-        <!-- Chat History Tab -->
         <div id="history-tab" class="tab-content hidden">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">📜 Chat History</h2>
+            <h2 style="margin-bottom: 20px; color: #34495e;">📜 Chat History</h2>
             <div style="margin-bottom: 20px;">
                 <button class="btn btn-secondary" onclick="exportChatHistory()">📤 Export History</button>
                 <button class="btn btn-secondary" onclick="clearChatHistory()" style="margin-left: 10px;">🗑️ Clear History</button>
             </div>
             <div class="chat-history" id="chat-history">
-                <!-- Chat sessions will be displayed here -->
-            </div>
+                </div>
         </div>
     </div>
 
@@ -769,6 +834,7 @@
             generateVariations: false,
             smartCategories: false
         };
+        let parameterCount = 0;
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -796,6 +862,16 @@
             }
         }
 
+        // Approximate parameter counter
+        function updateApproximateParameters() {
+            // A very rough approximation based on number of training pairs
+            const baseParameters = 100000; // Base for the initial model
+            const paramsPerEntry = 500; // A guess for complexity added per entry
+            const newCount = baseParameters + (trainingData.length * paramsPerEntry);
+            parameterCount = newCount;
+            document.getElementById('parameter-count').textContent = `~${(newCount / 1000000).toFixed(2)}M`;
+        }
+
         function updateAIStatus(status, message) {
             const statusElement = document.getElementById('ai-status');
             statusElement.className = `ai-status ${status}`;
@@ -814,26 +890,22 @@
                 logToConsole(`AI Enhancement disabled: ${type}`, 'info');
             }
             
-            showNotification(`${type} ${aiEnhancements[type] ? 'enabled' : 'disabled'}`, 'info');
+            showNotification(`${type.replace(/([A-Z])/g, ' $1').toLowerCase()} ${aiEnhancements[type] ? 'enabled' : 'disabled'}`, 'info');
         }
 
         // Tab switching functionality
         function showTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
             
-            // Remove active class from all buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Show selected tab and mark button as active
             document.getElementById(tabName + '-tab').classList.remove('hidden');
             event.target.classList.add('active');
             
-            // Refresh data when switching to certain tabs
             if (tabName === 'data') updateDataView();
             if (tabName === 'history') updateChatHistory();
         }
@@ -877,7 +949,6 @@
             try {
                 const db = await openDB();
                 
-                // Load training data
                 const trainingTransaction = db.transaction(['trainingData'], 'readonly');
                 const trainingStore = trainingTransaction.objectStore('trainingData');
                 const trainingRequest = trainingStore.getAll();
@@ -886,10 +957,10 @@
                     trainingData = trainingRequest.result;
                     updateStats();
                     updateDataView();
+                    updateApproximateParameters();
                     logToConsole(`Loaded ${trainingData.length} training entries`, 'info');
                 };
                 
-                // Load chat history
                 const historyTransaction = db.transaction(['chatHistory'], 'readonly');
                 const historyStore = historyTransaction.objectStore('chatHistory');
                 const historyRequest = historyStore.getAll();
@@ -921,32 +992,25 @@
             input.value = '';
             messageCounter++;
             
-            // Add user message to chat
             addMessageToChat(message, 'user');
             
-            // Log API call
             logToConsole(`API Call: User message "${message}"`, 'api-call');
             
-            // Generate response
             const startTime = Date.now();
             const response = await generateResponse(message);
             const responseTime = Date.now() - startTime;
             
             responseTimes.push(responseTime);
             
-            // Add bot response to chat
             addMessageToChat(response, 'bot');
             
-            // Update current chat session
             currentChatSession.push(
                 { type: 'user', message: message, timestamp: new Date() },
                 { type: 'bot', message: response, timestamp: new Date() }
             );
             
-            // Update stats
             updateStats();
             
-            // Log response
             logToConsole(`API Response: "${response}" (${responseTime}ms)`, 'api-call');
         }
 
@@ -971,7 +1035,11 @@
         async function generateResponse(message) {
             let response = '';
             
-            // Step 1: Check training data first (PRIMARY MODEL - our custom system)
+            const tokenizer = new puterAI.ai.Tokenizer('cl100k_base');
+            const tokens = tokenizer.encode(message);
+            logToConsole(`User message token count: ${tokens.length}`, 'info');
+
+            // Find a match in training data
             for (const data of trainingData) {
                 if (data.input.toLowerCase().includes(message.toLowerCase()) || 
                     message.toLowerCase().includes(data.input.toLowerCase())) {
@@ -980,15 +1048,15 @@
                 }
             }
             
-            // Step 2: If no training data match, use basic pattern matching
+            // Use a basic response if no match
             if (!response) {
                 response = getBasicResponse(message);
             }
             
-            // Step 3: Use Puter.js AI to ENHANCE the response (not replace it)
+            // Use Puter.js AI to ENHANCE the response
             if (puterAI && aiEnhancements.autoImprove && response) {
                 try {
-                    const enhancedResponse = await enhanceResponseWithAI(message, response);
+                    const enhancedResponse = await enhanceResponseWithAI(message, response, 'gpt-4o-mini');
                     if (enhancedResponse && enhancedResponse.length > 10) {
                         logToConsole(`AI enhanced response: "${response}" -> "${enhancedResponse}"`, 'info');
                         return enhancedResponse;
@@ -1028,7 +1096,7 @@
         }
 
         // AI Enhancement Functions using Puter.js
-        async function enhanceResponseWithAI(userMessage, originalResponse) {
+        async function enhanceResponseWithAI(userMessage, originalResponse, model) {
             if (!puterAI) return originalResponse;
             
             try {
@@ -1046,7 +1114,7 @@ Please provide an improved version that:
 Improved Response:`;
 
                 const result = await puterAI.ai.chat(prompt, {
-                    model: 'gpt-4o-mini',
+                    model: model,
                     max_tokens: 150
                 });
                 
@@ -1056,11 +1124,12 @@ Improved Response:`;
                 return originalResponse;
             }
         }
-
+        
         async function enhanceResponse() {
             const responseTextarea = document.getElementById('training-response');
             const inputText = document.getElementById('training-input').value.trim();
             const currentResponse = responseTextarea.value.trim();
+            const model = 'gpt-4o-mini';
             
             if (!currentResponse || !inputText) {
                 showNotification('Please enter both user message and response first', 'error');
@@ -1075,7 +1144,7 @@ Improved Response:`;
             showNotification('Enhancing response with AI...', 'info');
             
             try {
-                const enhanced = await enhanceResponseWithAI(inputText, currentResponse);
+                const enhanced = await enhanceResponseWithAI(inputText, currentResponse, model);
                 responseTextarea.value = enhanced;
                 showNotification('Response enhanced! 🤖✨', 'success');
                 logToConsole(`Manual response enhancement: "${currentResponse}" -> "${enhanced}"`, 'info');
@@ -1087,6 +1156,7 @@ Improved Response:`;
         async function suggestCategory() {
             const inputText = document.getElementById('training-input').value.trim();
             const categoryInput = document.getElementById('training-category');
+            const model = 'gpt-4o-mini';
             
             if (!inputText) {
                 showNotification('Please enter a user message first', 'error');
@@ -1108,7 +1178,7 @@ Choose from categories like: greeting, question, support, technical, personal, i
 Category:`;
 
                 const result = await puterAI.ai.chat(prompt, {
-                    model: 'gpt-4o-mini',
+                    model: model,
                     max_tokens: 20
                 });
                 
@@ -1126,6 +1196,7 @@ Category:`;
             const inputText = document.getElementById('training-input').value.trim();
             const responseText = document.getElementById('training-response').value.trim();
             const category = document.getElementById('training-category').value.trim() || 'general';
+            const model = 'gpt-4o-mini';
             
             if (!inputText || !responseText) {
                 showNotification('Please fill in both user message and response fields', 'error');
@@ -1159,7 +1230,7 @@ Input: [varied user message]
 Response: [varied response]`;
 
                 const result = await puterAI.ai.chat(prompt, {
-                    model: 'gpt-4o-mini',
+                    model: model,
                     max_tokens: 500
                 });
                 
@@ -1185,6 +1256,7 @@ Response: [varied response]`;
                 
                 updateStats();
                 updateDataView();
+                updateApproximateParameters();
                 
                 showNotification(`Generated ${addedCount} training variations! 🔄`, 'success');
                 logToConsole(`AI generated ${addedCount} training variations from: "${inputText}"`, 'info');
@@ -1192,6 +1264,92 @@ Response: [varied response]`;
             } catch (error) {
                 showNotification('Variation generation failed: ' + error.message, 'error');
                 logToConsole(`Variation generation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateAndTrainData() {
+            const model = document.getElementById('ai-model-select').value;
+            const prompt = document.getElementById('generation-prompt').value.trim();
+            
+            if (!puterAI) {
+                showNotification('AI generation not available', 'error');
+                return;
+            }
+            
+            if (!prompt) {
+                showNotification('Please provide a generation prompt', 'error');
+                return;
+            }
+            
+            showNotification('Generating new training data...', 'info');
+            
+            const generationPrompt = `Generate new training data pairs for a chatbot based on this prompt: "${prompt}". 
+            
+            The output should be a JSON array of objects, where each object has "input", "response", and "category" keys.
+            
+            Example format:
+            [
+              {
+                "input": "How do I reset my password?",
+                "response": "To reset your password, go to the login page and click 'Forgot Password'.",
+                "category": "technical support"
+              },
+              {
+                "input": "Tell me about the weather.",
+                "response": "I cannot provide real-time weather information.",
+                "category": "information"
+              }
+            ]
+            
+            Please provide only the JSON array, nothing else.`;
+            
+            try {
+                const result = await puterAI.ai.chat(generationPrompt, {
+                    model: model,
+                    max_tokens: 2000,
+                    response_format: { type: 'json_object' }
+                });
+                
+                const generatedData = JSON.parse(result.message.content.trim());
+                
+                let addedCount = 0;
+                for (const item of generatedData) {
+                    // Check if data already exists to avoid duplicates
+                    const isDuplicate = trainingData.some(entry => 
+                        entry.input.toLowerCase() === item.input.toLowerCase() &&
+                        entry.response.toLowerCase() === item.response.toLowerCase()
+                    );
+                    
+                    if (!isDuplicate && item.input && item.response) {
+                        const trainingEntry = {
+                            input: item.input,
+                            response: item.response,
+                            category: item.category || 'ai-generated',
+                            timestamp: new Date(),
+                            source: 'ai-generation'
+                        };
+                        
+                        // Automatically improve data if enabled
+                        if (aiEnhancements.autoImprove) {
+                            trainingEntry.response = await enhanceResponseWithAI(trainingEntry.input, trainingEntry.response, model);
+                            trainingEntry.aiEnhanced = true;
+                        }
+
+                        trainingData.push(trainingEntry);
+                        await saveToIndexedDB('trainingData', trainingEntry);
+                        addedCount++;
+                    }
+                }
+                
+                updateStats();
+                updateDataView();
+                updateApproximateParameters();
+                
+                showNotification(`Successfully generated and trained with ${addedCount} new entries! 🚀`, 'success');
+                logToConsole(`AI generation completed, added ${addedCount} new training entries`, 'info');
+            } catch (error) {
+                showNotification('Data generation failed: ' + error.message, 'error');
+                logToConsole(`Data generation error: ${error.message}`, 'error');
             }
         }
 
@@ -1219,12 +1377,10 @@ Response: [varied response]`;
             const feedbackButtons = event.target.parentElement;
             const buttons = feedbackButtons.querySelectorAll('.feedback-btn');
             
-            // Reset button states
             buttons.forEach(btn => {
                 btn.classList.remove('liked', 'disliked');
             });
             
-            // Set feedback state
             if (type === 'like') {
                 event.target.classList.add('liked');
                 logToConsole(`Positive feedback for message ${messageId}`, 'info');
@@ -1247,10 +1403,22 @@ Response: [varied response]`;
                 return;
             }
             
+            // Check for duplicates before adding
+            const isDuplicate = trainingData.some(entry => 
+                entry.input.toLowerCase() === input.toLowerCase() &&
+                entry.response.toLowerCase() === response.toLowerCase()
+            );
+
+            if (isDuplicate) {
+                showNotification('This training pair already exists.', 'error');
+                logToConsole(`Attempted to add duplicate training data: "${input}"`, 'error');
+                return;
+            }
+
             // Auto-enhance with AI if enabled
             if (puterAI && aiEnhancements.autoImprove) {
                 try {
-                    response = await enhanceResponseWithAI(input, response);
+                    response = await enhanceResponseWithAI(input, response, 'gpt-4o-mini');
                 } catch (error) {
                     logToConsole(`Auto-enhancement failed: ${error.message}`, 'error');
                 }
@@ -1275,13 +1443,10 @@ Response: [varied response]`;
                 aiEnhanced: aiEnhancements.autoImprove
             };
             
-            // Add to local array
             trainingData.push(trainingEntry);
             
-            // Save to IndexedDB
             await saveToIndexedDB('trainingData', trainingEntry);
             
-            // Auto-generate variations if enabled
             if (puterAI && aiEnhancements.generateVariations) {
                 try {
                     await generateVariationsForEntry(input, response, category);
@@ -1290,14 +1455,13 @@ Response: [varied response]`;
                 }
             }
             
-            // Clear form
             document.getElementById('training-input').value = '';
             document.getElementById('training-response').value = '';
             document.getElementById('training-category').value = '';
             
-            // Update UI
             updateStats();
             updateDataView();
+            updateApproximateParameters();
             
             showNotification('Training data added successfully! 🎉', 'success');
             logToConsole(`Added training data: "${input}" -> "${response}" (Category: ${category})`, 'info');
@@ -1375,10 +1539,11 @@ Response: [varied response]`;
         }
 
         function trainModel() {
-            // Simulate model training
             showNotification('Training model with current data...', 'info');
             logToConsole('Starting model training process', 'info');
             
+            // In a real application, this would involve a complex training loop.
+            // Here, we simulate it for demonstration purposes.
             setTimeout(() => {
                 showNotification('Model training completed! 🧠', 'success');
                 logToConsole(`Model training completed with ${trainingData.length} entries`, 'info');
@@ -1391,7 +1556,7 @@ Response: [varied response]`;
             dataGrid.innerHTML = '';
             
             if (trainingData.length === 0) {
-                dataGrid.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">No training data available. Add some data to get started!</p>';
+                dataGrid.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No training data available. Add some data to get started!</p>';
                 return;
             }
             
@@ -1408,8 +1573,9 @@ Response: [varied response]`;
                     <p>${data.category}</p>
                     <h4>Added:</h4>
                     <p>${new Date(data.timestamp).toLocaleString()}</p>
-                    ${data.aiEnhanced ? '<div style="background: #48bb78; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🤖 AI Enhanced</div>' : ''}
-                    ${data.source === 'ai-variation' || data.source === 'ai-auto-variation' ? '<div style="background: #4299e1; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🔄 AI Generated</div>' : ''}
+                    ${data.aiEnhanced ? '<div style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🤖 AI Enhanced</div>' : ''}
+                    ${data.source === 'ai-variation' || data.source === 'ai-auto-variation' ? '<div style="background: #2980b9; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🔄 AI Generated</div>' : ''}
+                    ${data.source === 'ai-generation' ? '<div style="background: #e67e22; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🚀 AI Generated (New)</div>' : ''}
                 `;
                 dataGrid.appendChild(dataItem);
             });
@@ -1420,6 +1586,7 @@ Response: [varied response]`;
                 trainingData.splice(index, 1);
                 updateDataView();
                 updateStats();
+                updateApproximateParameters();
                 showNotification('Training data deleted', 'info');
                 logToConsole(`Training data entry ${index} deleted`, 'info');
             }
@@ -1437,6 +1604,7 @@ Response: [varied response]`;
                     
                     updateDataView();
                     updateStats();
+                    updateApproximateParameters();
                     showNotification('All training data cleared', 'info');
                     logToConsole('All training data cleared', 'info');
                 } catch (error) {
@@ -1492,10 +1660,14 @@ Response: [varied response]`;
                     throw new Error('Unsupported file format. Please use JSON, CSV, or ZIP files.');
                 }
                 
-                // Process and save data
                 let importedCount = 0;
                 for (const item of data) {
-                    if (item.input && item.response) {
+                    const isDuplicate = trainingData.some(entry => 
+                        entry.input.toLowerCase() === item.input.toLowerCase() &&
+                        entry.response.toLowerCase() === item.response.toLowerCase()
+                    );
+                    
+                    if (!isDuplicate && item.input && item.response) {
                         const trainingEntry = {
                             input: item.input,
                             response: item.response,
@@ -1512,6 +1684,7 @@ Response: [varied response]`;
                 
                 updateStats();
                 updateDataView();
+                updateApproximateParameters();
                 
                 showNotification(`Successfully imported ${importedCount} training entries! 📥`, 'success');
                 logToConsole(`Import completed: ${importedCount} entries from ${file.name}`, 'info');
@@ -1521,7 +1694,6 @@ Response: [varied response]`;
                 logToConsole(`Import error: ${error.message}`, 'error');
             }
             
-            // Reset file input
             event.target.value = '';
         }
 
@@ -1563,7 +1735,6 @@ Response: [varied response]`;
             
             consoleLog.push(logEntry);
             
-            // Limit console log size
             if (consoleLog.length > 100) {
                 consoleLog.shift();
             }
@@ -1600,7 +1771,7 @@ Response: [varied response]`;
             historyContainer.innerHTML = '';
             
             if (chatHistory.length === 0) {
-                historyContainer.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">No chat history available yet. Start chatting to see your conversations here!</p>';
+                historyContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No chat history available yet. Start chatting to see your conversations here!</p>';
                 return;
             }
             
@@ -1698,6 +1869,8 @@ Response: [varied response]`;
                 ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
                 : 0;
             document.getElementById('avg-response-time').textContent = avgResponseTime + 'ms';
+            
+            updateApproximateParameters();
         }
 
         // Notification system
@@ -1708,10 +1881,8 @@ Response: [varied response]`;
             
             document.body.appendChild(notification);
             
-            // Show notification
             setTimeout(() => notification.classList.add('show'), 100);
             
-            // Hide and remove notification
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => document.body.removeChild(notification), 300);
@@ -1721,14 +1892,13 @@ Response: [varied response]`;
         // Auto-save chat session when leaving page
         window.addEventListener('beforeunload', saveChatSession);
 
-        // Auto-save chat session periodically
         setInterval(() => {
-            if (currentChatSession.length >= 4) { // Save after every 2 exchanges
+            if (currentChatSession.length >= 4) {
                 saveChatSession();
             }
-        }, 30000); // Check every 30 seconds
+        }, 30000);
 
-        // API Endpoint simulation (for external integration)
+        // API Endpoint simulation
         window.ChatbotAPI = {
             sendMessage: async function(message) {
                 const startTime = Date.now();
@@ -1753,6 +1923,17 @@ Response: [varied response]`;
                     source: 'api'
                 };
                 
+                // Check for duplicates before adding
+                const isDuplicate = trainingData.some(entry => 
+                    entry.input.toLowerCase() === input.toLowerCase() &&
+                    entry.response.toLowerCase() === response.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                    logToConsole(`API call tried to add duplicate data: "${input}"`, 'error');
+                    return { success: false, message: 'Duplicate training data already exists' };
+                }
+
                 trainingData.push(trainingEntry);
                 await saveToIndexedDB('trainingData', trainingEntry);
                 updateStats();
@@ -1765,6 +1946,7 @@ Response: [varied response]`;
                 return {
                     totalMessages: messageCounter,
                     trainingDataCount: trainingData.length,
+                    approximateParameters: parameterCount,
                     avgResponseTime: responseTimes.length > 0 
                         ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
                         : 0,
@@ -1773,7 +1955,6 @@ Response: [varied response]`;
             }
         };
 
-        // Initialize
         logToConsole('Chatbot API endpoints initialized', 'info');
         logToConsole('Available methods: ChatbotAPI.sendMessage(), ChatbotAPI.addTraining(), ChatbotAPI.getStats()', 'info');
         logToConsole('AI Enhancement Features: Response improvement, Auto-categorization, Variation generation', 'info');
