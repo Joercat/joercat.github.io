@@ -186,9 +186,7 @@ puter.ready(() => {
                     const request = indexedDB.open('aiTrainerDB_MultiModel_v2', 1);
                     request.onerror = e => { Logger.error(`DB Error: ${e.target.errorCode}`); reject(e); };
                     request.onsuccess = e => { DB.db = e.target.result; Logger.db('Database initialized.'); resolve(); };
-                    request.onupgraden
-eede
-d = e => { e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true }); };
+                    request.onupgradeneeded = e => { e.target.result.createObjectStore('training_data', { keyPath: 'id', autoIncrement: true }); };
                 }),
                 addEntry: (entry) => new Promise(resolve => {
                     const tx = DB.db.transaction(['training_data'], 'readwrite');
