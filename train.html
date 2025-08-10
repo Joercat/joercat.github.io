@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainable AI Chatbot System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            text-align: center;
+            color: #4a5568;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .tab-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #4c51bf, #553c9a);
+            transform: scale(1.05);
+        }
+
+        .tab-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .bot-message {
+            background: #e2e8f0;
+            color: #2d3748;
+            margin-right: auto;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .feedback-btn {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .feedback-btn:hover {
+            background: #edf2f7;
+        }
+
+        .feedback-btn.liked {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .feedback-btn.disliked {
+            background: #f56565;
+            color: white;
+            border-color: #f56565;
+        }
+
+        /* Import/Export Interface */
+        .import-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .import-section:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Data Display */
+        .data-grid {
+            display: grid;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .data-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .data-item h4 {
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .data-item p {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #e53e3e;
+            transform: scale(1.1);
+        }
+
+        /* Console Interface */
+        .console-container {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .console-entry {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .console-entry.api-call {
+            background: rgba(72, 187, 120, 0.1);
+            border-left-color: #48bb78;
+        }
+
+        .console-entry.error {
+            background: rgba(245, 101, 101, 0.1);
+            border-left-color: #f56565;
+        }
+
+        .console-entry.info {
+            background: rgba(66, 153, 225, 0.1);
+            border-left-color: #4299e1;
+        }
+
+        .timestamp {
+            color: #a0aec0;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        /* Chat History */
+        .chat-history {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .chat-session {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .session-title {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .session-time {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .session-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .chat-input-container {
+                flex-direction: column;
+            }
+
+            .chat-input {
+                margin-bottom: 10px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #48bb78;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .btn-ai-enhance {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .btn-ai-enhance:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .ai-enhancement-panel {
+            background: rgba(72, 187, 120, 0.1);
+            border: 2px solid rgba(72, 187, 120, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ai-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .ai-status.connected {
+            color: #48bb78;
+        }
+
+        .ai-status.error {
+            color: #f56565;
+        }
+
+        .enhancement-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .enhancement-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .enhancement-card:hover {
+            border-color: #48bb78;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.2);
+        }
+
+        .enhancement-card.active {
+            border-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Trainable AI Chatbot System</h1>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="showTab('chat')">💬 Chat</button>
+                <button class="tab-btn" onclick="showTab('training')">📚 Training</button>
+                <button class="tab-btn" onclick="showTab('data')">📊 View Data</button>
+                <button class="tab-btn" onclick="showTab('import')">📥 Import/Export</button>
+                <button class="tab-btn" onclick="showTab('console')">🖥️ Console</button>
+                <button class="tab-btn" onclick="showTab('history')">📜 Chat History</button>
+            </div>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="chat-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-messages">0</div>
+                    <div class="stat-label">Total Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="training-data-count">0</div>
+                    <div class="stat-label">Training Entries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avg-response-time">0ms</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        Hi! I'm your trainable AI assistant. Start chatting with me and use the feedback buttons to help me learn!
+                        <div class="feedback-buttons">
+                            <button class="feedback-btn" onclick="provideFeedback(0, 'like')">👍 Like</button>
+                            <button class="feedback-btn" onclick="provideFeedback(0, 'dislike')">👎 Dislike</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here..." onkeypress="handleChatInput(event)">
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Tab -->
+        <div id="training-tab" class="tab-content hidden">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">📚 Manual Training</h2>
+            
+            <!-- AI Enhancement Panel -->
+            <div class="ai-enhancement-panel">
+                <div class="ai-status" id="ai-status">
+                    🤖 Connecting to AI enhancement models...
+                </div>
+                <p style="color: #4a5568; margin-bottom: 15px;">
+                    Use AI models to automatically improve your training data quality, generate variations, and enhance responses.
+                </p>
+                <div class="enhancement-options">
+                    <div class="enhancement-card" onclick="toggleEnhancement('autoImprove')" id="auto-improve-card">
+                        <div style="font-size: 24px; margin-bottom: 8px;">✨</div>
+                        <div style="font-weight: 600; color: #4a5568;">Auto-Improve</div>
+                        <div style="font-size: 12px; color: #718096;">Enhance response quality</div>
+                    </div>
+                    <div class="enhancement-card" onclick="toggleEnhancement('generateVariations')" id="generate-variations-card">
+                        <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
+                        <div style="font-weight: 600; color: #4a5568;">Generate Variations</div>
+                        <div style="font-size: 12px; color: #718096;">Create similar training pairs</div>
+                    </div>
+                    <div class="enhancement-card" onclick="toggleEnhancement('smartCategories')" id="smart-categories-card">
+                        <div style="font-size: 24px; margin-bottom: 8px;">🏷️</div>
+                        <div style="font-weight: 600; color: #4a5568;">Smart Categories</div>
+                        <div style="font-size: 12px; color: #718096;">Auto-categorize content</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">User Message:</label>
+                <textarea class="form-textarea" id="training-input" placeholder="Enter the user's question or message..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Expected Response:</label>
+                <textarea class="form-textarea" id="training-response" placeholder="Enter the desired AI response..."></textarea>
+                <button class="btn-ai-enhance" onclick="enhanceResponse()">🤖 AI Enhance</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category (optional):</label>
+                <input type="text" class="form-input" id="training-category" placeholder="e.g., greeting, support, technical...">
+                <button class="btn-ai-enhance" onclick="suggestCategory()">🤖 AI Suggest</button>
+            </div>
+            <button class="btn" onclick="addTrainingData()">Add Training Data</button>
+            <button class="btn btn-secondary" onclick="trainModel()">🧠 Train Model</button>
+            <button class="btn-ai-enhance" onclick="generateTrainingVariations()">🔄 Generate AI Variations</button>
+        </div>
+
+        <!-- Data View Tab -->
+        <div id="data-tab" class="tab-content hidden">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">📊 Training Data Overview</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="exportData()">📤 Export Data</button>
+                <button class="btn btn-secondary" onclick="clearAllData()" style="margin-left: 10px;">🗑️ Clear All Data</button>
+            </div>
+            <div class="data-grid" id="data-grid">
+                <!-- Training data will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Import/Export Tab -->
+        <div id="import-tab" class="tab-content hidden">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">📥 Import Training Data</h2>
+            
+            <div class="import-section">
+                <h3 style="margin-bottom: 15px; color: #4a5568;">Upload Training Data</h3>
+                <p style="margin-bottom: 20px; color: #718096;">Supported formats: ZIP, CSV, JSON</p>
+                <label for="file-import" class="file-label">Choose File</label>
+                <input type="file" id="file-import" class="file-input" accept=".zip,.csv,.json" onchange="handleFileImport(event)">
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 15px; color: #4a5568;">Sample Data Formats</h3>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4 style="color: #4a5568; margin-bottom: 10px;">JSON Format:</h4>
+                    <pre style="background: #e2e8f0; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 14px;">[
+  {
+    "input": "Hello",
+    "response": "Hi there! How can I help you?",
+    "category": "greeting"
+  }
+]</pre>
+                </div>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #4a5568; margin-bottom: 10px;">CSV Format:</h4>
+                    <pre style="background: #e2e8f0; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 14px;">input,response,category
+"Hello","Hi there! How can I help you?","greeting"
+"What's the weather?","I don't have access to weather data.","information"</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Tab -->
+        <div id="console-tab" class="tab-content hidden">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">🖥️ System Console</h2>
+            <button class="btn btn-secondary" onclick="clearConsole()" style="margin-bottom: 20px;">Clear Console</button>
+            <div class="console-container" id="console-output">
+                <div class="console-entry info">
+                    <div class="timestamp">[System] Console initialized</div>
+                    <div>Chatbot system ready for operation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat History Tab -->
+        <div id="history-tab" class="tab-content hidden">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">📜 Chat History</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="exportChatHistory()">📤 Export History</button>
+                <button class="btn btn-secondary" onclick="clearChatHistory()" style="margin-left: 10px;">🗑️ Clear History</button>
+            </div>
+            <div class="chat-history" id="chat-history">
+                <!-- Chat sessions will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let trainingData = [];
+        let chatHistory = [];
+        let consoleLog = [];
+        let currentChatSession = [];
+        let messageCounter = 0;
+        let responseTimes = [];
+        let puterAI = null;
+        let aiEnhancements = {
+            autoImprove: false,
+            generateVariations: false,
+            smartCategories: false
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromIndexedDB();
+            updateStats();
+            updateDataView();
+            updateChatHistory();
+            initializePuterAI();
+            logToConsole('System initialized successfully', 'info');
+        });
+
+        // Initialize Puter.js AI models
+        async function initializePuterAI() {
+            try {
+                if (typeof puter !== 'undefined') {
+                    puterAI = puter;
+                    updateAIStatus('connected', '🤖 AI Enhancement Models Connected');
+                    logToConsole('Puter.js AI models initialized successfully', 'info');
+                } else {
+                    throw new Error('Puter.js not available');
+                }
+            } catch (error) {
+                updateAIStatus('error', '❌ AI Enhancement Models Failed to Connect');
+                logToConsole(`AI initialization error: ${error.message}`, 'error');
+            }
+        }
+
+        function updateAIStatus(status, message) {
+            const statusElement = document.getElementById('ai-status');
+            statusElement.className = `ai-status ${status}`;
+            statusElement.textContent = message;
+        }
+
+        function toggleEnhancement(type) {
+            aiEnhancements[type] = !aiEnhancements[type];
+            const card = document.getElementById(type.replace(/([A-Z])/g, '-$1').toLowerCase() + '-card');
+            
+            if (aiEnhancements[type]) {
+                card.classList.add('active');
+                logToConsole(`AI Enhancement enabled: ${type}`, 'info');
+            } else {
+                card.classList.remove('active');
+                logToConsole(`AI Enhancement disabled: ${type}`, 'info');
+            }
+            
+            showNotification(`${type} ${aiEnhancements[type] ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab and mark button as active
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            event.target.classList.add('active');
+            
+            // Refresh data when switching to certain tabs
+            if (tabName === 'data') updateDataView();
+            if (tabName === 'history') updateChatHistory();
+        }
+
+        // IndexedDB operations
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('ChatbotDB', 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('trainingData')) {
+                        const store = db.createObjectStore('trainingData', { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('category', 'category', { unique: false });
+                    }
+                    
+                    if (!db.objectStoreNames.contains('chatHistory')) {
+                        db.createObjectStore('chatHistory', { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+            });
+        }
+
+        async function saveToIndexedDB(storeName, data) {
+            try {
+                const db = await openDB();
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                await store.add(data);
+                logToConsole(`Data saved to ${storeName}`, 'info');
+            } catch (error) {
+                logToConsole(`Error saving to ${storeName}: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadDataFromIndexedDB() {
+            try {
+                const db = await openDB();
+                
+                // Load training data
+                const trainingTransaction = db.transaction(['trainingData'], 'readonly');
+                const trainingStore = trainingTransaction.objectStore('trainingData');
+                const trainingRequest = trainingStore.getAll();
+                
+                trainingRequest.onsuccess = () => {
+                    trainingData = trainingRequest.result;
+                    updateStats();
+                    updateDataView();
+                    logToConsole(`Loaded ${trainingData.length} training entries`, 'info');
+                };
+                
+                // Load chat history
+                const historyTransaction = db.transaction(['chatHistory'], 'readonly');
+                const historyStore = historyTransaction.objectStore('chatHistory');
+                const historyRequest = historyStore.getAll();
+                
+                historyRequest.onsuccess = () => {
+                    chatHistory = historyRequest.result;
+                    updateChatHistory();
+                    logToConsole(`Loaded ${chatHistory.length} chat sessions`, 'info');
+                };
+                
+            } catch (error) {
+                logToConsole(`Error loading data: ${error.message}`, 'error');
+            }
+        }
+
+        // Chat functionality
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            input.value = '';
+            messageCounter++;
+            
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            
+            // Log API call
+            logToConsole(`API Call: User message "${message}"`, 'api-call');
+            
+            // Generate response
+            const startTime = Date.now();
+            const response = await generateResponse(message);
+            const responseTime = Date.now() - startTime;
+            
+            responseTimes.push(responseTime);
+            
+            // Add bot response to chat
+            addMessageToChat(response, 'bot');
+            
+            // Update current chat session
+            currentChatSession.push(
+                { type: 'user', message: message, timestamp: new Date() },
+                { type: 'bot', message: response, timestamp: new Date() }
+            );
+            
+            // Update stats
+            updateStats();
+            
+            // Log response
+            logToConsole(`API Response: "${response}" (${responseTime}ms)`, 'api-call');
+        }
+
+        function addMessageToChat(message, type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = `
+                ${message}
+                ${type === 'bot' ? `
+                    <div class="feedback-buttons">
+                        <button class="feedback-btn" onclick="provideFeedback(${messageCounter}, 'like')">👍 Like</button>
+                        <button class="feedback-btn" onclick="provideFeedback(${messageCounter}, 'dislike')">👎 Dislike</button>
+                    </div>
+                ` : ''}
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function generateResponse(message) {
+            let response = '';
+            
+            // Step 1: Check training data first (PRIMARY MODEL - our custom system)
+            for (const data of trainingData) {
+                if (data.input.toLowerCase().includes(message.toLowerCase()) || 
+                    message.toLowerCase().includes(data.input.toLowerCase())) {
+                    response = data.response;
+                    break;
+                }
+            }
+            
+            // Step 2: If no training data match, use basic pattern matching
+            if (!response) {
+                response = getBasicResponse(message);
+            }
+            
+            // Step 3: Use Puter.js AI to ENHANCE the response (not replace it)
+            if (puterAI && aiEnhancements.autoImprove && response) {
+                try {
+                    const enhancedResponse = await enhanceResponseWithAI(message, response);
+                    if (enhancedResponse && enhancedResponse.length > 10) {
+                        logToConsole(`AI enhanced response: "${response}" -> "${enhancedResponse}"`, 'info');
+                        return enhancedResponse;
+                    }
+                } catch (error) {
+                    logToConsole(`AI enhancement failed: ${error.message}`, 'error');
+                }
+            }
+            
+            return response;
+        }
+
+        function getBasicResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                return 'Hello! How can I help you today?';
+            }
+            
+            if (lowerMessage.includes('how are you')) {
+                return "I'm doing well, thank you for asking! How can I assist you?";
+            }
+            
+            if (lowerMessage.includes('weather')) {
+                return "I don't have access to real-time weather data, but I'd be happy to help with other questions!";
+            }
+            
+            if (lowerMessage.includes('time')) {
+                return `The current time is ${new Date().toLocaleTimeString()}.`;
+            }
+            
+            if (lowerMessage.includes('help')) {
+                return "I'm here to help! You can ask me questions, and don't forget to use the feedback buttons to help me learn and improve my responses.";
+            }
+            
+            return "I'm still learning! Please use the feedback buttons to help me understand what you're looking for, or add training data to teach me better responses.";
+        }
+
+        // AI Enhancement Functions using Puter.js
+        async function enhanceResponseWithAI(userMessage, originalResponse) {
+            if (!puterAI) return originalResponse;
+            
+            try {
+                const prompt = `Improve this chatbot response to be more helpful, natural, and engaging while keeping the same core meaning:
+
+User Message: "${userMessage}"
+Current Response: "${originalResponse}"
+
+Please provide an improved version that:
+- Maintains the same helpful intent
+- Sounds more natural and conversational
+- Is approximately the same length
+- Adds appropriate personality
+
+Improved Response:`;
+
+                const result = await puterAI.ai.chat(prompt, {
+                    model: 'gpt-4o-mini',
+                    max_tokens: 150
+                });
+                
+                return result.message?.content?.trim() || originalResponse;
+            } catch (error) {
+                logToConsole(`Response enhancement error: ${error.message}`, 'error');
+                return originalResponse;
+            }
+        }
+
+        async function enhanceResponse() {
+            const responseTextarea = document.getElementById('training-response');
+            const inputText = document.getElementById('training-input').value.trim();
+            const currentResponse = responseTextarea.value.trim();
+            
+            if (!currentResponse || !inputText) {
+                showNotification('Please enter both user message and response first', 'error');
+                return;
+            }
+            
+            if (!puterAI) {
+                showNotification('AI enhancement not available', 'error');
+                return;
+            }
+            
+            showNotification('Enhancing response with AI...', 'info');
+            
+            try {
+                const enhanced = await enhanceResponseWithAI(inputText, currentResponse);
+                responseTextarea.value = enhanced;
+                showNotification('Response enhanced! 🤖✨', 'success');
+                logToConsole(`Manual response enhancement: "${currentResponse}" -> "${enhanced}"`, 'info');
+            } catch (error) {
+                showNotification('Enhancement failed: ' + error.message, 'error');
+            }
+        }
+
+        async function suggestCategory() {
+            const inputText = document.getElementById('training-input').value.trim();
+            const categoryInput = document.getElementById('training-category');
+            
+            if (!inputText) {
+                showNotification('Please enter a user message first', 'error');
+                return;
+            }
+            
+            if (!puterAI) {
+                showNotification('AI categorization not available', 'error');
+                return;
+            }
+            
+            try {
+                const prompt = `Categorize this user message into a single, concise category:
+
+Message: "${inputText}"
+
+Choose from categories like: greeting, question, support, technical, personal, information, request, complaint, compliment, goodbye, or suggest a new appropriate category.
+
+Category:`;
+
+                const result = await puterAI.ai.chat(prompt, {
+                    model: 'gpt-4o-mini',
+                    max_tokens: 20
+                });
+                
+                const category = result.message?.content?.trim().toLowerCase() || 'general';
+                categoryInput.value = category;
+                showNotification('Category suggested! 🏷️', 'success');
+                logToConsole(`AI suggested category "${category}" for: "${inputText}"`, 'info');
+            } catch (error) {
+                showNotification('Category suggestion failed: ' + error.message, 'error');
+                logToConsole(`Category suggestion error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateTrainingVariations() {
+            const inputText = document.getElementById('training-input').value.trim();
+            const responseText = document.getElementById('training-response').value.trim();
+            const category = document.getElementById('training-category').value.trim() || 'general';
+            
+            if (!inputText || !responseText) {
+                showNotification('Please fill in both user message and response fields', 'error');
+                return;
+            }
+            
+            if (!puterAI) {
+                showNotification('AI variation generation not available', 'error');
+                return;
+            }
+            
+            showNotification('Generating training variations with AI...', 'info');
+            
+            try {
+                const prompt = `Generate 3 variations of this training pair for a chatbot. Keep the core meaning the same but vary the wording:
+
+Original Input: "${inputText}"
+Original Response: "${responseText}"
+
+Generate 3 variations in this exact format:
+VARIATION 1:
+Input: [varied user message]
+Response: [varied response]
+
+VARIATION 2:
+Input: [varied user message]
+Response: [varied response]
+
+VARIATION 3:
+Input: [varied user message]
+Response: [varied response]`;
+
+                const result = await puterAI.ai.chat(prompt, {
+                    model: 'gpt-4o-mini',
+                    max_tokens: 500
+                });
+                
+                const content = result.message?.content || '';
+                const variations = parseVariations(content);
+                
+                let addedCount = 0;
+                for (const variation of variations) {
+                    if (variation.input && variation.response) {
+                        const trainingEntry = {
+                            input: variation.input,
+                            response: variation.response,
+                            category: category,
+                            timestamp: new Date(),
+                            source: 'ai-variation'
+                        };
+                        
+                        trainingData.push(trainingEntry);
+                        await saveToIndexedDB('trainingData', trainingEntry);
+                        addedCount++;
+                    }
+                }
+                
+                updateStats();
+                updateDataView();
+                
+                showNotification(`Generated ${addedCount} training variations! 🔄`, 'success');
+                logToConsole(`AI generated ${addedCount} training variations from: "${inputText}"`, 'info');
+                
+            } catch (error) {
+                showNotification('Variation generation failed: ' + error.message, 'error');
+                logToConsole(`Variation generation error: ${error.message}`, 'error');
+            }
+        }
+
+        function parseVariations(content) {
+            const variations = [];
+            const variationBlocks = content.split(/VARIATION \d+:/);
+            
+            for (let i = 1; i < variationBlocks.length; i++) {
+                const block = variationBlocks[i];
+                const inputMatch = block.match(/Input:\s*(.+?)(?=\n|Response:|$)/s);
+                const responseMatch = block.match(/Response:\s*(.+?)(?=\n\n|VARIATION|$)/s);
+                
+                if (inputMatch && responseMatch) {
+                    variations.push({
+                        input: inputMatch[1].trim().replace(/^\[|\]$/g, ''),
+                        response: responseMatch[1].trim().replace(/^\[|\]$/g, '')
+                    });
+                }
+            }
+            
+            return variations;
+        }
+
+        function provideFeedback(messageId, type) {
+            const feedbackButtons = event.target.parentElement;
+            const buttons = feedbackButtons.querySelectorAll('.feedback-btn');
+            
+            // Reset button states
+            buttons.forEach(btn => {
+                btn.classList.remove('liked', 'disliked');
+            });
+            
+            // Set feedback state
+            if (type === 'like') {
+                event.target.classList.add('liked');
+                logToConsole(`Positive feedback for message ${messageId}`, 'info');
+                showNotification('Thanks for the positive feedback! 👍', 'success');
+            } else {
+                event.target.classList.add('disliked');
+                logToConsole(`Negative feedback for message ${messageId}`, 'info');
+                showNotification('Thanks for the feedback! I\'ll try to improve. 👎', 'info');
+            }
+        }
+
+        // Training functionality
+        async function addTrainingData() {
+            const input = document.getElementById('training-input').value.trim();
+            let response = document.getElementById('training-response').value.trim();
+            let category = document.getElementById('training-category').value.trim() || 'general';
+            
+            if (!input || !response) {
+                showNotification('Please fill in both input and response fields', 'error');
+                return;
+            }
+            
+            // Auto-enhance with AI if enabled
+            if (puterAI && aiEnhancements.autoImprove) {
+                try {
+                    response = await enhanceResponseWithAI(input, response);
+                } catch (error) {
+                    logToConsole(`Auto-enhancement failed: ${error.message}`, 'error');
+                }
+            }
+            
+            // Auto-categorize with AI if enabled and no category provided
+            if (puterAI && aiEnhancements.smartCategories && category === 'general') {
+                try {
+                    const aiCategory = await getAICategory(input);
+                    if (aiCategory) category = aiCategory;
+                } catch (error) {
+                    logToConsole(`Auto-categorization failed: ${error.message}`, 'error');
+                }
+            }
+            
+            const trainingEntry = {
+                input: input,
+                response: response,
+                category: category,
+                timestamp: new Date(),
+                source: 'manual',
+                aiEnhanced: aiEnhancements.autoImprove
+            };
+            
+            // Add to local array
+            trainingData.push(trainingEntry);
+            
+            // Save to IndexedDB
+            await saveToIndexedDB('trainingData', trainingEntry);
+            
+            // Auto-generate variations if enabled
+            if (puterAI && aiEnhancements.generateVariations) {
+                try {
+                    await generateVariationsForEntry(input, response, category);
+                } catch (error) {
+                    logToConsole(`Auto-variation generation failed: ${error.message}`, 'error');
+                }
+            }
+            
+            // Clear form
+            document.getElementById('training-input').value = '';
+            document.getElementById('training-response').value = '';
+            document.getElementById('training-category').value = '';
+            
+            // Update UI
+            updateStats();
+            updateDataView();
+            
+            showNotification('Training data added successfully! 🎉', 'success');
+            logToConsole(`Added training data: "${input}" -> "${response}" (Category: ${category})`, 'info');
+        }
+
+        async function getAICategory(input) {
+            if (!puterAI) return null;
+            
+            try {
+                const prompt = `Categorize this user message into a single, concise category:
+
+Message: "${input}"
+
+Choose from categories like: greeting, question, support, technical, personal, information, request, complaint, compliment, goodbye, or suggest a new appropriate category.
+
+Category:`;
+
+                const result = await puterAI.ai.chat(prompt, {
+                    model: 'gpt-4o-mini',
+                    max_tokens: 20
+                });
+                
+                return result.message?.content?.trim().toLowerCase() || null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        async function generateVariationsForEntry(input, response, category) {
+            if (!puterAI) return;
+            
+            try {
+                const prompt = `Generate 2 variations of this training pair for a chatbot. Keep the core meaning the same but vary the wording:
+
+Original Input: "${input}"
+Original Response: "${response}"
+
+Generate 2 variations in this exact format:
+VARIATION 1:
+Input: [varied user message]
+Response: [varied response]
+
+VARIATION 2:
+Input: [varied user message]
+Response: [varied response]`;
+
+                const result = await puterAI.ai.chat(prompt, {
+                    model: 'gpt-4o-mini',
+                    max_tokens: 400
+                });
+                
+                const content = result.message?.content || '';
+                const variations = parseVariations(content);
+                
+                for (const variation of variations) {
+                    if (variation.input && variation.response) {
+                        const trainingEntry = {
+                            input: variation.input,
+                            response: variation.response,
+                            category: category,
+                            timestamp: new Date(),
+                            source: 'ai-auto-variation'
+                        };
+                        
+                        trainingData.push(trainingEntry);
+                        await saveToIndexedDB('trainingData', trainingEntry);
+                    }
+                }
+                
+                logToConsole(`Auto-generated ${variations.length} variations for: "${input}"`, 'info');
+                
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function trainModel() {
+            // Simulate model training
+            showNotification('Training model with current data...', 'info');
+            logToConsole('Starting model training process', 'info');
+            
+            setTimeout(() => {
+                showNotification('Model training completed! 🧠', 'success');
+                logToConsole(`Model training completed with ${trainingData.length} entries`, 'info');
+            }, 2000);
+        }
+
+        // Data management
+        function updateDataView() {
+            const dataGrid = document.getElementById('data-grid');
+            dataGrid.innerHTML = '';
+            
+            if (trainingData.length === 0) {
+                dataGrid.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">No training data available. Add some data to get started!</p>';
+                return;
+            }
+            
+            trainingData.forEach((data, index) => {
+                const dataItem = document.createElement('div');
+                dataItem.className = 'data-item';
+                dataItem.innerHTML = `
+                    <button class="delete-btn" onclick="deleteTrainingData(${index})">&times;</button>
+                    <h4>Input:</h4>
+                    <p>"${data.input}"</p>
+                    <h4>Response:</h4>
+                    <p>"${data.response}"</p>
+                    <h4>Category:</h4>
+                    <p>${data.category}</p>
+                    <h4>Added:</h4>
+                    <p>${new Date(data.timestamp).toLocaleString()}</p>
+                    ${data.aiEnhanced ? '<div style="background: #48bb78; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🤖 AI Enhanced</div>' : ''}
+                    ${data.source === 'ai-variation' || data.source === 'ai-auto-variation' ? '<div style="background: #4299e1; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px;">🔄 AI Generated</div>' : ''}
+                `;
+                dataGrid.appendChild(dataItem);
+            });
+        }
+
+        async function deleteTrainingData(index) {
+            if (confirm('Are you sure you want to delete this training data?')) {
+                trainingData.splice(index, 1);
+                updateDataView();
+                updateStats();
+                showNotification('Training data deleted', 'info');
+                logToConsole(`Training data entry ${index} deleted`, 'info');
+            }
+        }
+
+        async function clearAllData() {
+            if (confirm('Are you sure you want to delete ALL training data? This cannot be undone.')) {
+                trainingData = [];
+                
+                try {
+                    const db = await openDB();
+                    const transaction = db.transaction(['trainingData'], 'readwrite');
+                    const store = transaction.objectStore('trainingData');
+                    await store.clear();
+                    
+                    updateDataView();
+                    updateStats();
+                    showNotification('All training data cleared', 'info');
+                    logToConsole('All training data cleared', 'info');
+                } catch (error) {
+                    logToConsole(`Error clearing data: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // File import/export functionality
+        async function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            showNotification('Processing file...', 'info');
+            logToConsole(`Importing file: ${file.name}`, 'info');
+            
+            try {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                let data = [];
+                
+                if (fileExtension === 'json') {
+                    const text = await file.text();
+                    data = JSON.parse(text);
+                } else if (fileExtension === 'csv') {
+                    const text = await file.text();
+                    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                    data = parsed.data.map(row => ({
+                        input: row.input || row.question || row.user_message || '',
+                        response: row.response || row.answer || row.bot_response || '',
+                        category: row.category || 'imported'
+                    }));
+                } else if (fileExtension === 'zip') {
+                    const zip = new JSZip();
+                    const zipContent = await zip.loadAsync(file);
+                    
+                    for (const filename of Object.keys(zipContent.files)) {
+                        if (filename.endsWith('.json')) {
+                            const content = await zipContent.files[filename].async('text');
+                            const jsonData = JSON.parse(content);
+                            data = data.concat(Array.isArray(jsonData) ? jsonData : [jsonData]);
+                        } else if (filename.endsWith('.csv')) {
+                            const content = await zipContent.files[filename].async('text');
+                            const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+                            const csvData = parsed.data.map(row => ({
+                                input: row.input || row.question || row.user_message || '',
+                                response: row.response || row.answer || row.bot_response || '',
+                                category: row.category || 'imported'
+                            }));
+                            data = data.concat(csvData);
+                        }
+                    }
+                } else {
+                    throw new Error('Unsupported file format. Please use JSON, CSV, or ZIP files.');
+                }
+                
+                // Process and save data
+                let importedCount = 0;
+                for (const item of data) {
+                    if (item.input && item.response) {
+                        const trainingEntry = {
+                            input: item.input,
+                            response: item.response,
+                            category: item.category || 'imported',
+                            timestamp: new Date(),
+                            source: 'import'
+                        };
+                        
+                        trainingData.push(trainingEntry);
+                        await saveToIndexedDB('trainingData', trainingEntry);
+                        importedCount++;
+                    }
+                }
+                
+                updateStats();
+                updateDataView();
+                
+                showNotification(`Successfully imported ${importedCount} training entries! 📥`, 'success');
+                logToConsole(`Import completed: ${importedCount} entries from ${file.name}`, 'info');
+                
+            } catch (error) {
+                showNotification(`Import failed: ${error.message}`, 'error');
+                logToConsole(`Import error: ${error.message}`, 'error');
+            }
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function exportData() {
+            if (trainingData.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+            
+            const dataToExport = trainingData.map(item => ({
+                input: item.input,
+                response: item.response,
+                category: item.category,
+                timestamp: item.timestamp
+            }));
+            
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatbot_training_data_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Training data exported! 📤', 'success');
+            logToConsole(`Exported ${trainingData.length} training entries`, 'info');
+        }
+
+        // Console functionality
+        function logToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                message: message,
+                type: type,
+                timestamp: timestamp
+            };
+            
+            consoleLog.push(logEntry);
+            
+            // Limit console log size
+            if (consoleLog.length > 100) {
+                consoleLog.shift();
+            }
+            
+            updateConsole();
+        }
+
+        function updateConsole() {
+            const consoleOutput = document.getElementById('console-output');
+            consoleOutput.innerHTML = '';
+            
+            consoleLog.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = `console-entry ${entry.type}`;
+                entryDiv.innerHTML = `
+                    <div class="timestamp">[${entry.timestamp}]</div>
+                    <div>${entry.message}</div>
+                `;
+                consoleOutput.appendChild(entryDiv);
+            });
+            
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleLog = [];
+            updateConsole();
+            logToConsole('Console cleared', 'info');
+        }
+
+        // Chat history functionality
+        function updateChatHistory() {
+            const historyContainer = document.getElementById('chat-history');
+            historyContainer.innerHTML = '';
+            
+            if (chatHistory.length === 0) {
+                historyContainer.innerHTML = '<p style="text-align: center; color: #718096; padding: 40px;">No chat history available yet. Start chatting to see your conversations here!</p>';
+                return;
+            }
+            
+            chatHistory.slice().reverse().forEach((session, index) => {
+                const sessionDiv = document.createElement('div');
+                sessionDiv.className = 'chat-session';
+                
+                const sessionHeader = document.createElement('div');
+                sessionHeader.className = 'session-header';
+                sessionHeader.innerHTML = `
+                    <div class="session-title">Chat Session ${chatHistory.length - index}</div>
+                    <div class="session-time">${new Date(session.timestamp).toLocaleString()}</div>
+                `;
+                
+                const messagesDiv = document.createElement('div');
+                messagesDiv.className = 'session-messages';
+                
+                session.messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.type}-message`;
+                    messageDiv.style.marginBottom = '8px';
+                    messageDiv.textContent = msg.message;
+                    messagesDiv.appendChild(messageDiv);
+                });
+                
+                sessionDiv.appendChild(sessionHeader);
+                sessionDiv.appendChild(messagesDiv);
+                historyContainer.appendChild(sessionDiv);
+            });
+        }
+
+        async function saveChatSession() {
+            if (currentChatSession.length === 0) return;
+            
+            const session = {
+                messages: currentChatSession.slice(),
+                timestamp: new Date(),
+                messageCount: currentChatSession.length
+            };
+            
+            chatHistory.push(session);
+            await saveToIndexedDB('chatHistory', session);
+            
+            currentChatSession = [];
+            updateChatHistory();
+            logToConsole(`Chat session saved with ${session.messageCount} messages`, 'info');
+        }
+
+        function exportChatHistory() {
+            if (chatHistory.length === 0) {
+                showNotification('No chat history to export', 'error');
+                return;
+            }
+            
+            const blob = new Blob([JSON.stringify(chatHistory, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatbot_history_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Chat history exported! 📤', 'success');
+            logToConsole(`Exported ${chatHistory.length} chat sessions`, 'info');
+        }
+
+        async function clearChatHistory() {
+            if (confirm('Are you sure you want to clear all chat history? This cannot be undone.')) {
+                chatHistory = [];
+                currentChatSession = [];
+                
+                try {
+                    const db = await openDB();
+                    const transaction = db.transaction(['chatHistory'], 'readwrite');
+                    const store = transaction.objectStore('chatHistory');
+                    await store.clear();
+                    
+                    updateChatHistory();
+                    showNotification('Chat history cleared', 'info');
+                    logToConsole('Chat history cleared', 'info');
+                } catch (error) {
+                    logToConsole(`Error clearing chat history: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Stats functionality
+        function updateStats() {
+            document.getElementById('total-messages').textContent = messageCounter;
+            document.getElementById('training-data-count').textContent = trainingData.length;
+            
+            const avgResponseTime = responseTimes.length > 0 
+                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                : 0;
+            document.getElementById('avg-response-time').textContent = avgResponseTime + 'ms';
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Hide and remove notification
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Auto-save chat session when leaving page
+        window.addEventListener('beforeunload', saveChatSession);
+
+        // Auto-save chat session periodically
+        setInterval(() => {
+            if (currentChatSession.length >= 4) { // Save after every 2 exchanges
+                saveChatSession();
+            }
+        }, 30000); // Check every 30 seconds
+
+        // API Endpoint simulation (for external integration)
+        window.ChatbotAPI = {
+            sendMessage: async function(message) {
+                const startTime = Date.now();
+                const response = await generateResponse(message);
+                const responseTime = Date.now() - startTime;
+                
+                logToConsole(`External API Call: "${message}" -> "${response}" (${responseTime}ms)`, 'api-call');
+                
+                return {
+                    response: response,
+                    responseTime: responseTime,
+                    timestamp: new Date().toISOString()
+                };
+            },
+            
+            addTraining: async function(input, response, category = 'api') {
+                const trainingEntry = {
+                    input: input,
+                    response: response,
+                    category: category,
+                    timestamp: new Date(),
+                    source: 'api'
+                };
+                
+                trainingData.push(trainingEntry);
+                await saveToIndexedDB('trainingData', trainingEntry);
+                updateStats();
+                
+                logToConsole(`Training data added via API: "${input}" -> "${response}"`, 'api-call');
+                return { success: true, message: 'Training data added successfully' };
+            },
+            
+            getStats: function() {
+                return {
+                    totalMessages: messageCounter,
+                    trainingDataCount: trainingData.length,
+                    avgResponseTime: responseTimes.length > 0 
+                        ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                        : 0,
+                    chatSessions: chatHistory.length
+                };
+            }
+        };
+
+        // Initialize
+        logToConsole('Chatbot API endpoints initialized', 'info');
+        logToConsole('Available methods: ChatbotAPI.sendMessage(), ChatbotAPI.addTraining(), ChatbotAPI.getStats()', 'info');
+        logToConsole('AI Enhancement Features: Response improvement, Auto-categorization, Variation generation', 'info');
+    </script>
+</body>
+</html>
