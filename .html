@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter.js Chat with Claude</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90%;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #5d5dff;
+            color: white;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-bottom: 2px solid #4a4ad9;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 75%;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+        .user-message {
+            background-color: #5d5dff;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+            border-bottom-right-radius: 5px;
+        }
+        .assistant-message {
+            background-color: #e6e8eb;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        .chat-input-area {
+            display: flex;
+            padding: 15px;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+        #model-selector {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #send-button {
+            background-color: #5d5dff;
+        }
+        #send-button:hover {
+            background-color: #4a4ad9;
+        }
+        #clear-button {
+            background-color: #dc3545;
+        }
+        #clear-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Puter.js Chat with Claude
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            </div>
+        <div class="chat-input-area">
+            <select id="model-selector">
+                <option value="claude-opus-4.1">Claude Opus 4.1</option>
+                <option value="claude-opus-4">Claude Opus 4</option>
+                <option value="claude-sonnet-4" selected>Claude Sonnet 4</option>
+            </select>
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+            <button id="clear-button">Clear</button>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const clearButton = document.getElementById('clear-button');
+        const modelSelector = document.getElementById('model-selector');
+
+        let messages = [];
+
+        function saveMessages() {
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+        }
+
+        function loadMessages() {
+            const storedMessages = localStorage.getItem('chatMessages');
+            if (storedMessages) {
+                messages = JSON.parse(storedMessages);
+                renderMessages();
+            }
+        }
+
+        function renderMessages() {
+            chatMessages.innerHTML = '';
+            messages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(`${msg.role}-message`);
+                messageElement.innerText = msg.content;
+                chatMessages.appendChild(messageElement);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const userMessage = userInput.value.trim();
+            if (userMessage === '') return;
+
+            const selectedModel = modelSelector.value;
+            
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            clearButton.disabled = true;
+
+            messages.push({ role: 'user', content: userMessage });
+            renderMessages();
+            userInput.value = '';
+
+            try {
+                const response = await puter.ai.chat(messages, { model: selectedModel });
+                
+                const assistantMessage = response.message.content[0].text;
+                messages.push({ role: 'assistant', content: assistantMessage });
+                renderMessages();
+                
+                saveMessages();
+            } catch (error) {
+                console.error("Error calling Puter.js API:", error);
+                messages.push({ role: 'assistant', content: 'An error occurred. Please try again.' });
+                renderMessages();
+            } finally {
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                clearButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            messages = [];
+            localStorage.removeItem('chatMessages');
+            renderMessages();
+        });
+
+        window.onload = loadMessages;
+    </script>
+</body>
+</html>
