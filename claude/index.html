@@ -42,6 +42,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            border-bottom: 1px solid #e0e0e0;
         }
         .message {
             padding: 12px 18px;
@@ -62,14 +63,6 @@
             color: #333;
             align-self: flex-start;
             border-bottom-left-radius: 5px;
-        }
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            align-self: center;
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
         }
         .chat-input-area {
             display: flex;
@@ -114,6 +107,22 @@
         #clear-button:hover {
             background-color: #c82333;
         }
+        .console-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8em;
+            overflow-y: auto;
+            max-height: 150px;
+        }
+        .console-log { color: #f0f4f9; }
+        .console-error { color: #ff6b6b; }
+        .console-info { color: #78a9ff; }
     </style>
 </head>
 <body>
@@ -134,6 +143,8 @@
             <button id="clear-button">Clear</button>
         </div>
     </div>
+    <div id="app-console" class="console-container">
+        </div>
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
@@ -142,18 +153,32 @@
         const sendButton = document.getElementById('send-button');
         const clearButton = document.getElementById('clear-button');
         const modelSelector = document.getElementById('model-selector');
+        const appConsole = document.getElementById('app-console');
 
         let messages = [];
 
+        function logToConsole(message, type = 'info') {
+            const logElement = document.createElement('div');
+            logElement.classList.add(`console-${type}`);
+            logElement.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            appConsole.appendChild(logElement);
+            appConsole.scrollTop = appConsole.scrollHeight;
+        }
+
         function saveMessages() {
             localStorage.setItem('chatMessages', JSON.stringify(messages));
+            logToConsole('Messages saved to local storage.', 'info');
         }
 
         function loadMessages() {
+            logToConsole('Loading messages from local storage...', 'info');
             const storedMessages = localStorage.getItem('chatMessages');
             if (storedMessages) {
                 messages = JSON.parse(storedMessages);
                 renderMessages();
+                logToConsole('Messages loaded successfully.', 'info');
+            } else {
+                logToConsole('No messages found in local storage.', 'info');
             }
         }
 
@@ -174,7 +199,8 @@
             if (userMessage === '') return;
 
             const selectedModel = modelSelector.value;
-            
+            logToConsole(`User message sent to model: ${selectedModel}`, 'info');
+
             userInput.disabled = true;
             sendButton.disabled = true;
             clearButton.disabled = true;
@@ -193,6 +219,7 @@
                 const response = await puter.ai.chat(messages, { model: selectedModel });
                 
                 chatMessages.removeChild(typingIndicator);
+                logToConsole('API call successful.', 'info');
 
                 const assistantMessage = response.message.content[0].text;
                 messages.push({ role: 'assistant', content: assistantMessage });
@@ -202,21 +229,18 @@
             } catch (error) {
                 console.error("Puter.js API Error:", error);
                 
-                let errorMessageText = 'An error occurred. Check the console for details. The model identifier might be incorrect.';
+                let errorMessageText = 'An unknown error occurred.';
                 if (error.message) {
                     errorMessageText = `Error: ${error.message}`;
                 } else if (typeof error === 'string') {
                     errorMessageText = `Error: ${error}`;
                 }
+                
+                logToConsole(`API call failed: ${errorMessageText}`, 'error');
+                logToConsole(`Debug Info: Model was '${selectedModel}'. Check browser dev console for full error object.`, 'error');
 
-                const errorElement = document.createElement('div');
-                errorElement.classList.add('error-message');
-                errorElement.innerText = errorMessageText;
-                chatMessages.appendChild(errorElement);
-                
-                messages.push({ role: 'assistant', content: errorMessageText });
-                
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                messages.push({ role: 'assistant', content: 'An error occurred. Check the on-page console for details.' });
+                renderMessages();
             } finally {
                 userInput.disabled = false;
                 sendButton.disabled = false;
@@ -236,6 +260,7 @@
             messages = [];
             localStorage.removeItem('chatMessages');
             renderMessages();
+            logToConsole('Chat history cleared from local storage.', 'info');
         });
 
         window.onload = loadMessages;
