@@ -184,7 +184,6 @@
             userInput.value = '';
 
             try {
-                // Display a "typing" message or indicator
                 const typingIndicator = document.createElement('div');
                 typingIndicator.classList.add('message', 'assistant-message');
                 typingIndicator.innerText = 'Claude is thinking...';
@@ -193,7 +192,6 @@
 
                 const response = await puter.ai.chat(messages, { model: selectedModel });
                 
-                // Remove typing indicator before showing the actual response
                 chatMessages.removeChild(typingIndicator);
 
                 const assistantMessage = response.message.content[0].text;
@@ -204,7 +202,6 @@
             } catch (error) {
                 console.error("Puter.js API Error:", error);
                 
-                // Display a specific error message to the user
                 let errorMessageText = 'An unknown error occurred. Please try again.';
                 if (error.message) {
                     errorMessageText = `Error: ${error.message}`;
@@ -217,7 +214,6 @@
                 errorElement.innerText = errorMessageText;
                 chatMessages.appendChild(errorElement);
                 
-                // Also add a generic assistant message to the history so the chat log is correct
                 messages.push({ role: 'assistant', content: errorMessageText });
                 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -246,4 +242,3 @@
     </script>
 </body>
 </html>
-
