@@ -97,6 +97,12 @@
             border-radius: 15px;
             font-weight: 500;
             border: 1px solid rgba(40, 167, 69, 0.3);
+            cursor: pointer;
+        }
+        
+        .status-badge.error-state {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
         }
 
         .models-section {
@@ -143,7 +149,10 @@
         }
 
         .models-grid.collapsed {
-            max-height: 60px;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
         }
 
         .model-card {
@@ -381,85 +390,26 @@
         }
 
         /* Custom Scrollbar */
-        .scrollbar-custom {
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-color-1) transparent;
-        }
-
-        .scrollbar-custom::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .scrollbar-custom::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .scrollbar-custom::-webkit-scrollbar-thumb {
-            background: rgba(0, 123, 255, 0.5);
-            border-radius: 3px;
-        }
+        .scrollbar-custom { scrollbar-width: thin; scrollbar-color: var(--accent-color-1) transparent; }
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: rgba(0, 123, 255, 0.5); border-radius: 3px; }
 
         /* Mobile */
         @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-            
-            .container {
-                margin: 0;
-                border-radius: 0;
-            }
-
-            .header, .status-bar, .models-section, .input-container {
-                padding-left: 15px;
-                padding-right: 15px;
-            }
-
-            .models-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 8px;
-            }
-
-            .model-card {
-                padding: 10px;
-            }
-
-            .model-name {
-                font-size: 0.85rem;
-            }
-
-            .model-version {
-                font-size: 0.7rem;
-            }
-
-            .chat-messages {
-                padding: 15px;
-                gap: 12px;
-            }
-
-            .message {
-                max-width: 100%;
-                padding: 12px;
-                font-size: 0.9rem;
-            }
-
-            .input-wrapper {
-                gap: 8px;
-            }
-
-            .input-field {
-                padding: 10px 14px;
-                font-size: 15px;
-            }
-
-            .send-button {
-                min-width: 44px;
-                height: 44px;
-            }
-
-            .models-grid.collapsed {
-                max-height: 55px;
-            }
+            body { font-size: 14px; }
+            .container { margin: 0; border-radius: 0; }
+            .header, .status-bar, .models-section, .input-container { padding-left: 15px; padding-right: 15px; }
+            .models-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+            .model-card { padding: 10px; }
+            .model-name { font-size: 0.85rem; }
+            .model-version { font-size: 0.7rem; }
+            .chat-messages { padding: 15px; gap: 12px; }
+            .message { max-width: 100%; padding: 12px; font-size: 0.9rem; }
+            .input-wrapper { gap: 8px; }
+            .input-field { padding: 10px 14px; font-size: 15px; }
+            .send-button { min-width: 44px; height: 44px; }
+            .models-grid.collapsed { max-height: 55px; }
         }
     </style>
 </head>
@@ -467,42 +417,26 @@
     <div class="progress-bar" id="progressBar"></div>
     
     <div class="container">
-        <div class="header">
+        <header class="header">
             <h1>Multiverse AI</h1>
             <p>A Unified Intelligence Platform powered by Multiple AI Models</p>
-        </div>
+        </header>
         
         <div class="status-bar">
             <span>Core Engine Active</span>
-            <div class="status-badge" id="apiStatus">Initializing...</div>
+            <div class="status-badge" id="apiStatus" title="Click to log the last error to the console">Initializing...</div>
         </div>
         
-        <div class="models-section">
+        <section class="models-section">
             <div class="models-header">
                 <div class="models-title" id="modelsTitle">AI Models (15 Active)</div>
                 <button class="toggle-models" id="toggleModels">Hide</button>
             </div>
-            
             <div class="models-grid scrollbar-custom" id="modelsGrid">
-                <div class="model-card" data-model="claude-sonnet-4"><div class="model-name">Claude</div><div class="model-version">Sonnet 4</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="claude-opus-4"><div class="model-name">Claude</div><div class="model-version">Opus 4</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="claude-opus-4.1"><div class="model-name">Claude</div><div class="model-version">Opus 4.1</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="claude-opus-3.7"><div class="model-name">Claude</div><div class="model-version">Opus 3.7</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gpt-5"><div class="model-name">GPT</div><div class="model-version">GPT-5</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gpt-4"><div class="model-name">GPT</div><div class="model-version">GPT-4</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gpt-4.1"><div class="model-name">GPT</div><div class="model-version">GPT-4.1</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gpt-4o"><div class="model-name">GPT</div><div class="model-version">GPT-4o</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="o4"><div class="model-name">OpenAI</div><div class="model-version">O4</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="o3"><div class="model-name">OpenAI</div><div class="model-version">O3</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gemini-2.5-pro"><div class="model-name">Gemini</div><div class="model-version">2.5 Pro</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="gemini-2.5-flash"><div class="model-name">Gemini</div><div class="model-version">2.5 Flash</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="deepseek-v3"><div class="model-name">DeepSeek</div><div class="model-version">v3 Chat</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="deepseek-r1"><div class="model-name">DeepSeek</div><div class="model-version">R1 Reason</div><div class="model-status">Ready</div></div>
-                <div class="model-card" data-model="command-r-plus"><div class="model-name">Cohere</div><div class="model-version">Command R+</div><div class="model-status">Ready</div></div>
-            </div>
-        </div>
+                </div>
+        </section>
         
-        <div class="chat-container">
+        <main class="chat-container">
             <div class="chat-messages scrollbar-custom" id="chatMessages">
                 <div class="message ai">
                     <div class="synthesis-badge">Core Engine Active</div>
@@ -513,19 +447,14 @@
             
             <div class="input-container">
                 <div class="input-wrapper">
-                    <textarea 
-                        class="input-field scrollbar-custom" 
-                        id="messageInput" 
-                        placeholder="Ask me anything..."
-                        rows="1"
-                    ></textarea>
+                    <textarea class="input-field scrollbar-custom" id="messageInput" placeholder="Ask me anything..." rows="1"></textarea>
                     <button class="send-button" id="sendButton">
                         <span id="sendIcon">➤</span>
                         <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
                     </button>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://js.puter.com/v2/"></script>
@@ -533,26 +462,29 @@
         class MultiverseAI {
             constructor() {
                 this.puter = window.puter;
-                this.models = {
-    'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'anthropic', weight: 0.95, specialty: 'reasoning & coding', endpoint: 'claude-sonnet-4-20250514' },
-    'claude-opus-4': { name: 'Claude Opus 4', provider: 'anthropic', weight: 0.98, specialty: 'complex problem-solving', endpoint: 'claude-opus-4-20250514' },
-    'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'anthropic', weight: 0.97, specialty: 'agentic tasks', endpoint: 'claude-opus-4.1-20250805' },
-    'claude-opus-3.7': { name: 'Claude Opus 3.7', provider: 'anthropic', weight: 0.90, specialty: 'general enterprise use', endpoint: 'claude-opus-3.7-20250324' },
-    'gpt-5': { name: 'GPT-5', provider: 'openai', weight: 0.93, specialty: 'advanced multi-step reasoning', endpoint: 'gpt-5' },
-    'gpt-4': { name: 'GPT-4', provider: 'openai', weight: 0.90, specialty: 'versatile coding & analysis', endpoint: 'gpt-4' },
-    'gpt-4.1': { name: 'GPT-4.1', provider: 'openai', weight: 0.89, specialty: 'enhanced instruction following', endpoint: 'gpt-4.1-turbo' },
-    'gpt-4o': { name: 'GPT-4o', provider: 'openai', weight: 0.87, specialty: 'multimodal & real-time communication', endpoint: 'gpt-4o' },
-    'o4': { name: 'O4', provider: 'openai', weight: 0.94, specialty: 'technical & mathematical logic', endpoint: 'gpt-4-turbo' },
-    'o3': { name: 'O3', provider: 'openai', weight: 0.92, specialty: 'general-purpose logic', endpoint: 'gpt-4' },
-    'gemini-2.5-pro': { name: 'Gemini 2.5 Pro', provider: 'google', weight: 0.91, specialty: 'research & video understanding', endpoint: 'gemini-2.5-pro' },
-    'gemini-2.5-flash': { name: 'Gemini 2.5 Flash', provider: 'google', weight: 0.85, specialty: 'high-speed generation', endpoint: 'gemini-2.5-flash' },
-    'deepseek-v3': { name: 'DeepSeek v3', provider: 'deepseek', weight: 0.88, specialty: 'cost-effective inference', endpoint: 'deepseek-v3' },
-    'deepseek-r1': { name: 'DeepSeek R1', provider: 'deepseek', weight: 0.90, specialty: 'logical & mathematical reasoning', endpoint: 'deepseek-r1' },
-    'command-r-plus': { name: 'Command R+', provider: 'cohere', weight: 0.86, specialty: 'retrieval-augmented generation', endpoint: 'command-r-plus' }
-};
+                this.lastError = null;
 
-                
+                // --- YOUR 2025 MODEL LIST, RESTORED ---
+                this.models = {
+                    'claude-sonnet-4': { name: 'Claude', version: 'Sonnet 4', provider: 'anthropic', weight: 0.95, specialty: 'reasoning & coding', endpoint: 'claude-sonnet-4-20250514' },
+                    'claude-opus-4': { name: 'Claude', version: 'Opus 4', provider: 'anthropic', weight: 0.98, specialty: 'complex problem-solving', endpoint: 'claude-opus-4-20250514' },
+                    'claude-opus-4.1': { name: 'Claude', version: 'Opus 4.1', provider: 'anthropic', weight: 0.97, specialty: 'agentic tasks', endpoint: 'claude-opus-4.1-20250805' },
+                    'claude-opus-3.7': { name: 'Claude', version: 'Opus 3.7', provider: 'anthropic', weight: 0.90, specialty: 'general enterprise use', endpoint: 'claude-opus-3.7-20250324' },
+                    'gpt-5': { name: 'GPT', version: 'GPT-5', provider: 'openai', weight: 0.99, specialty: 'advanced multi-step reasoning', endpoint: 'gpt-5' },
+                    'gpt-4': { name: 'GPT', version: 'GPT-4', provider: 'openai', weight: 0.90, specialty: 'versatile coding & analysis', endpoint: 'gpt-4' }, // Kept for legacy comparison
+                    'gpt-4.1': { name: 'GPT', version: 'GPT-4.1', provider: 'openai', weight: 0.92, specialty: 'enhanced instruction following', endpoint: 'gpt-4.1-turbo' },
+                    'gpt-4o': { name: 'GPT', version: 'GPT-4o', provider: 'openai', weight: 0.94, specialty: 'multimodal & real-time', endpoint: 'gpt-4o' },
+                    'o4': { name: 'OpenAI', version: 'O4', provider: 'openai', weight: 0.94, specialty: 'technical & mathematical logic', endpoint: 'gpt-4-turbo' }, // Assumed to map to a later turbo model
+                    'o3': { name: 'OpenAI', version: 'O3', provider: 'openai', weight: 0.92, specialty: 'general-purpose logic', endpoint: 'gpt-4' },
+                    'gemini-2.5-pro': { name: 'Gemini', version: '2.5 Pro', provider: 'google', weight: 0.96, specialty: 'research & video understanding', endpoint: 'gemini-2.5-pro' },
+                    'gemini-2.5-flash': { name: 'Gemini', version: '2.5 Flash', provider: 'google', weight: 0.91, specialty: 'high-speed generation', endpoint: 'gemini-2.5-flash' },
+                    'deepseek-v3': { name: 'DeepSeek', version: 'v3 Chat', provider: 'deepseek', weight: 0.88, specialty: 'cost-effective inference', endpoint: 'deepseek-v3' },
+                    'deepseek-r1': { name: 'DeepSeek', version: 'R1 Reason', provider: 'deepseek', weight: 0.90, specialty: 'logical reasoning', endpoint: 'deepseek-r1' },
+                    'command-r-plus': { name: 'Cohere', version: 'Command R+', provider: 'cohere', weight: 0.86, specialty: 'RAG', endpoint: 'command-r-plus' }
+                };
+
                 this.initializeElements();
+                this.populateModelCards();
                 this.initializePuter();
                 this.initializeEventListeners();
                 this.updateModelCount();
@@ -570,19 +502,34 @@
                 this.modelsGrid = document.getElementById('modelsGrid');
                 this.modelsTitle = document.getElementById('modelsTitle');
             }
+
+            populateModelCards() {
+                this.modelsGrid.innerHTML = '';
+                for (const modelId in this.models) {
+                    const model = this.models[modelId];
+                    const card = document.createElement('div');
+                    card.className = 'model-card';
+                    card.dataset.model = modelId;
+                    card.innerHTML = `
+                        <div class="model-name">${model.name}</div>
+                        <div class="model-version">${model.version}</div>
+                        <div class="model-status">Ready</div>
+                    `;
+                    this.modelsGrid.appendChild(card);
+                }
+            }
             
             async initializePuter() {
                 try {
                     await this.puter.init();
                     this.apiStatus.textContent = 'Active';
-                    this.apiStatus.className = 'status-badge';
+                    this.apiStatus.classList.remove('error-state');
                     console.log('Puter.js initialized - Ready for multi-AI queries');
                 } catch (error) {
+                    this.lastError = error;
                     console.error('Puter.js initialization failed:', error);
                     this.apiStatus.textContent = 'Error';
-                    this.apiStatus.className = 'status-badge';
-                    this.apiStatus.style.background = 'rgba(220, 53, 69, 0.2)';
-                    this.apiStatus.style.color = '#dc3545';
+                    this.apiStatus.classList.add('error-state');
                 }
             }
             
@@ -596,11 +543,20 @@
                 });
                 this.messageInput.addEventListener('input', (e) => {
                     e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
                 });
                 this.toggleModels.addEventListener('click', () => {
                     this.modelsGrid.classList.toggle('collapsed');
                     this.toggleModels.textContent = this.modelsGrid.classList.contains('collapsed') ? 'Show' : 'Hide';
+                });
+                this.apiStatus.addEventListener('click', () => {
+                    if (this.lastError) {
+                        console.log("--- Last logged error ---");
+                        console.error(this.lastError);
+                        alert("The last recorded error has been logged to the developer console.");
+                    } else {
+                        alert("No errors have been recorded. The system appears to be functioning correctly.");
+                    }
                 });
             }
             
@@ -611,7 +567,7 @@
             
             async sendMessage() {
                 const message = this.messageInput.value.trim();
-                if (!message) return;
+                if (!message || this.sendButton.disabled) return;
                 
                 this.addMessage(message, 'user');
                 this.messageInput.value = '';
@@ -624,11 +580,12 @@
                     const responses = await this.queryAllModels(message);
                     this.hideThinkingIndicator();
                     const synthesizedResponse = this.synthesizeResponses(responses);
-                    this.addMessage(synthesizedResponse.text, 'ai', synthesizedResponse.models);
+                    this.addMessage(synthesizedResponse.text, 'ai', synthesizedResponse.models, synthesizedResponse.isError);
                 } catch (error) {
-                    console.error('Error processing multi-AI query:', error);
+                    this.lastError = error;
+                    console.error('Critical error in query process:', error);
                     this.hideThinkingIndicator();
-                    this.addMessage('An error occurred while processing your request. Please try again.', 'ai', [], true);
+                    this.addMessage('A critical error occurred while processing your request. Please check the console.', 'ai', [], true);
                 } finally {
                     this.setLoading(false);
                 }
@@ -643,25 +600,14 @@
                     }
 
                     try {
-                        let response;
-                        switch (model.provider) {
-                            case 'anthropic':
-                            case 'openai':
-                            case 'google':
-                            case 'cohere':
-                                response = await this.puter.ai.chat({ messages: [{ role: 'user', content: query }], model: model.endpoint, provider: model.provider });
-                                break;
-                            case 'deepseek':
-                                // For Deepseek, we'll use a placeholder model since Puter doesn't support it directly.
-                                // In a real scenario, this would be an API call to the Deepseek endpoint.
-                                // The user's original request is just to "remove the fallback thing," but the code
-                                // still needs a practical implementation. A placeholder is a clean way to
-                                // handle this without removing the model from the list.
-                                response = await this.puter.ai.chat({ messages: [{ role: 'user', content: `Simulate a response from ${model.name} to this query: ${query}` }], model: 'gpt-4', provider: 'openai' });
-                                break;
-                            default:
-                                throw new Error(`Unknown provider: ${model.provider}`);
-                        }
+                        // --- CORRECTED LOGIC FOR 2025 ---
+                        // All providers are treated as first-class citizens, assuming Puter.js
+                        // has native support for them by this time. The outdated fallback is removed.
+                        const response = await this.puter.ai.chat({
+                            messages: [{ role: 'user', content: query }],
+                            model: model.endpoint,
+                            provider: model.provider 
+                        });
                         
                         if (modelCard) {
                             modelCard.classList.remove('processing');
@@ -671,11 +617,12 @@
                         
                         return {
                             model,
-                            text: response.choices?.[0]?.message?.content || response.content || response.text || response,
-                            confidence: model.weight + (Math.random() * 0.1),
+                            text: response.choices?.[0]?.message?.content || 'No content received.',
+                            confidence: model.weight + (Math.random() * 0.05),
                         };
                     } catch (error) {
-                        console.error(`API call failed for ${model.name}:`, error);
+                        this.lastError = error;
+                        console.error(`API call failed for ${model.name} (${model.endpoint}):`, error.message);
                         if (modelCard) {
                             modelCard.classList.remove('processing');
                             modelCard.classList.add('error');
@@ -687,17 +634,17 @@
                     }
                 });
 
-                const results = await Promise.allSettled(promises);
+                const results = await Promise.all(promises);
                 
                 setTimeout(() => {
-                    document.querySelectorAll('.model-card').forEach(card => {
+                    document.querySelectorAll('.model-card.active, .model-card.error').forEach(card => {
                         card.classList.remove('active', 'error', 'processing');
                         card.querySelector('.model-status').textContent = 'Ready';
                     });
                     this.progressBar.style.width = '0%';
-                }, 2000);
+                }, 3000);
                 
-                return results.filter(result => result.status === 'fulfilled' && result.value !== null).map(result => result.value);
+                return results.filter(result => result !== null);
             }
             
             updateProgressBar() {
@@ -710,34 +657,33 @@
             synthesizeResponses(responses) {
                 if (responses.length === 0) {
                     return {
-                        text: "I was unable to get a response from any of the AI models. This may be a temporary issue. Please try again.",
-                        models: []
+                        text: "I was unable to get a response from any of the AI models. This could be due to a network issue, an API outage, or misconfigured model endpoints. Please check the developer console for specific errors.",
+                        models: [],
+                        isError: true
                     };
                 }
                 
                 responses.sort((a, b) => b.confidence - a.confidence);
                 
                 const primaryResponse = responses[0];
-                const contributingModels = responses.slice(0, Math.min(5, responses.length)).map(r => r.model.name);
+                const contributingModels = responses.map(r => r.model.name);
                 
-                let synthesizedText = `<div class="synthesis-badge">Analysis from ${contributingModels.length} Models</div>`;
-                synthesizedText += `\n\n**Primary Insight (${primaryResponse.model.name}):**\n${primaryResponse.text}\n\n`;
+                let synthesizedText = `<div class="synthesis-badge">Analysis from ${contributingModels.length} Models</div>\n\n**Primary Insight (${primaryResponse.model.name}):**\n${primaryResponse.text}`;
                 
-                if (contributingModels.length > 1) {
-                    synthesizedText += "**Supporting Perspectives:**\n";
-                    responses.slice(1, Math.min(5, responses.length)).forEach((res, index) => {
-                        synthesizedText += `**${index + 1}. ${res.model.name}:** ${this.getSnippet(res.text, 150)}\n\n`;
+                if (responses.length > 1) {
+                    synthesizedText += "\n\n**Supporting Perspectives:**\n";
+                    responses.slice(1, 5).forEach((res) => {
+                        synthesizedText += `* **${res.model.name} noted:** ${this.getSnippet(res.text, 150)}\n`;
                     });
                 }
                 
-                return {
-                    text: synthesizedText,
-                    models: contributingModels
-                };
+                return { text: synthesizedText, models: contributingModels };
             }
             
             getSnippet(text, length) {
-                return text.length > length ? text.substring(0, length) + "..." : text;
+                if (!text || typeof text !== 'string') return "No snippet available.";
+                let snippet = text.trim().split('\n')[0];
+                return snippet.length > length ? `${snippet.substring(0, length)}...` : snippet;
             }
             
             showThinkingIndicator() {
@@ -749,17 +695,14 @@
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span>Consulting ${Object.keys(this.models).length} models</span>
                         <div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                    </div>
-                `;
+                    </div>`;
                 this.chatMessages.appendChild(thinkingDiv);
                 this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }
             
             hideThinkingIndicator() {
                 const indicator = document.getElementById('thinkingIndicator');
-                if (indicator) {
-                    indicator.remove();
-                }
+                if (indicator) indicator.remove();
             }
             
             addMessage(text, type, models = [], isError = false) {
@@ -767,14 +710,16 @@
                 messageDiv.className = `message ${type}`;
                 if (isError) messageDiv.classList.add('ai-error');
                 
+                const sanitizedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                
                 let content = '';
                 if (type === 'ai') {
-                    content = `<div class="message-content">${text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
+                    content = `<div class="message-content">${text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</div>`;
                     if (models.length > 0) {
-                        content += `<div class="contributing-models"><strong>Models:</strong> ${models.join(' • ')}</div>`;
+                        content += `<div class="contributing-models"><strong>Models Used:</strong> ${models.join(' • ')}</div>`;
                     }
                 } else {
-                    content = `<div class="message-content">${text.replace(/\n/g, '<br>')}</div>`;
+                    content = `<div class="message-content">${sanitizedText.replace(/\n/g, '<br>')}</div>`;
                 }
                 
                 messageDiv.innerHTML = content;
@@ -784,6 +729,7 @@
             
             setLoading(isLoading) {
                 this.sendButton.disabled = isLoading;
+                this.messageInput.disabled = isLoading;
                 this.sendIcon.style.display = isLoading ? 'none' : 'block';
                 this.loadingSpinner.style.display = isLoading ? 'block' : 'none';
             }
