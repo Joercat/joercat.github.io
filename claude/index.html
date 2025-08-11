@@ -202,7 +202,7 @@
             } catch (error) {
                 console.error("Puter.js API Error:", error);
                 
-                let errorMessageText = 'An unknown error occurred. Please try again.';
+                let errorMessageText = 'An error occurred. Check the console for details. The model identifier might be incorrect.';
                 if (error.message) {
                     errorMessageText = `Error: ${error.message}`;
                 } else if (typeof error === 'string') {
