@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiverse AI - A Unified Intelligence Platform</title>
+    <title>Multiverse AI - The 10T Parameter MoE model</title>
     <style>
         :root {
             --bg-color-dark: #0a0a0f;
@@ -534,22 +534,23 @@
             constructor() {
                 this.puter = window.puter;
                 this.models = {
-                    'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'anthropic', weight: 0.95, specialty: 'reasoning', endpoint: 'claude-3-sonnet-20240229' },
-                    'claude-opus-4': { name: 'Claude Opus 4', provider: 'anthropic', weight: 0.98, specialty: 'creative', endpoint: 'claude-3-opus-20240229' },
-                    'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'anthropic', weight: 0.97, specialty: 'analysis', endpoint: 'claude-3-opus-20240229' },
-                    'claude-opus-3.7': { name: 'Claude Opus 3.7', provider: 'anthropic', weight: 0.90, specialty: 'balanced', endpoint: 'claude-3-opus-20240229' },
-                    'gpt-5': { name: 'GPT-5', provider: 'openai', weight: 0.93, specialty: 'general', endpoint: 'gpt-4-turbo-preview' },
-                    'gpt-4': { name: 'GPT-4', provider: 'openai', weight: 0.90, specialty: 'coding', endpoint: 'gpt-4' },
-                    'gpt-4.1': { name: 'GPT-4.1', provider: 'openai', weight: 0.89, specialty: 'reasoning', endpoint: 'gpt-4-turbo' },
-                    'gpt-4o': { name: 'GPT-4o', provider: 'openai', weight: 0.87, specialty: 'multimodal', endpoint: 'gpt-4o' },
-                    'o4': { name: 'O4', provider: 'openai', weight: 0.94, specialty: 'math', endpoint: 'gpt-4-turbo' },
-                    'o3': { name: 'O3', provider: 'openai', weight: 0.92, specialty: 'logic', endpoint: 'gpt-4' },
-                    'gemini-2.5-pro': { name: 'Gemini 2.5 Pro', provider: 'google', weight: 0.91, specialty: 'research', endpoint: 'gemini-pro' },
-                    'gemini-2.5-flash': { name: 'Gemini 2.5 Flash', provider: 'google', weight: 0.85, specialty: 'speed', endpoint: 'gemini-pro' },
-                    'deepseek-v3': { name: 'DeepSeek v3', provider: 'deepseek', weight: 0.88, specialty: 'coding', endpoint: 'deepseek-chat' },
-                    'deepseek-r1': { name: 'DeepSeek R1', provider: 'deepseek', weight: 0.90, specialty: 'reasoning', endpoint: 'deepseek-reasoner' },
-                    'command-r-plus': { name: 'Command R+', provider: 'cohere', weight: 0.86, specialty: 'retrieval', endpoint: 'command-r-plus' }
-                };
+    'claude-sonnet-4': { name: 'Claude Sonnet 4', provider: 'anthropic', weight: 0.95, specialty: 'reasoning & coding', endpoint: 'claude-sonnet-4-20250514' },
+    'claude-opus-4': { name: 'Claude Opus 4', provider: 'anthropic', weight: 0.98, specialty: 'complex problem-solving', endpoint: 'claude-opus-4-20250514' },
+    'claude-opus-4.1': { name: 'Claude Opus 4.1', provider: 'anthropic', weight: 0.97, specialty: 'agentic tasks', endpoint: 'claude-opus-4.1-20250805' },
+    'claude-opus-3.7': { name: 'Claude Opus 3.7', provider: 'anthropic', weight: 0.90, specialty: 'general enterprise use', endpoint: 'claude-opus-3.7-20250324' },
+    'gpt-5': { name: 'GPT-5', provider: 'openai', weight: 0.93, specialty: 'advanced multi-step reasoning', endpoint: 'gpt-5' },
+    'gpt-4': { name: 'GPT-4', provider: 'openai', weight: 0.90, specialty: 'versatile coding & analysis', endpoint: 'gpt-4' },
+    'gpt-4.1': { name: 'GPT-4.1', provider: 'openai', weight: 0.89, specialty: 'enhanced instruction following', endpoint: 'gpt-4.1-turbo' },
+    'gpt-4o': { name: 'GPT-4o', provider: 'openai', weight: 0.87, specialty: 'multimodal & real-time communication', endpoint: 'gpt-4o' },
+    'o4': { name: 'O4', provider: 'openai', weight: 0.94, specialty: 'technical & mathematical logic', endpoint: 'gpt-4-turbo' },
+    'o3': { name: 'O3', provider: 'openai', weight: 0.92, specialty: 'general-purpose logic', endpoint: 'gpt-4' },
+    'gemini-2.5-pro': { name: 'Gemini 2.5 Pro', provider: 'google', weight: 0.91, specialty: 'research & video understanding', endpoint: 'gemini-2.5-pro' },
+    'gemini-2.5-flash': { name: 'Gemini 2.5 Flash', provider: 'google', weight: 0.85, specialty: 'high-speed generation', endpoint: 'gemini-2.5-flash' },
+    'deepseek-v3': { name: 'DeepSeek v3', provider: 'deepseek', weight: 0.88, specialty: 'cost-effective inference', endpoint: 'deepseek-v3' },
+    'deepseek-r1': { name: 'DeepSeek R1', provider: 'deepseek', weight: 0.90, specialty: 'logical & mathematical reasoning', endpoint: 'deepseek-r1' },
+    'command-r-plus': { name: 'Command R+', provider: 'cohere', weight: 0.86, specialty: 'retrieval-augmented generation', endpoint: 'command-r-plus' }
+};
+
                 
                 this.initializeElements();
                 this.initializePuter();
