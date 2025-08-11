@@ -426,7 +426,7 @@
         .theme-preview {
             height: 80px;
             cursor: pointer;
-            border: 1px solid var(--main-color);
+            border: 1-px solid var(--main-color);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -536,9 +536,19 @@ const System = {
     bootComplete: false,
     taskbarApps: {},
     terminalAliases: {},
+    
+    bootedKey: 'scos_booted_once',
 
     async init() {
-        await this.startBootSequence();
+        const hasBooted = localStorage.getItem(this.bootedKey);
+        
+        if (hasBooted) {
+            document.getElementById('loading-screen').style.display = 'none';
+        } else {
+            await this.startBootSequence();
+            localStorage.setItem(this.bootedKey, 'true');
+        }
+        
         this.FileSystem.init();
         this.WindowManager.init();
         this.initDesktop();
