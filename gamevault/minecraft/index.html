@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/img/favicon.png">
+    <title>Minecraft</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #39FF14;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            overflow-x: auto;
+        }
+        header {
+            background-color: #1e1e1e;
+            padding: 20px;
+            text-align: center;
+            color: #39FF14;
+            border-bottom: 2px solid #39FF14;
+            width: 100%;
+        }
+        .search-container {
+            position: relative;
+            width: 500px;
+            margin: 10px auto;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #39FF14;
+            border-radius: 4px;
+            background-color: #1e1e1e;
+            color: #39FF14;
+        }
+        .search-bar:focus {
+            outline: none;
+            border: 2px solid #55ff33;
+        }
+        .results-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            color: #000;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ccc;
+        }
+        .result-item:hover {
+            background-color: #e0e0e0;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .custom-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: 2px solid #39FF14;
+            background-color: #1e1e1e;
+            color: #39FF14;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .custom-button:hover {
+            background-color: #39FF14;
+            color: #1e1e1e;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Minecraft</h1>
+    </header>
+<br>
+    <div class="button-container">
+        <a href="https://sigmagames69.github.io/minecraft/1.8.html" class="custom-button">Minecraft 1.8 wasm</a>
+        <a href="https://sigmagames69.github.io/minecraft/1.12.html" class="custom-button">Minecraft 1.12 wasm</a>
+    </div>
+<br>
+    <div class="button-container">
+        <a href="https://sigmagames69.github.io/minecraft/1.8 js.html" class="custom-button">Minecraft 1.8 js</a>
+        <a href="https://sigmagames69.github.io/minecraft/1.12 js.zip" class="custom-button" download>Minecraft 1.12 js</a>
+    </div>
+</body>
+</html>
