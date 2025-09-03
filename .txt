@@ -1,0 +1,7 @@
+ * DeepSeek-V3 = JoerAI 2 XL pro
+ * DeepSeek-V3.1 = JoerAI 2.5 pro
+ * Qwen2.5-72B = JoerAI 2 small
+ * Mixtral 8x22B = JoerAI 2 medium 
+ * Llama-3.1-405B = JoerAI 2 large 
+ * GPT-OSS-120B = JoerAI 2.5
+ * Mixtral 8x7B = JoerAI 2 micro
