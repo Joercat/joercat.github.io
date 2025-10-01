@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streame - Your Premium Streaming Experience</title>
-    <link rel="icon" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/svgs/solid/play-circle.svg">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23e50914' d='M8 5v14l11-7z'/></svg>">
     <style>
         * {
             margin: 0;
@@ -20,6 +20,7 @@
             --text: #ffffff;
             --text-muted: #b3b3b3;
             --hover: #f40612;
+            --success: #46d369;
         }
 
         body {
@@ -36,32 +37,41 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(229, 9, 20, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(229, 9, 20, 0.05) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 50%, rgba(229, 9, 20, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(229, 9, 20, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 20%, rgba(70, 211, 105, 0.05) 0%, transparent 40%);
             pointer-events: none;
             z-index: 0;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
         header {
             position: fixed;
             top: 0;
             width: 100%;
-            background: linear-gradient(180deg, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.7) 100%);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.98) 0%, rgba(10, 10, 10, 0.85) 100%);
+            backdrop-filter: blur(20px) saturate(180%);
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         header.scrolled {
             background: rgba(10, 10, 10, 0.98);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(30px) saturate(200%);
         }
 
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 5%;
+            padding: 1.2rem 5%;
             max-width: 1800px;
             margin: 0 auto;
         }
@@ -69,29 +79,37 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 2rem;
+            gap: 0.6rem;
+            font-size: 2.2rem;
             font-weight: 900;
             color: var(--primary);
             text-decoration: none;
-            letter-spacing: -1px;
-            transition: transform 0.3s ease;
+            letter-spacing: -1.5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
         }
 
         .logo:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-2px);
+            text-shadow: 0 0 30px rgba(229, 9, 20, 0.6);
         }
 
         .logo svg {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             fill: var(--primary);
-            filter: drop-shadow(0 0 10px rgba(229, 9, 20, 0.5));
+            filter: drop-shadow(0 0 15px rgba(229, 9, 20, 0.6));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
             list-style: none;
             align-items: center;
         }
@@ -99,28 +117,32 @@
         .nav-links a {
             color: var(--text);
             text-decoration: none;
-            transition: color 0.3s;
-            font-weight: 500;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
             position: relative;
+            padding: 0.5rem 0;
         }
 
-        .nav-links a::after {
+        .nav-links a::before {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: 0;
+            bottom: 0;
+            left: 50%;
             width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: width 0.3s ease;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
         }
 
-        .nav-links a:hover::after {
+        .nav-links a:hover::before {
             width: 100%;
         }
 
         .nav-links a:hover {
             color: var(--primary);
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
         }
 
         .search-container {
@@ -128,67 +150,89 @@
         }
 
         #searchInput {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
             color: var(--text);
-            width: 200px;
-            transition: all 0.3s ease;
+            width: 220px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
         }
 
         #searchInput:focus {
             outline: none;
-            background: rgba(255, 255, 255, 0.15);
-            width: 300px;
+            background: rgba(255, 255, 255, 0.12);
+            width: 320px;
             border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+
+        #searchInput::placeholder {
+            color: var(--text-muted);
         }
 
         .mobile-menu {
             display: none;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             cursor: pointer;
+            padding: 10px;
         }
 
         .mobile-menu span {
-            width: 25px;
+            width: 28px;
             height: 3px;
             background: var(--text);
             transition: 0.3s;
+            border-radius: 2px;
         }
 
         main {
             position: relative;
             z-index: 1;
-            padding-top: 80px;
+            padding-top: 90px;
         }
 
         .hero {
-            height: 70vh;
-            background: linear-gradient(to bottom, transparent 0%, var(--dark) 100%),
-                        url('https://images.unsplash.com/photo-1574267432644-f734b8a75c13?w=1920') center/cover;
+            height: 75vh;
+            background: linear-gradient(to bottom, rgba(20, 20, 20, 0.3) 0%, var(--dark) 100%),
+                        linear-gradient(to right, rgba(10, 10, 10, 0.8) 0%, transparent 60%),
+                        url('https://images.unsplash.com/photo-1574267432644-f734b8a75c13?w=1920&h=1080&fit=crop') center/cover;
             display: flex;
             align-items: center;
             padding: 0 5%;
             position: relative;
-            animation: heroFade 1s ease-in;
+            animation: heroFade 1.2s ease-in;
+            background-attachment: fixed;
         }
 
         @keyframes heroFade {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(20, 20, 20, 0.4) 100%);
         }
 
         .hero-content {
-            max-width: 600px;
-            animation: slideUp 0.8s ease-out;
+            max-width: 650px;
+            animation: slideUp 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px);
             }
             to {
                 opacity: 1;
@@ -197,154 +241,182 @@
         }
 
         .hero-content h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            line-height: 1.2;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .hero-content p {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 1.2rem;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 0.8rem 2rem;
+            padding: 1rem 2.5rem;
             border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.7rem;
             text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: width 0.6s, height 0.6s, top 0.6s, left 0.6s;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, #c40813 100%);
             color: var(--text);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
         }
 
         .btn-primary:hover {
-            background: var(--hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.4);
+            background: linear-gradient(135deg, var(--hover) 0%, var(--primary) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(229, 9, 20, 0.5);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             color: var(--text);
             backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
         }
 
         .section {
-            padding: 3rem 5%;
+            padding: 4rem 5%;
             max-width: 1800px;
             margin: 0 auto;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .section-title {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.5rem;
+            font-weight: 800;
             position: relative;
             display: inline-block;
+            background: linear-gradient(135deg, #ffffff 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .section-title::after {
             content: '';
             position: absolute;
-            bottom: -8px;
+            bottom: -12px;
             left: 0;
-            width: 60px;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 2px;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            border-radius: 3px;
+            animation: titleUnderline 1s ease-out;
         }
 
-        .live-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--primary);
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        @keyframes titleUnderline {
+            from { width: 0; }
+            to { width: 80px; }
         }
 
         .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 4rem;
         }
 
         .content-card {
             position: relative;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--secondary);
-            animation: fadeIn 0.5s ease-in;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, rgba(86, 77, 77, 0.3) 0%, rgba(20, 20, 20, 0.8) 100%);
+            animation: fadeIn 0.6s ease-in;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .content-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(229, 9, 20, 0.3);
+            border-color: rgba(229, 9, 20, 0.5);
         }
 
         .card-image {
             width: 100%;
-            height: 400px;
+            height: 420px;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .content-card:hover .card-image {
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
 
         .card-overlay {
@@ -352,44 +424,53 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 100%);
-            padding: 2rem 1rem 1rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+            padding: 2.5rem 1.5rem 1.5rem;
             transform: translateY(0);
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .content-card:hover .card-overlay {
-            padding: 2.5rem 1rem 1.5rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.85) 70%, transparent 100%);
+            padding: 3rem 1.5rem 2rem;
         }
 
         .card-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.7rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .card-meta {
             display: flex;
-            gap: 1rem;
-            font-size: 0.9rem;
+            gap: 1.2rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.7rem;
+            flex-wrap: wrap;
+        }
+
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
 
         .card-description {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.6;
             opacity: 0;
             max-height: 0;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .content-card:hover .card-description {
             opacity: 1;
-            max-height: 100px;
-            margin-top: 0.5rem;
+            max-height: 120px;
+            margin-top: 0.8rem;
         }
 
         .play-icon {
@@ -397,36 +478,52 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0);
-            width: 60px;
-            height: 60px;
-            background: rgba(229, 9, 20, 0.9);
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(229, 9, 20, 0.95), rgba(196, 8, 19, 0.95));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(229, 9, 20, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .content-card:hover .play-icon {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1) rotate(360deg);
         }
 
         .play-icon::after {
             content: '';
             width: 0;
             height: 0;
-            border-left: 20px solid white;
-            border-top: 12px solid transparent;
-            border-bottom: 12px solid transparent;
-            margin-left: 5px;
+            border-left: 22px solid white;
+            border-top: 14px solid transparent;
+            border-bottom: 14px solid transparent;
+            margin-left: 6px;
         }
 
         .series-section .content-grid {
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         }
 
         .series-card .card-image {
-            height: 300px;
+            height: 330px;
+        }
+
+        .episode-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(229, 9, 20, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
         }
 
         .video-modal {
@@ -436,9 +533,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.97);
             z-index: 2000;
-            animation: modalFade 0.3s ease-in;
+            animation: modalFade 0.4s ease-in;
+            backdrop-filter: blur(10px);
         }
 
         @keyframes modalFade {
@@ -456,11 +554,13 @@
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             background: var(--darker);
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            animation: scaleUp 0.3s ease-out;
+            animation: scaleUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 100px rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         @keyframes scaleUp {
@@ -470,57 +570,126 @@
 
         .close-modal {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            border: none;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             z-index: 10;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 300;
         }
 
         .close-modal:hover {
             background: var(--primary);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
         }
 
         .video-player {
             width: 100%;
-            height: 70vh;
+            height: 75vh;
             background: black;
         }
 
         .video-info {
-            padding: 2rem;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
         }
 
         .video-info h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            margin-bottom: 1.2rem;
+            font-weight: 800;
         }
 
         .video-info p {
             color: var(--text-muted);
-            line-height: 1.6;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .episode-selector {
+            padding: 2rem;
+            background: rgba(20, 20, 20, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .episode-selector h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .episode-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .episode-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .episode-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .episode-item.active {
+            background: rgba(229, 9, 20, 0.2);
+            border-color: var(--primary);
+        }
+
+        .episode-number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .episode-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .episode-duration {
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
 
         .error-message {
-            background: rgba(229, 9, 20, 0.2);
-            border: 1px solid var(--primary);
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
+            background: linear-gradient(135deg, rgba(229, 9, 20, 0.25) 0%, rgba(196, 8, 19, 0.15) 100%);
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
             display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
         }
 
         .error-message.show {
             display: block;
-            animation: shake 0.5s ease;
+            animation: shake 0.5s ease, fadeIn 0.3s ease;
         }
 
         @keyframes shake {
@@ -531,13 +700,13 @@
 
         .loading-spinner {
             display: none;
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid var(--primary);
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 2rem auto;
+            margin: 3rem auto;
         }
 
         .loading-spinner.show {
@@ -549,10 +718,21 @@
         }
 
         footer {
-            background: var(--darker);
-            padding: 3rem 5%;
-            margin-top: 4rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            padding: 4rem 5%;
+            margin-top: 5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
         }
 
         .footer-content {
@@ -560,12 +740,14 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
+            gap: 3rem;
         }
 
         .footer-section h3 {
             color: var(--primary);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
         .footer-section ul {
@@ -573,42 +755,48 @@
         }
 
         .footer-section ul li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
         }
 
         .footer-section a {
             color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.3s;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .footer-section a:hover {
             color: var(--primary);
+            transform: translateX(5px);
         }
 
         .social-links {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
         }
 
         .social-links a {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            font-size: 1.2rem;
         }
 
         .social-links a:hover {
             background: var(--primary);
-            transform: translateY(-3px);
+            transform: translateY(-5px) rotate(360deg);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.5);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 968px) {
             .nav-links {
                 display: none;
             }
@@ -618,32 +806,40 @@
             }
 
             .hero-content h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
 
             .hero-content p {
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
             .content-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 1rem;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 1.5rem;
             }
 
             .card-image {
-                height: 250px !important;
+                height: 280px !important;
             }
 
             .section-title {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
 
             #searchInput {
-                width: 150px;
+                width: 160px;
             }
 
             #searchInput:focus {
-                width: 200px;
+                width: 220px;
+            }
+
+            .hero {
+                height: 60vh;
+            }
+
+            .episode-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -661,12 +857,11 @@
             </a>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
-                <li><a href="#live">Live</a></li>
                 <li><a href="#series">Series</a></li>
                 <li><a href="#movies">Movies</a></li>
             </ul>
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Search...">
+                <input type="text" id="searchInput" placeholder="Search content...">
             </div>
             <div class="mobile-menu">
                 <span></span>
@@ -677,15 +872,15 @@
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero" id="home">
             <div class="hero-content">
                 <h1>Unlimited Entertainment</h1>
                 <p>Stream your favorite shows and movies anytime, anywhere. Experience premium quality streaming with Streame.</p>
                 <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="scrollToSection('live')">
-                        <span>▶</span> Watch Live
+                    <button class="btn btn-primary" onclick="scrollToSection('series')">
+                        <span>▶</span> Browse Series
                     </button>
-                    <button class="btn btn-secondary" onclick="scrollToSection('series')">More Info</button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('movies')">Explore Movies</button>
                 </div>
             </div>
         </section>
@@ -695,15 +890,11 @@
             <div class="loading-spinner" id="loadingSpinner"></div>
         </div>
 
-        <section id="live" class="section">
+        <section id="series" class="section series-section">
             <div class="section-header">
-                <h2 class="section-title">Live NHL Games</h2>
-                <div class="live-indicator">
-                    <span class="live-dot"></span>
-                    LIVE NOW
-                </div>
+                <h2 class="section-title">Popular Series</h2>
             </div>
-            <div id="liveGamesGrid" class="content-grid"></div>
+            <div id="seriesGrid" class="content-grid"></div>
         </section>
 
         <section id="movies" class="section">
@@ -711,13 +902,6 @@
                 <h2 class="section-title">Featured Movies</h2>
             </div>
             <div id="moviesGrid" class="content-grid"></div>
-        </section>
-
-        <section id="series" class="section series-section">
-            <div class="section-header">
-                <h2 class="section-title">Popular Series</h2>
-            </div>
-            <div id="seriesGrid" class="content-grid"></div>
         </section>
     </main>
 
@@ -729,6 +913,10 @@
                 <h2 id="videoTitle"></h2>
                 <p id="videoDescription"></p>
             </div>
+            <div id="episodeSelector" class="episode-selector" style="display: none;">
+                <h3>Episodes</h3>
+                <div id="episodeList" class="episode-list"></div>
+            </div>
         </div>
     </div>
 
@@ -736,18 +924,18 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Streame</h3>
-                <p>Your premium streaming destination for unlimited entertainment.</p>
+                <p style="color: var(--text-muted); line-height: 1.6;">Your premium streaming destination for unlimited entertainment. Watch movies and series on demand.</p>
                 <div class="social-links">
-                    <a href="https://facebook.com" target="_blank">f</a>
-                    <a href="https://twitter.com" target="_blank">𝕏</a>
-                    <a href="https://instagram.com" target="_blank">📷</a>
+                    <a href="https://facebook.com" target="_blank" title="Facebook">f</a>
+                    <a href="https://twitter.com" target="_blank" title="Twitter">𝕏</a>
+                    <a href="https://instagram.com" target="_blank" title="Instagram">📷</a>
+                    <a href="https://youtube.com" target="_blank" title="YouTube">▶</a>
                 </div>
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#live">Live Games</a></li>
                     <li><a href="#series">TV Series</a></li>
                     <li><a href="#movies">Movies</a></li>
                 </ul>
@@ -755,20 +943,24 @@
             <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
-                    <li><a href="https://support.example.com">Help Center</a></li>
-                    <li><a href="https://support.example.com/contact">Contact Us</a></li>
-                    <li><a href="https://www.example.com/terms">Terms of Service</a></li>
-                    <li><a href="https://www.example.com/privacy">Privacy Policy</a></li>
+                    <li><a href="https://support.example.com" target="_blank">Help Center</a></li>
+                    <li><a href="https://support.example.com/contact" target="_blank">Contact Us</a></li>
+                    <li><a href="https://www.example.com/terms" target="_blank">Terms of Service</a></li>
+                    <li><a href="https://www.example.com/privacy" target="_blank">Privacy Policy</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>About</h3>
+                <h3>Company</h3>
                 <ul>
-                    <li><a href="https://www.example.com/about">About Us</a></li>
-                    <li><a href="https://www.example.com/careers">Careers</a></li>
-                    <li><a href="https://www.example.com/press">Press</a></li>
+                    <li><a href="https://www.example.com/about" target="_blank">About Us</a></li>
+                    <li><a href="https://www.example.com/careers" target="_blank">Careers</a></li>
+                    <li><a href="https://www.example.com/press" target="_blank">Press</a></li>
+                    <li><a href="https://www.example.com/investors" target="_blank">Investors</a></li>
                 </ul>
             </div>
+        </div>
+        <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.9rem;">
+            © 2025 Streame. All rights reserved.
         </div>
     </footer>
 
@@ -776,11 +968,13 @@
         const state = {
             movies: [],
             series: [],
-            liveGames: [],
-            currentVideo: null
+            currentVideo: null,
+            currentSeries: null,
+            currentEpisode: null
         };
 
         // Scroll header effect
+        let lastScrollY = window.scrollY;
         window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
             if (window.scrollY > 100) {
@@ -788,14 +982,15 @@
             } else {
                 header.classList.remove('scrolled');
             }
+            lastScrollY = window.scrollY;
         });
 
         // Utility functions
         function showError(message) {
             const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
+            errorEl.textContent = '⚠️ ' + message;
             errorEl.classList.add('show');
-            setTimeout(() => errorEl.classList.remove('show'), 5000);
+            setTimeout(() => errorEl.classList.remove('show'), 6000);
         }
 
         function showLoading(show) {
@@ -808,155 +1003,284 @@
         }
 
         function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            const element = document.getElementById(id);
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
         }
 
-        // Fetch JSON data with error handling
+        // Fetch JSON data with comprehensive error handling
         async function fetchJSON(filename) {
             try {
                 showLoading(true);
                 const response = await fetch(filename);
                 if (!response.ok) {
-                    throw new Error(`Failed to load ${filename}: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: Failed to load ${filename}`);
+                }
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error(`Invalid content type for ${filename}. Expected JSON.`);
                 }
                 const data = await response.json();
                 showLoading(false);
                 return data;
             } catch (error) {
                 showLoading(false);
-                showError(`Error loading ${filename}: ${error.message}. Please check if the file exists.`);
+                if (error.name === 'SyntaxError') {
+                    showError(`${filename} contains invalid JSON format. Please check the file.`);
+                } else if (error.message.includes('404')) {
+                    showError(`${filename} not found. Please create the file in the same directory.`);
+                } else {
+                    showError(`Error loading ${filename}: ${error.message}`);
+                }
                 console.error('Fetch error:', error);
                 return null;
             }
         }
 
-        // Fetch live NHL games from onhockey.tv
-        async function fetchLiveGames() {
-            try {
-                // Generate mock live NHL games (in production, you'd scrape onhockey.tv or use their API)
-                const teams = [
-                    { home: 'Boston Bruins', away: 'Montreal Canadiens' },
-                    { home: 'Toronto Maple Leafs', away: 'Ottawa Senators' },
-                    { home: 'Tampa Bay Lightning', away: 'Florida Panthers' },
-                    { home: 'Vegas Golden Knights', away: 'Colorado Avalanche' },
-                    { home: 'Edmonton Oilers', away: 'Calgary Flames' }
-                ];
-
-                state.liveGames = teams.map((game, index) => ({
-                    id: `live-${index}`,
-                    title: `${game.away} @ ${game.home}`,
-                    description: `Live NHL Game - ${game.away} vs ${game.home}`,
-                    thumbnail: `https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=800&h=600&fit=crop`,
-                    videoUrl: `https://onhockey.tv/live/game${index + 1}`,
-                    live: true,
-                    score: `${Math.floor(Math.random() * 5)} - ${Math.floor(Math.random() * 5)}`
-                }));
-
-                renderLiveGames();
-            } catch (error) {
-                showError('Error fetching live games: ' + error.message);
-            }
-        }
-
-        // Render functions
-        function renderLiveGames() {
-            const grid = document.getElementById('liveGamesGrid');
-            grid.innerHTML = state.liveGames.map(game => `
-                <div class="content-card" onclick="playVideo('${game.id}', 'live')">
-                    <img src="${game.thumbnail}" alt="${game.title}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=800'">
-                    <div class="play-icon"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">${game.title}</div>
-                        <div class="card-meta">
-                            <span style="color: var(--primary);">● LIVE</span>
-                            <span>${game.score}</span>
-                        </div>
-                        <div class="card-description">${game.description}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
+        // Render movies
         function renderMovies() {
             const grid = document.getElementById('moviesGrid');
             if (state.movies.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No movies available. Please add content to content.json</p>';
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 1rem;">No movies available</p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Add content to content.json to display movies here</p>
+                    </div>
+                `;
                 return;
             }
-            grid.innerHTML = state.movies.map(movie => `
-                <div class="content-card" onclick="playVideo('${movie.id}', 'movie')">
-                    <img src="${movie.thumbnail}" alt="${movie.title}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800'">
+            grid.innerHTML = state.movies.map((movie, index) => `
+                <div class="content-card" onclick="playVideo('${movie.id}', 'movie')" style="animation-delay: ${index * 0.05}s;">
+                    <img src="${movie.thumbnail}" alt="${movie.title}" class="card-image" 
+                         onerror="this.src='https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=1200&fit=crop'">
                     <div class="play-icon"></div>
                     <div class="card-overlay">
                         <div class="card-title">${movie.title}</div>
                         <div class="card-meta">
-                            <span>${movie.year || 'N/A'}</span>
-                            <span>${movie.duration || 'N/A'}</span>
-                            <span>${movie.rating || 'N/A'}</span>
+                            ${movie.year ? `<span>📅 ${movie.year}</span>` : ''}
+                            ${movie.duration ? `<span>⏱️ ${movie.duration}</span>` : ''}
+                            ${movie.rating ? `<span>⭐ ${movie.rating}</span>` : ''}
                         </div>
-                        <div class="card-description">${movie.description || ''}</div>
+                        <div class="card-description">${movie.description || 'No description available'}</div>
                     </div>
                 </div>
             `).join('');
         }
 
+        // Render series with episode count badge
         function renderSeries() {
             const grid = document.getElementById('seriesGrid');
             if (state.series.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No series available. Please add content to series.json</p>';
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 1rem;">No series available</p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Add content to series.json to display series here</p>
+                    </div>
+                `;
                 return;
             }
-            grid.innerHTML = state.series.map(series => `
-                <div class="content-card series-card" onclick="playVideo('${series.id}', 'series')">
-                    <img src="${series.thumbnail}" alt="${series.title}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600'">
-                    <div class="play-icon"></div>
-                    <div class="card-overlay">
-                        <div class="card-title">${series.title}</div>
-                        <div class="card-meta">
-                            <span>${series.seasons || 1} Season${series.seasons !== 1 ? 's' : ''}</span>
-                            <span>${series.year || 'N/A'}</span>
+            grid.innerHTML = state.series.map((series, index) => {
+                const episodeCount = series.episodes ? series.episodes.length : 0;
+                return `
+                    <div class="content-card series-card" onclick="openSeries('${series.id}')" style="animation-delay: ${index * 0.05}s;">
+                        <img src="${series.thumbnail}" alt="${series.title}" class="card-image" 
+                             onerror="this.src='https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&h=900&fit=crop'">
+                        ${episodeCount > 0 ? `<div class="episode-badge">${episodeCount} Episode${episodeCount !== 1 ? 's' : ''}</div>` : ''}
+                        <div class="play-icon"></div>
+                        <div class="card-overlay">
+                            <div class="card-title">${series.title}</div>
+                            <div class="card-meta">
+                                ${series.seasons ? `<span>📺 ${series.seasons} Season${series.seasons !== 1 ? 's' : ''}</span>` : ''}
+                                ${series.year ? `<span>📅 ${series.year}</span>` : ''}
+                            </div>
+                            <div class="card-description">${series.description || 'No description available'}</div>
                         </div>
-                        <div class="card-description">${series.description || ''}</div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Video player
-        function playVideo(id, type) {
-            let video;
-            if (type === 'live') {
-                video = state.liveGames.find(v => v.id === id);
-            } else if (type === 'movie') {
-                video = state.movies.find(v => v.id === id);
-            } else if (type === 'series') {
-                video = state.series.find(v => v.id === id);
-            }
-
-            if (!video) {
-                showError('Video not found');
+        // Open series and display episode selector
+        function openSeries(seriesId) {
+            const series = state.series.find(s => s.id === seriesId);
+            
+            if (!series) {
+                showError('Series not found. Please try again.');
                 return;
             }
 
-            state.currentVideo = video;
+            if (!series.episodes || series.episodes.length === 0) {
+                showError('No episodes available for this series.');
+                return;
+            }
+
+            state.currentSeries = series;
+            state.currentEpisode = series.episodes[0];
+
             const modal = document.getElementById('videoModal');
             const player = document.getElementById('videoPlayer');
             const title = document.getElementById('videoTitle');
             const description = document.getElementById('videoDescription');
+            const episodeSelector = document.getElementById('episodeSelector');
+            const episodeList = document.getElementById('episodeList');
+
+            // Set series info
+            title.textContent = series.title;
+            description.textContent = series.description || 'No description available';
+
+            // Build episode list
+            episodeList.innerHTML = series.episodes.map((episode, index) => `
+                <div class="episode-item ${index === 0 ? 'active' : ''}" onclick="playEpisode(${index})" data-episode-index="${index}">
+                    <div class="episode-number">Episode ${episode.episodeNumber || (index + 1)}</div>
+                    <div class="episode-title">${episode.title || `Episode ${index + 1}`}</div>
+                    ${episode.duration ? `<div class="episode-duration">${episode.duration}</div>` : ''}
+                </div>
+            `).join('');
+
+            // Show episode selector
+            episodeSelector.style.display = 'block';
+
+            // Load first episode
+            loadEpisodeVideo(series.episodes[0]);
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Play specific episode
+        function playEpisode(episodeIndex) {
+            if (!state.currentSeries || !state.currentSeries.episodes[episodeIndex]) {
+                showError('Episode not found.');
+                return;
+            }
+
+            const episode = state.currentSeries.episodes[episodeIndex];
+            state.currentEpisode = episode;
+
+            // Update active state
+            document.querySelectorAll('.episode-item').forEach((item, index) => {
+                if (index === episodeIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Update title
+            const title = document.getElementById('videoTitle');
+            title.textContent = `${state.currentSeries.title} - ${episode.title || `Episode ${episodeIndex + 1}`}`;
+
+            // Update description
+            const description = document.getElementById('videoDescription');
+            description.textContent = episode.description || state.currentSeries.description || 'No description available';
+
+            // Load video
+            loadEpisodeVideo(episode);
+        }
+
+        // Load episode video with error handling
+        function loadEpisodeVideo(episode) {
+            const player = document.getElementById('videoPlayer');
+            
+            player.src = '';
+            player.poster = episode.thumbnail || state.currentSeries.thumbnail;
+            
+            player.onerror = function(e) {
+                const errorCode = player.error ? player.error.code : 'unknown';
+                const errorMessages = {
+                    1: 'Video loading aborted',
+                    2: 'Network error while loading video',
+                    3: 'Video decoding failed - format may not be supported',
+                    4: 'Video source URL is invalid or video is unavailable'
+                };
+                const errorMsg = errorMessages[errorCode] || 'Unknown error occurred';
+                showError(`Failed to load episode: ${errorMsg}. Please check the video URL.`);
+                console.error('Video error:', e, player.error);
+            };
+
+            player.onloadstart = function() {
+                console.log('Episode loading started...');
+            };
+
+            player.onloadeddata = function() {
+                console.log('Episode loaded successfully');
+            };
+
+            player.onended = function() {
+                // Auto-play next episode
+                const currentIndex = state.currentSeries.episodes.indexOf(state.currentEpisode);
+                if (currentIndex < state.currentSeries.episodes.length - 1) {
+                    playEpisode(currentIndex + 1);
+                }
+            };
+
+            // Set video source
+            player.src = episode.videoUrl;
+            player.load();
+        }
+
+        // Play single movie
+        function playVideo(id, type) {
+            let video = state.movies.find(v => v.id === id);
+
+            if (!video) {
+                showError('Video not found. Please try again.');
+                return;
+            }
+
+            state.currentVideo = video;
+            state.currentSeries = null;
+
+            const modal = document.getElementById('videoModal');
+            const player = document.getElementById('videoPlayer');
+            const title = document.getElementById('videoTitle');
+            const description = document.getElementById('videoDescription');
+            const episodeSelector = document.getElementById('episodeSelector');
+
+            // Hide episode selector for movies
+            episodeSelector.style.display = 'none';
 
             title.textContent = video.title;
             description.textContent = video.description || 'No description available';
 
-            // Handle video loading with error handling
-            player.src = video.videoUrl;
-            player.onerror = function() {
-                showError(`Failed to load video: ${video.title}. The video URL may be invalid or the video is unavailable.`);
-                player.poster = video.thumbnail;
+            // Handle video loading with comprehensive error handling
+            player.src = '';
+            player.poster = video.thumbnail;
+            
+            player.onerror = function(e) {
+                const errorCode = player.error ? player.error.code : 'unknown';
+                const errorMessages = {
+                    1: 'Video loading aborted',
+                    2: 'Network error while loading video',
+                    3: 'Video decoding failed - format may not be supported',
+                    4: 'Video source URL is invalid or video is unavailable'
+                };
+                const errorMsg = errorMessages[errorCode] || 'Unknown error occurred';
+                showError(`Failed to load video: ${errorMsg}. Please check the video URL.`);
+                console.error('Video error:', e, player.error);
+            };
+
+            player.onloadstart = function() {
+                console.log('Video loading started...');
             };
 
             player.onloadeddata = function() {
                 console.log('Video loaded successfully');
             };
+
+            player.oncanplay = function() {
+                console.log('Video can start playing');
+            };
+
+            // Set video source after event handlers
+            player.src = video.videoUrl;
+            player.load();
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -969,6 +1293,9 @@
             player.src = '';
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
+            state.currentVideo = null;
+            state.currentSeries = null;
+            state.currentEpisode = null;
         }
 
         // Close modal on escape key
@@ -985,114 +1312,83 @@
             }
         });
 
-        // Search functionality
+        // Advanced search functionality
+        let searchTimeout;
+        const originalData = { movies: [], series: [] };
+
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            if (!query) {
-                renderMovies();
-                renderSeries();
-                return;
-            }
+            clearTimeout(searchTimeout);
+            const query = e.target.value.toLowerCase().trim();
+            
+            searchTimeout = setTimeout(() => {
+                if (!query) {
+                    state.movies = [...originalData.movies];
+                    state.series = [...originalData.series];
+                    renderMovies();
+                    renderSeries();
+                    return;
+                }
 
-            const filteredMovies = state.movies.filter(m => 
-                m.title.toLowerCase().includes(query) || 
-                (m.description && m.description.toLowerCase().includes(query))
-            );
-            const filteredSeries = state.series.filter(s => 
-                s.title.toLowerCase().includes(query) || 
-                (s.description && s.description.toLowerCase().includes(query))
-            );
+                const filteredMovies = originalData.movies.filter(m => 
+                    m.title.toLowerCase().includes(query) || 
+                    (m.description && m.description.toLowerCase().includes(query)) ||
+                    (m.genre && m.genre.toLowerCase().includes(query))
+                );
+                
+                const filteredSeries = originalData.series.filter(s => 
+                    s.title.toLowerCase().includes(query) || 
+                    (s.description && s.description.toLowerCase().includes(query)) ||
+                    (s.genre && s.genre.toLowerCase().includes(query))
+                );
 
-            const moviesGrid = document.getElementById('moviesGrid');
-            const seriesGrid = document.getElementById('seriesGrid');
-
-            if (filteredMovies.length === 0) {
-                moviesGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No movies found</p>';
-            } else {
                 state.movies = filteredMovies;
-                renderMovies();
-            }
-
-            if (filteredSeries.length === 0) {
-                seriesGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No series found</p>';
-            } else {
                 state.series = filteredSeries;
+                
+                renderMovies();
                 renderSeries();
-            }
+            }, 300);
         });
 
         // Initialize app
         async function init() {
-            // Fetch live games
-            await fetchLiveGames();
+            console.log('Initializing Streame application...');
 
             // Fetch movies from content.json
             const moviesData = await fetchJSON('content.json');
-            if (moviesData && moviesData.movies) {
+            if (moviesData && moviesData.movies && Array.isArray(moviesData.movies)) {
                 state.movies = moviesData.movies;
+                originalData.movies = [...moviesData.movies];
                 renderMovies();
             } else {
-                // Fallback sample data if JSON fails
+                // Provide sample data if JSON fails
                 state.movies = [
-                    {
-                        id: 'movie1',
-                        title: 'Sample Movie 1',
-                        description: 'This is a sample movie. Add your content to content.json',
-                        thumbnail: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=1200&fit=crop',
-                        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                        year: '2024',
-                        duration: '2h 15m',
-                        rating: 'PG-13'
-                    },
-                    {
-                        id: 'movie2',
-                        title: 'Sample Movie 2',
-                        description: 'Another sample movie entry',
-                        thumbnail: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&h=1200&fit=crop',
-                        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                        year: '2024',
-                        duration: '1h 45m',
-                        rating: 'R'
-                    }
+                    {}
                 ];
+                originalData.movies = [...state.movies];
                 renderMovies();
+                showError('content.json not found or invalid. Using sample data.');
             }
 
             // Fetch series from series.json
             const seriesData = await fetchJSON('series.json');
-            if (seriesData && seriesData.series) {
+            if (seriesData && seriesData.series && Array.isArray(seriesData.series)) {
                 state.series = seriesData.series;
+                originalData.series = [...seriesData.series];
                 renderSeries();
             } else {
-                // Fallback sample data if JSON fails
+                // Provide sample data if JSON fails
                 state.series = [
-                    {
-                        id: 'series1',
-                        title: 'Sample Series 1',
-                        description: 'This is a sample series. Add your content to series.json',
-                        thumbnail: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&h=900&fit=crop',
-                        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-                        seasons: 3,
-                        year: '2023'
-                    },
-                    {
-                        id: 'series2',
-                        title: 'Sample Series 2',
-                        description: 'Another sample series entry',
-                        thumbnail: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=600&h=900&fit=crop',
-                        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-                        seasons: 2,
-                        year: '2024'
-                    }
+                    {}
                 ];
+                originalData.series = [...state.series];
                 renderSeries();
+                showError('series.json not found or invalid. Using sample data.');
             }
+            
+            console.log('Streame initialized successfully');
         }
 
-        // Update live games every 30 seconds
-        setInterval(fetchLiveGames, 30000);
-
-        // Start the app
+        // Start the application
         init();
     </script>
 </body>
