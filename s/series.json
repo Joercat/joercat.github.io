@@ -1,0 +1,24 @@
+{
+  "series": [
+    {
+      "id": "1",
+      "title": "Valkrie drive: Mermaid",
+      "description": "1",
+      "thumbnail": "valkriedrive.jpg",
+      "seasons": 1,
+      "year": "2015",
+      "rating": "TV-MA",
+      "genre": "Anime",
+      "episodes": [
+        {
+          "episodeNumber": 1,
+          "title": "1",
+          "description": "1",
+          "videoUrl": "http://storage1.ct.ws/uploads/Valkyrie Drive Mermaid - 01.mkv",
+          "duration": "45 min",
+          "thumbnail": "valkriedrive.jpg"
+        }
+      ]
+    }
+  ]
+}
