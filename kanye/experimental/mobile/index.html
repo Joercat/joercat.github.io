@@ -470,11 +470,12 @@
 
         const textureLoader = new THREE.TextureLoader();
 
-        // ============ DETECT MOBILE ============
-        function detectMobile() {
-            isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-            return isMobile;
-        }
+// ============ DETECT MOBILE ============
+function detectMobile() {
+    // Check if the CSS media query for coarse/no-hover pointer is active
+    isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    return isMobile;
+}
 
         // ============ UI FUNCTIONS ============
         function showTab(tabId) {
@@ -2068,8 +2069,9 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
-            // Mobile controls setup
-            setupMobileControls();
+    if (isMobile) { // <-- Added condition
+        setupMobileControls();
+    }
         }
 
         // ============ MOBILE CONTROLS ============
