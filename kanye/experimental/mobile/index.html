@@ -45,6 +45,7 @@
         .settings-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; color: #ddd; gap: 10px; flex-wrap: wrap; }
         .settings-row label { font-size: clamp(12px, 2.5vw, 14px); }
         .settings-row select, .settings-row input { background: #333; color: #fff; border: 1px solid #555; padding: 5px 8px; border-radius: 4px; font-size: 14px; }
+        .sensitivity-value { color: #ffd700; min-width: 30px; text-align: center; }
         
         .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
         .shop-item { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; color: #fff; }
@@ -66,7 +67,7 @@
         #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; box-shadow: 0 0 4px #fff; }
         
-        #stamina-container { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: min(200px, 40vw); height: 8px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; }
+        #stamina-container { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: min(200px, 40vw); height: 8px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; }
         #stamina-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 3px; transition: width 0.1s; }
         #stamina-bar.infinite { background: linear-gradient(90deg, #fbbf24, #f59e0b); animation: pulse 0.3s infinite alternate; }
         #stamina-bar.boosted { background: linear-gradient(90deg, #f472b6, #ec4899); }
@@ -86,7 +87,7 @@
         #escape-door-indicator.nearby { color: #ffff00; text-shadow: 0 0 20px #ffff00; }
         @keyframes doorPulse { from { opacity: 0.7; } to { opacity: 1; } }
         
-        #powerups-display { position: absolute; bottom: 155px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        #powerups-display { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
         .powerup-slot { width: 40px; height: 40px; background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
         .powerup-slot span { font-size: 20px; }
         .powerup-slot.active { border-color: #4ade80; box-shadow: 0 0 10px #4ade80; }
@@ -113,8 +114,6 @@
         .mobile-joystick { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: auto; touch-action: none; }
         .joystick-knob { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: rgba(255,255,255,0.4); border-radius: 50%; pointer-events: none; }
         
-        .mobile-look { position: absolute; bottom: 20px; right: 150px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: auto; touch-action: none; }
-        
         .mobile-btn { position: absolute; width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: auto; touch-action: manipulation; user-select: none; }
         .mobile-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
         
@@ -123,21 +122,20 @@
         #btn-sprint.active { background: rgba(255,200,0,0.5); }
         #btn-pause { top: 15px; right: 15px; width: 45px; height: 45px; font-size: 20px; position: fixed; z-index: 160; display: none; }
         
-             /* Show mobile controls on touch devices */
+        /* Show mobile controls on touch devices */
         @media (hover: none) and (pointer: coarse) {
             #mobile-controls { display: block; }
             #btn-pause { display: flex; }
-            /* #stamina-container override removed to use the new 10px position */
-            #powerups-display { bottom: 35px; } /* Moved down to be just above the new stamina bar position */
+            #stamina-container { bottom: 85px; }
+            #powerups-display { bottom: 100px; }
             .menu-section p { font-size: 12px; }
             #minimap { width: 100px; height: 100px; }
             #minimap-floor { top: 105px; width: 100px; }
         }
-
+        
         @media (max-width: 480px) {
             .mobile-joystick { width: 100px; height: 100px; left: 15px; bottom: 15px; }
             .joystick-knob { width: 40px; height: 40px; }
-            .mobile-look { width: 100px; height: 100px; right: 130px; bottom: 15px; }
             .mobile-btn { width: 55px; height: 55px; font-size: 22px; }
             #btn-jump { bottom: 60px; right: 15px; }
             #btn-sprint { bottom: 5px; right: 70px; }
@@ -190,8 +188,8 @@
             
             <div class="menu-section mobile-controls-info">
                 <p><strong>CONTROLS:</strong><br>
-                Left Joystick - Move | Right Area - Look<br>
-                ⚡ - Sprint | ^ - Jump</p>
+                Left Joystick - Move | Swipe Screen - Look<br>
+                ⚡ - Sprint | 🦘 - Jump</p>
             </div>
             
             <div class="menu-section">
@@ -260,7 +258,8 @@
                 </div>
                 <div class="settings-row">
                     <label>Look Sensitivity:</label>
-                    <input type="range" id="sensitivity" min="1" max="10" value="5" onchange="updateSensitivity()">
+                    <input type="range" id="sensitivity" min="1" max="10" value="5" oninput="updateSensitivity()">
+                    <span class="sensitivity-value" id="sensitivity-display">5</span>
                 </div>
                 <div class="settings-row">
                     <label>Music Volume:</label>
@@ -302,7 +301,7 @@
         <div class="mobile-joystick" id="joystick-move">
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
-        <div class="mobile-btn" id="btn-jump">^</div>
+        <div class="mobile-btn" id="btn-jump">🦘</div>
         <div class="mobile-btn" id="btn-sprint">⚡</div>
     </div>
     <div class="mobile-btn" id="btn-pause">⏸️</div>
@@ -321,7 +320,8 @@
             </div>
             <div class="settings-row">
                 <label>Sensitivity:</label>
-                <input type="range" id="pause-sensitivity" min="1" max="10" value="5" onchange="updateSensitivity()">
+                <input type="range" id="pause-sensitivity" min="1" max="10" value="5" oninput="updateSensitivity()">
+                <span class="sensitivity-value" id="pause-sensitivity-display">5</span>
             </div>
         </div>
         <button class="menu-btn" onclick="resumeGame()">RESUME</button>
@@ -395,7 +395,8 @@
         let startTime = 0;
         let sessionCoins = 0;
         let sprintKeyCode = 'ShiftLeft';
-        let mouseSensitivity = 0.005;
+        let baseSensitivity = 0.0012; // Tripled from 0.0004
+        let mouseSensitivity = baseSensitivity * 5; // Default multiplier of 5
         let musicVolumeMultiplier = 1;
         let isMobile = false;
         
@@ -547,11 +548,12 @@
             // Settings
             document.getElementById('sprint-key-select').value = saveData.settings.sprintKey;
             document.getElementById('sensitivity').value = saveData.settings.sensitivity;
+            document.getElementById('sensitivity-display').textContent = saveData.settings.sensitivity;
             document.getElementById('music-volume').value = saveData.settings.musicVolume;
             document.getElementById('minimap-toggle').checked = saveData.settings.minimapEnabled !== false;
             
             sprintKeyCode = saveData.settings.sprintKey;
-            mouseSensitivity = saveData.settings.sensitivity * 0.0004;
+            mouseSensitivity = baseSensitivity * saveData.settings.sensitivity;
             musicVolumeMultiplier = saveData.settings.musicVolume / 100;
             
             // Apply minimap visibility
@@ -600,9 +602,22 @@
         }
 
         function updateSensitivity() {
-            const val = document.getElementById('sensitivity').value || document.getElementById('pause-sensitivity').value;
+            // Get value from whichever slider was changed
+            let val = document.getElementById('sensitivity').value;
+            const pauseSensitivity = document.getElementById('pause-sensitivity');
+            if (document.activeElement === pauseSensitivity) {
+                val = pauseSensitivity.value;
+            }
+            
             saveData.settings.sensitivity = parseInt(val);
-            mouseSensitivity = saveData.settings.sensitivity * 0.0004;
+            mouseSensitivity = baseSensitivity * saveData.settings.sensitivity;
+            
+            // Update both sliders and displays
+            document.getElementById('sensitivity').value = val;
+            document.getElementById('pause-sensitivity').value = val;
+            document.getElementById('sensitivity-display').textContent = val;
+            document.getElementById('pause-sensitivity-display').textContent = val;
+            
             saveSaveData();
         }
 
@@ -1281,7 +1296,6 @@
                 }
             }
 
-            // Check for movement input (keyboard or mobile)
             const hasMovementInput = keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] || 
                                      (isMobile && (Math.abs(mobileJoystick.moveX) > 0.1 || Math.abs(mobileJoystick.moveZ) > 0.1));
             
@@ -1304,13 +1318,11 @@
 
             let moveX = 0, moveZ = 0;
             
-            // Keyboard input
             if (keys['KeyW']) { moveX += forwardX; moveZ += forwardZ; }
             if (keys['KeyS']) { moveX -= forwardX; moveZ -= forwardZ; }
             if (keys['KeyD']) { moveX += rightX; moveZ += rightZ; }
             if (keys['KeyA']) { moveX -= rightX; moveZ -= rightZ; }
             
-            // Mobile joystick input
             if (isMobile && mobileJoystick.active) {
                 moveX += forwardX * mobileJoystick.moveZ + rightX * mobileJoystick.moveX;
                 moveZ += forwardZ * mobileJoystick.moveZ + rightZ * mobileJoystick.moveX;
@@ -1322,7 +1334,6 @@
                 moveZ = (moveZ / len) * moveSpeed;
             }
 
-            // Jump (keyboard or mobile)
             if ((keys['Space'] || mobileJumpPressed) && player.onGround) {
                 player.vy = jumpPower;
                 player.onGround = false;
@@ -1358,941 +1369,434 @@
             if (standingOnDecor && player.vy <= 0) {
                 newY = decorTopY + 1.6;
                 player.vy = 0;
-                player.onGround = true;
+                                player.onGround = true;
             } else if (newY < 1.6) {
                 newY = 1.6;
                 player.vy = 0;
                 player.onGround = true;
             }
             if (newY > WALL_H - 0.3) { newY = WALL_H - 0.3; player.vy = 0; }
-player.y = newY;
-                  camera.position.set(player.x, player.y, player.z);
-        camera.rotation.order = 'YXZ';
-        camera.rotation.y = player.yaw;
-        camera.rotation.x = player.pitch;
-        
-        checkPowerupCollection();
-        checkCoinCollection();
-        checkEscapeDoor();
-    }
+            player.y = newY;
 
-    // ============ POWERUP COLLECTION ============
-    function checkPowerupCollection() {
-        for (const p of powerups) {
-            if (p.collected) continue;
-            const dist = Math.hypot(p.x - player.x, p.z - player.z);
-            if (dist < 1.5) {
-                p.collected = true;
-                if (p.sprite) scene.remove(p.sprite);
-                activatePowerup(p.type);
+            camera.position.set(player.x, player.y, player.z);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = player.yaw;
+            camera.rotation.x = player.pitch;
+            
+            checkPowerupCollection();
+            checkCoinCollection();
+            checkEscapeDoor();
+        }
+
+        // ============ POWERUP COLLECTION ============
+        function checkPowerupCollection() {
+            for (const p of powerups) {
+                if (p.collected) continue;
+                const dist = Math.hypot(p.x - player.x, p.z - player.z);
+                if (dist < 1.5) {
+                    p.collected = true;
+                    if (p.sprite) scene.remove(p.sprite);
+                    activatePowerup(p.type);
+                }
             }
         }
-    }
 
-    function activatePowerup(type) {
-        const msg = document.getElementById('pickup-msg');
-        const upg = saveData.upgrades;
-        
-        if (type === 'ice') {
-            let freezeTime = 3;
-            if (upg.ice >= 1) freezeTime += 1;
-            if (upg.ice >= 2) freezeTime += 2;
-            if (upg.ice >= 3) { freezeTime += 0; kanye.halfSpeed = true; kanye.halfSpeedTimer = 3; }
+        function activatePowerup(type) {
+            const msg = document.getElementById('pickup-msg');
+            const upg = saveData.upgrades;
             
-            kanye.frozen = true;
-            kanye.frozenTimer = freezeTime;
-            document.getElementById('freeze-overlay').style.opacity = '1';
-            msg.textContent = `❄️ KANYE FROZEN FOR ${freezeTime} SECONDS!`;
-            document.getElementById('slot-ice').classList.add('active');
-            setTimeout(() => document.getElementById('slot-ice').classList.remove('active'), freezeTime * 1000);
-            
-        } else if (type === 'speed') {
-            let duration = 10;
-            if (upg.speed >= 1) duration += 3;
-            if (upg.speed >= 2) duration += 2;
-            if (upg.speed >= 3) { player.speedBoost = true; player.speedBoostTimer = 5; }
-            
-            player.infiniteStamina = true;
-            player.infiniteStaminaTimer = duration;
-            document.getElementById('stamina-bar').classList.add('infinite');
-            if (upg.speed >= 3) document.getElementById('stamina-bar').classList.add('boosted');
-            msg.textContent = `⚡ INFINITE STAMINA FOR ${duration} SECONDS!`;
-            document.getElementById('slot-speed').classList.add('active');
-            setTimeout(() => document.getElementById('slot-speed').classList.remove('active'), duration * 1000);
-            
-        } else if (type === 'shield') {
-            if (player.shieldHits > 0) {
-                msg.textContent = '🛡️ SHIELD ALREADY ACTIVE!';
-            } else {
-                player.shieldHits = upg.shield >= 3 ? 2 : 1;
-                document.getElementById('shield-indicator').style.opacity = '1';
-                msg.textContent = upg.shield >= 3 ? '🛡️ DOUBLE SHIELD ACQUIRED!' : '🛡️ SHIELD ACQUIRED!';
-                document.getElementById('slot-shield').classList.add('active');
-            }
-        }
-        
-        msg.style.opacity = '1';
-        setTimeout(() => { msg.style.opacity = '0'; }, 2000);
-    }
-
-    // ============ COIN COLLECTION ============
-    function checkCoinCollection() {
-        let needRespawn = false;
-        for (const c of coins) {
-            if (c.collected) continue;
-            const dist = Math.hypot(c.x - player.x, c.z - player.z);
-            if (dist < 1.5) {
-                c.collected = true;
-                if (c.sprite) scene.remove(c.sprite);
-                sessionCoins++;
-                document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
-                needRespawn = true;
+            if (type === 'ice') {
+                let freezeTime = 3;
+                if (upg.ice >= 1) freezeTime += 1;
+                if (upg.ice >= 2) freezeTime += 2;
+                if (upg.ice >= 3) { freezeTime += 0; kanye.halfSpeed = true; kanye.halfSpeedTimer = 3; }
                 
-                const msg = document.getElementById('pickup-msg');
-                msg.textContent = '💰 +1 COIN';
-                msg.style.opacity = '1';
-                setTimeout(() => { msg.style.opacity = '0'; }, 1000);
-            }
-        }
-        if (needRespawn) setTimeout(spawnCoins, 2000);
-    }
-
-    // ============ UPDATE KANYE ============
-    function updateKanye(dt) {
-        if (!kanye.sprite || isPaused) return;
-
-        if (kanye.frozen) {
-            kanye.frozenTimer -= dt;
-            if (kanye.frozenTimer <= 0) {
-                kanye.frozen = false;
-                document.getElementById('freeze-overlay').style.opacity = '0';
-            }
-            kanye.sprite.material.color.setHex(kanye.frozen ? 0x88ccff : 0xffffff);
-            return;
-        }
-        
-        if (kanye.halfSpeed) {
-            kanye.halfSpeedTimer -= dt;
-            if (kanye.halfSpeedTimer <= 0) kanye.halfSpeed = false;
-        }
-
-        let kanyeBaseSpeed = currentMap === 'warehouse' ? 8.5 : 7.5;
-        const kanyeMaxSpeed = kanye.halfSpeed ? kanyeBaseSpeed * 0.6 : kanyeBaseSpeed;
-        const kanyeTurnSpeed = 3.5;
-        
-        kanye.pathTimer -= dt;
-        if (kanye.pathTimer <= 0) {
-            kanye.pathTimer = 0.25;
-            
-            const kGrid = worldToGrid(kanye.x, kanye.z);
-            const pGrid = worldToGrid(player.x, player.z);
-            
-            const predX = player.x + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ? 
-                -Math.sin(player.yaw) * 3 : 0);
-            const predZ = player.z + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ? 
-                -Math.cos(player.yaw) * 3 : 0);
-            const predGrid = worldToGrid(predX, predZ);
-            
-            let path = findPath(kGrid.x, kGrid.z, predGrid.x, predGrid.z);
-            if (path.length === 0) path = findPath(kGrid.x, kGrid.z, pGrid.x, pGrid.z);
-            
-            kanye.path = path;
-            kanye.pathIndex = 0;
-        }
-
-        let targetX = player.x;
-        let targetZ = player.z;
-
-        if (kanye.path.length > 0) {
-            while (kanye.pathIndex < kanye.path.length) {
-                const node = kanye.path[kanye.pathIndex];
-                const nodePos = gridToWorld(node.x, node.z);
-                const distToNode = Math.hypot(nodePos.x - kanye.x, nodePos.z - kanye.z);
-                if (distToNode < 1.5 && kanye.pathIndex < kanye.path.length - 1) {
-                    kanye.pathIndex++;
+                kanye.frozen = true;
+                kanye.frozenTimer = freezeTime;
+                document.getElementById('freeze-overlay').style.opacity = '1';
+                msg.textContent = `❄️ KANYE FROZEN FOR ${freezeTime} SECONDS!`;
+                document.getElementById('slot-ice').classList.add('active');
+                setTimeout(() => document.getElementById('slot-ice').classList.remove('active'), freezeTime * 1000);
+                
+            } else if (type === 'speed') {
+                let duration = 10;
+                if (upg.speed >= 1) duration += 3;
+                if (upg.speed >= 2) duration += 2;
+                if (upg.speed >= 3) { player.speedBoost = true; player.speedBoostTimer = 5; }
+                
+                player.infiniteStamina = true;
+                player.infiniteStaminaTimer = duration;
+                document.getElementById('stamina-bar').classList.add('infinite');
+                if (upg.speed >= 3) document.getElementById('stamina-bar').classList.add('boosted');
+                msg.textContent = `⚡ INFINITE STAMINA FOR ${duration} SECONDS!`;
+                document.getElementById('slot-speed').classList.add('active');
+                setTimeout(() => document.getElementById('slot-speed').classList.remove('active'), duration * 1000);
+                
+            } else if (type === 'shield') {
+                if (player.shieldHits > 0) {
+                    msg.textContent = '🛡️ SHIELD ALREADY ACTIVE!';
                 } else {
-                    targetX = nodePos.x;
-                    targetZ = nodePos.z;
-                    break;
+                    player.shieldHits = upg.shield >= 3 ? 2 : 1;
+                    document.getElementById('shield-indicator').style.opacity = '1';
+                    msg.textContent = upg.shield >= 3 ? '🛡️ DOUBLE SHIELD ACQUIRED!' : '🛡️ SHIELD ACQUIRED!';
+                    document.getElementById('slot-shield').classList.add('active');
                 }
             }
+            
+            msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 2000);
         }
 
-        const dx = targetX - kanye.x;
-        const dz = targetZ - kanye.z;
-        const dist = Math.hypot(dx, dz);
-
-        if (dist > 0.1) {
-            const desiredVx = (dx / dist) * kanyeMaxSpeed;
-            const desiredVz = (dz / dist) * kanyeMaxSpeed;
-
-            kanye.vx += (desiredVx - kanye.vx) * kanyeTurnSpeed * dt;
-            kanye.vz += (desiredVz - kanye.vz) * kanyeTurnSpeed * dt;
-
-            const speed = Math.hypot(kanye.vx, kanye.vz);
-            if (speed > kanyeMaxSpeed) {
-                kanye.vx = (kanye.vx / speed) * kanyeMaxSpeed;
-                kanye.vz = (kanye.vz / speed) * kanyeMaxSpeed;
-            }
-        }
-
-        let newX = kanye.x + kanye.vx * dt;
-        let newZ = kanye.z + kanye.vz * dt;
-
-        if (!isWalkableWorld(newX, kanye.z, 0.4)) { 
-            newX = kanye.x; 
-            kanye.vx *= -0.5;
-            if (Math.abs(kanye.vz) > 0.5) {
-                kanye.vx = 0;
-            }
-        }
-        if (!isWalkableWorld(kanye.x, newZ, 0.4)) { 
-            newZ = kanye.z; 
-            kanye.vz *= -0.5;
-            if (Math.abs(kanye.vx) > 0.5) {
-                kanye.vz = 0;
-            }
-        }
-        
-        const movement = Math.hypot(newX - kanye.x, newZ - kanye.z);
-        if (movement < 0.01 * dt && Math.hypot(kanye.vx, kanye.vz) > 0.1) {
-            kanye.pathTimer = 0;
-            const randomAngle = Math.random() * Math.PI * 2;
-            kanye.vx = Math.cos(randomAngle) * 2;
-            kanye.vz = Math.sin(randomAngle) * 2;
-        }
-        
-        kanye.x = newX;
-        kanye.z = newZ;
-        
-        kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
-
-        const distToPlayer = Math.hypot(kanye.x - player.x, kanye.z - player.z);
-
-        const audioRange = 70;
-        let vol = distToPlayer < audioRange ? Math.pow(1 - (distToPlayer / audioRange), 0.5) : 0;
-        setAudioVolume(vol);
-
-        const fear = document.getElementById('fear-overlay');
-        const warn = document.getElementById('warning');
-        if (distToPlayer < 20) {
-            fear.style.opacity = (1 - distToPlayer / 20) * 0.6;
-            warn.style.opacity = distToPlayer < 10 ? 1 : 0;
-        } else {
-            fear.style.opacity = 0;
-            warn.style.opacity = 0;
-        }
-
-        if (distToPlayer < 1.2) {
-            if (player.shieldHits > 0) {
-                player.shieldHits--;
-                
-                let freezeOnBlock = 0;
-                if (saveData.upgrades.shield >= 1) freezeOnBlock = 1;
-                if (saveData.upgrades.shield >= 2) freezeOnBlock = 2;
-                if (saveData.upgrades.shield >= 3) freezeOnBlock = 2;
-                
-                if (freezeOnBlock > 0) {
-                    kanye.frozen = true;
-                    kanye.frozenTimer = freezeOnBlock;
+        // ============ COIN COLLECTION ============
+        function checkCoinCollection() {
+            let needRespawn = false;
+            for (const c of coins) {
+                if (c.collected) continue;
+                const dist = Math.hypot(c.x - player.x, c.z - player.z);
+                if (dist < 1.5) {
+                    c.collected = true;
+                    if (c.sprite) scene.remove(c.sprite);
+                    sessionCoins++;
+                    document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
+                    needRespawn = true;
+                    
+                    const msg = document.getElementById('pickup-msg');
+                    msg.textContent = '💰 +1 COIN';
+                    msg.style.opacity = '1';
+                    setTimeout(() => { msg.style.opacity = '0'; }, 1000);
                 }
-                
-                if (player.shieldHits <= 0) {
-                    document.getElementById('shield-indicator').style.opacity = '0';
-                    document.getElementById('slot-shield').classList.remove('active');
+            }
+            if (needRespawn) setTimeout(spawnCoins, 2000);
+        }
+
+        // ============ UPDATE KANYE ============
+        function updateKanye(dt) {
+            if (!kanye.sprite || isPaused) return;
+
+            if (kanye.frozen) {
+                kanye.frozenTimer -= dt;
+                if (kanye.frozenTimer <= 0) {
+                    kanye.frozen = false;
+                    document.getElementById('freeze-overlay').style.opacity = '0';
                 }
+                kanye.sprite.material.color.setHex(kanye.frozen ? 0x88ccff : 0xffffff);
+                return;
+            }
+            
+            if (kanye.halfSpeed) {
+                kanye.halfSpeedTimer -= dt;
+                if (kanye.halfSpeedTimer <= 0) kanye.halfSpeed = false;
+            }
+
+            let kanyeBaseSpeed = currentMap === 'warehouse' ? 8.5 : 7.5;
+            const kanyeMaxSpeed = kanye.halfSpeed ? kanyeBaseSpeed * 0.6 : kanyeBaseSpeed;
+            const kanyeTurnSpeed = 3.5;
+            
+            kanye.pathTimer -= dt;
+            if (kanye.pathTimer <= 0) {
+                kanye.pathTimer = 0.25;
                 
-                const bounceDir = Math.atan2(kanye.z - player.z, kanye.x - player.x);
-                kanye.x += Math.cos(bounceDir) * 8;
-                kanye.z += Math.sin(bounceDir) * 8;
-                kanye.vx = Math.cos(bounceDir) * 10;
-                kanye.vz = Math.sin(bounceDir) * 10;
+                const kGrid = worldToGrid(kanye.x, kanye.z);
+                const pGrid = worldToGrid(player.x, player.z);
                 
-                if (!isWalkableWorld(kanye.x, kanye.z, 0.4)) {
-                    const kGrid = worldToGrid(kanye.x, kanye.z);
-                    for (let r = 1; r < 10; r++) {
-                        let found = false;
-                        for (let ddx = -r; ddx <= r && !found; ddx++) {
-                            for (let ddz = -r; ddz <= r && !found; ddz++) {
-                                if (isWalkableGrid(kGrid.x + ddx, kGrid.z + ddz)) {
-                                    const pos = gridToWorld(kGrid.x + ddx, kGrid.z + ddz);
-                                    kanye.x = pos.x;
-                                    kanye.z = pos.z;
-                                    found = true;
-                                }
-                            }
-                        }
-                        if (found) break;
+                const predX = player.x + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ? 
+                    -Math.sin(player.yaw) * 3 : 0);
+                const predZ = player.z + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ? 
+                    -Math.cos(player.yaw) * 3 : 0);
+                const predGrid = worldToGrid(predX, predZ);
+                
+                let path = findPath(kGrid.x, kGrid.z, predGrid.x, predGrid.z);
+                if (path.length === 0) path = findPath(kGrid.x, kGrid.z, pGrid.x, pGrid.z);
+                
+                kanye.path = path;
+                kanye.pathIndex = 0;
+            }
+
+            let targetX = player.x;
+            let targetZ = player.z;
+
+            if (kanye.path.length > 0) {
+                while (kanye.pathIndex < kanye.path.length) {
+                    const node = kanye.path[kanye.pathIndex];
+                    const nodePos = gridToWorld(node.x, node.z);
+                    const distToNode = Math.hypot(nodePos.x - kanye.x, nodePos.z - kanye.z);
+                    if (distToNode < 1.5 && kanye.pathIndex < kanye.path.length - 1) {
+                        kanye.pathIndex++;
+                    } else {
+                        targetX = nodePos.x;
+                        targetZ = nodePos.z;
+                        break;
                     }
                 }
-                
-                kanye.pathTimer = 0;
-                
-                const msg = document.getElementById('pickup-msg');
-                msg.textContent = player.shieldHits > 0 ? '🛡️ SHIELD BLOCKED! 1 HIT LEFT!' : '🛡️ SHIELD BLOCKED KANYE!';
-                msg.style.opacity = '1';
-                setTimeout(() => { msg.style.opacity = '0'; }, 2000);
-            } else {
-                killPlayer();
             }
-        }
-    }
 
-    // ============ MINIMAP ============
-    function updateMinimap() {
-        if (isEscapeMode) return; // No minimap in escape mode
-        
-        const canvas = document.getElementById('minimap-canvas');
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width;
-        const h = canvas.height;
-        const scale = w / GRID_SIZE;
+            const dx = targetX - kanye.x;
+            const dz = targetZ - kanye.z;
+            const dist = Math.hypot(dx, dz);
 
-        ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, 0, w, h);
+            if (dist > 0.1) {
+                const desiredVx = (dx / dist) * kanyeMaxSpeed;
+                const desiredVz = (dz / dist) * kanyeMaxSpeed;
 
-        ctx.fillStyle = '#444';
-        for (let x = 0; x < GRID_SIZE; x++) {
-            for (let z = 0; z < GRID_SIZE; z++) {
-                if (maze[x] && maze[x][z] === 1) {
-                    ctx.fillRect(x * scale, z * scale, scale, scale);
+                kanye.vx += (desiredVx - kanye.vx) * kanyeTurnSpeed * dt;
+                kanye.vz += (desiredVz - kanye.vz) * kanyeTurnSpeed * dt;
+
+                const speed = Math.hypot(kanye.vx, kanye.vz);
+                if (speed > kanyeMaxSpeed) {
+                    kanye.vx = (kanye.vx / speed) * kanyeMaxSpeed;
+                    kanye.vz = (kanye.vz / speed) * kanyeMaxSpeed;
+                }
+            }
+
+            let newX = kanye.x + kanye.vx * dt;
+            let newZ = kanye.z + kanye.vz * dt;
+
+            if (!isWalkableWorld(newX, kanye.z, 0.4)) { 
+                newX = kanye.x; 
+                kanye.vx *= -0.5;
+                if (Math.abs(kanye.vz) > 0.5) {
+                    kanye.vx = 0;
+                }
+            }
+            if (!isWalkableWorld(kanye.x, newZ, 0.4)) { 
+                newZ = kanye.z; 
+                kanye.vz *= -0.5;
+                if (Math.abs(kanye.vx) > 0.5) {
+                    kanye.vz = 0;
+                }
+            }
+            
+            const movement = Math.hypot(newX - kanye.x, newZ - kanye.z);
+            if (movement < 0.01 * dt && Math.hypot(kanye.vx, kanye.vz) > 0.1) {
+                kanye.pathTimer = 0;
+                const randomAngle = Math.random() * Math.PI * 2;
+                kanye.vx = Math.cos(randomAngle) * 2;
+                kanye.vz = Math.sin(randomAngle) * 2;
+            }
+            
+            kanye.x = newX;
+            kanye.z = newZ;
+            
+            kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+
+            const distToPlayer = Math.hypot(kanye.x - player.x, kanye.z - player.z);
+
+            const audioRange = 70;
+            let vol = distToPlayer < audioRange ? Math.pow(1 - (distToPlayer / audioRange), 0.5) : 0;
+            setAudioVolume(vol);
+
+            const fear = document.getElementById('fear-overlay');
+            const warn = document.getElementById('warning');
+            if (distToPlayer < 20) {
+                fear.style.opacity = (1 - distToPlayer / 20) * 0.6;
+                warn.style.opacity = distToPlayer < 10 ? 1 : 0;
+            } else {
+                fear.style.opacity = 0;
+                warn.style.opacity = 0;
+            }
+
+            if (distToPlayer < 1.2) {
+                if (player.shieldHits > 0) {
+                    player.shieldHits--;
+                    
+                    let freezeOnBlock = 0;
+                    if (saveData.upgrades.shield >= 1) freezeOnBlock = 1;
+                    if (saveData.upgrades.shield >= 2) freezeOnBlock = 2;
+                    if (saveData.upgrades.shield >= 3) freezeOnBlock = 2;
+                    
+                    if (freezeOnBlock > 0) {
+                        kanye.frozen = true;
+                        kanye.frozenTimer = freezeOnBlock;
+                    }
+                    
+                    if (player.shieldHits <= 0) {
+                        document.getElementById('shield-indicator').style.opacity = '0';
+                        document.getElementById('slot-shield').classList.remove('active');
+                    }
+                    
+                    const bounceDir = Math.atan2(kanye.z - player.z, kanye.x - player.x);
+                    kanye.x += Math.cos(bounceDir) * 8;
+                    kanye.z += Math.sin(bounceDir) * 8;
+                    kanye.vx = Math.cos(bounceDir) * 10;
+                    kanye.vz = Math.sin(bounceDir) * 10;
+                    
+                    if (!isWalkableWorld(kanye.x, kanye.z, 0.4)) {
+                        const kGrid = worldToGrid(kanye.x, kanye.z);
+                        for (let r = 1; r < 10; r++) {
+                            let found = false;
+                            for (let ddx = -r; ddx <= r && !found; ddx++) {
+                                for (let ddz = -r; ddz <= r && !found; ddz++) {
+                                    if (isWalkableGrid(kGrid.x + ddx, kGrid.z + ddz)) {
+                                        const pos = gridToWorld(kGrid.x + ddx, kGrid.z + ddz);
+                                        kanye.x = pos.x;
+                                        kanye.z = pos.z;
+                                        found = true;
+                                    }
+                                }
+                            }
+                            if (found) break;
+                        }
+                    }
+                    
+                    kanye.pathTimer = 0;
+                    
+                    const msg = document.getElementById('pickup-msg');
+                    msg.textContent = player.shieldHits > 0 ? '🛡️ SHIELD BLOCKED! 1 HIT LEFT!' : '🛡️ SHIELD BLOCKED KANYE!';
+                    msg.style.opacity = '1';
+                    setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+                } else {
+                    killPlayer();
                 }
             }
         }
-        
-        for (const p of powerups) {
-            if (p.collected) continue;
-            const px = (p.x / CELL + GRID_SIZE / 2) * scale;
-            const pz = (p.z / CELL + GRID_SIZE / 2) * scale;
-            ctx.fillStyle = p.type === 'ice' ? '#88ccff' : p.type === 'speed' ? '#ffcc00' : '#44ff44';
+
+        // ============ MINIMAP ============
+        function updateMinimap() {
+            if (isEscapeMode) return;
+            
+            const canvas = document.getElementById('minimap-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const scale = w / GRID_SIZE;
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = '#444';
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let z = 0; z < GRID_SIZE; z++) {
+                    if (maze[x] && maze[x][z] === 1) {
+                        ctx.fillRect(x * scale, z * scale, scale, scale);
+                    }
+                }
+            }
+            
+            for (const p of powerups) {
+                if (p.collected) continue;
+                const px = (p.x / CELL + GRID_SIZE / 2) * scale;
+                const pz = (p.z / CELL + GRID_SIZE / 2) * scale;
+                ctx.fillStyle = p.type === 'ice' ? '#88ccff' : p.type === 'speed' ? '#ffcc00' : '#44ff44';
+                ctx.beginPath();
+                ctx.arc(px, pz, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const c of coins) {
+                if (c.collected) continue;
+                const cx = (c.x / CELL + GRID_SIZE / 2) * scale;
+                const cz = (c.z / CELL + GRID_SIZE / 2) * scale;
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(cx, cz, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const playerMapX = (player.x / CELL + GRID_SIZE / 2) * scale;
+            const playerMapZ = (player.z / CELL + GRID_SIZE / 2) * scale;
+            
+            ctx.fillStyle = '#4f4';
             ctx.beginPath();
-            ctx.arc(px, pz, 3, 0, Math.PI * 2);
+            ctx.arc(playerMapX, playerMapZ, 5, 0, Math.PI * 2);
             ctx.fill();
+
+            ctx.strokeStyle = '#4f4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(playerMapX, playerMapZ);
+            const dirLen = 14;
+            const dirX = playerMapX - Math.sin(player.yaw) * dirLen;
+            const dirZ = playerMapZ - Math.cos(player.yaw) * dirLen;
+            ctx.lineTo(dirX, dirZ);
+            ctx.stroke();
+
+            const kanyeMapX = (kanye.x / CELL + GRID_SIZE / 2) * scale;
+            const kanyeMapZ = (kanye.z / CELL + GRID_SIZE / 2) * scale;
+            ctx.fillStyle = kanye.frozen ? '#88ccff' : '#f44';
+            ctx.beginPath();
+            ctx.arc(kanyeMapX, kanyeMapZ, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const mapNames = { backrooms: '🏢 Backrooms', warehouse: '🏭 Warehouse', hospital: '🏥 Hospital' };
+            document.getElementById('minimap-floor').textContent = mapNames[currentMap] || 'Unknown';
         }
 
-        for (const c of coins) {
-            if (c.collected) continue;
-            const cx = (c.x / CELL + GRID_SIZE / 2) * scale;
-            const cz = (c.z / CELL + GRID_SIZE / 2) * scale;
-            ctx.fillStyle = '#ffd700';
-            ctx.beginPath();
-            ctx.arc(cx, cz, 2, 0, Math.PI * 2);
-            ctx.fill();
+        // ============ TIMER ============
+        function updateTimer() {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+            document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        const playerMapX = (player.x / CELL + GRID_SIZE / 2) * scale;
-        const playerMapZ = (player.z / CELL + GRID_SIZE / 2) * scale;
-        
-        ctx.fillStyle = '#4f4';
-        ctx.beginPath();
-        ctx.arc(playerMapX, playerMapZ, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#4f4';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(playerMapX, playerMapZ);
-        const dirLen = 14;
-        const dirX = playerMapX - Math.sin(player.yaw) * dirLen;
-        const dirZ = playerMapZ - Math.cos(player.yaw) * dirLen;
-        ctx.lineTo(dirX, dirZ);
-        ctx.stroke();
-
-        const kanyeMapX = (kanye.x / CELL + GRID_SIZE / 2) * scale;
-        const kanyeMapZ = (kanye.z / CELL + GRID_SIZE / 2) * scale;
-        ctx.fillStyle = kanye.frozen ? '#88ccff' : '#f44';
-        ctx.beginPath();
-        ctx.arc(kanyeMapX, kanyeMapZ, 5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        const mapNames = { backrooms: '🏢 Backrooms', warehouse: '🏭 Warehouse', hospital: '🏥 Hospital' };
-        document.getElementById('minimap-floor').textContent = mapNames[currentMap] || 'Unknown';
-    }
-
-    // ============ TIMER ============
-    function updateTimer() {
-        const elapsed = (Date.now() - startTime) / 1000;
-        const mins = Math.floor(elapsed / 60);
-        const secs = Math.floor(elapsed % 60);
-        document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // ============ DEATH ============
-    function killPlayer() {
-        if (isDead) return;
-        isDead = true;
-        
-        const elapsed = (Date.now() - startTime) / 1000;
-        const mins = Math.floor(elapsed / 60);
-        const secs = Math.floor(elapsed % 60);
-        
-        saveData.highscores.push(elapsed);
-        saveData.highscores.sort((a, b) => b - a);
-        saveData.highscores = saveData.highscores.slice(0, 3);
-        
-        saveData.coins += sessionCoins;
-        saveSaveData();
-        
-        document.getElementById('survival-time').textContent = `Survived: ${mins}:${secs.toString().padStart(2, '0')}`;
-        document.getElementById('coins-earned').textContent = `+${sessionCoins} coins`;
-        document.getElementById('death-screen').style.display = 'flex';
-        
-        stopAudio();
-        if (!isMobile) document.exitPointerLock();
-    }
-
-    // ============ PAUSE ============
-    function togglePause() {
-        if (!gameStarted || isDead) return;
-        
-        isPaused = !isPaused;
-        document.getElementById('pause-screen').style.display = isPaused ? 'flex' : 'none';
-        
-        if (isPaused) {
-            pauseAudio();
+        // ============ DEATH ============
+        function killPlayer() {
+            if (isDead) return;
+            isDead = true;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+            
+            saveData.highscores.push(elapsed);
+            saveData.highscores.sort((a, b) => b - a);
+            saveData.highscores = saveData.highscores.slice(0, 3);
+            
+            saveData.coins += sessionCoins;
+            saveSaveData();
+            
+            document.getElementById('survival-time').textContent = `Survived: ${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('coins-earned').textContent = `+${sessionCoins} coins`;
+            document.getElementById('death-screen').style.display = 'flex';
+            
+            stopAudio();
             if (!isMobile) document.exitPointerLock();
-        } else {
+        }
+
+        // ============ PAUSE ============
+        function togglePause() {
+            if (!gameStarted || isDead) return;
+            
+            isPaused = !isPaused;
+            document.getElementById('pause-screen').style.display = isPaused ? 'flex' : 'none';
+            
+            // Sync pause screen controls with current values
+            document.getElementById('pause-sensitivity').value = saveData.settings.sensitivity;
+            document.getElementById('pause-sensitivity-display').textContent = saveData.settings.sensitivity;
+            document.getElementById('pause-volume').value = saveData.settings.musicVolume;
+            
+            if (isPaused) {
+                pauseAudio();
+                if (!isMobile) document.exitPointerLock();
+            } else {
+                if (!isMobile) renderer.domElement.requestPointerLock();
+            }
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            document.getElementById('pause-screen').style.display = 'none';
             if (!isMobile) renderer.domElement.requestPointerLock();
         }
-    }
 
-    function resumeGame() {
-        isPaused = false;
-        document.getElementById('pause-screen').style.display = 'none';
-        if (!isMobile) renderer.domElement.requestPointerLock();
-    }
-
-    function quitGame() {
-        sessionCoins = 0;
-        returnToMenu();
-    }
-
-    function returnToMenu() {
-        gameStarted = false;
-        isPaused = false;
-        isDead = false;
-        isEscapeMode = false;
-        GRID_SIZE = baseGridSize;
-        
-        stopAudio();
-        if (!isMobile) document.exitPointerLock();
-        
-        document.getElementById('death-screen').style.display = 'none';
-        document.getElementById('pause-screen').style.display = 'none';
-        document.getElementById('start-screen').classList.remove('hidden');
-        document.getElementById('escape-hud').style.display = 'none';
-        
-        // Restore minimap visibility based on settings
-        if (saveData.settings.minimapEnabled !== false) {
-            document.getElementById('minimap').style.display = 'block';
-            document.getElementById('minimap-floor').style.display = 'block';
-        }
-        
-        updateUI();
-    }
-
-    // ============ ESCAPE MODE ============
-    function startEscapeMode() {
-        document.getElementById('start-screen').classList.add('hidden');
-        gameStarted = true;
-        isEscapeMode = true;
-        escapeRound = 1;
-        startTime = Date.now();
-        stamina = 100;
-        sessionCoins = 0;
-        document.getElementById('hud-coins').textContent = '💰 0';
-        
-        const escapeMaps = ['backrooms', 'hospital'];
-        currentMap = escapeMaps[Math.floor(Math.random() * escapeMaps.length)];
-        
-        GRID_SIZE = baseGridSize * 2;
-        
-        document.getElementById('minimap').style.display = 'none';
-        document.getElementById('minimap-floor').style.display = 'none';
-        
-        document.getElementById('escape-hud').style.display = 'block';
-        document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
-        document.getElementById('escape-door-indicator').textContent = '🚪 FIND THE EXIT!';
-        document.getElementById('escape-door-indicator').classList.remove('nearby');
-        
-        if (document.getElementById('escape-shield-toggle').checked && saveData.coins >= 5) {
-            saveData.coins -= 5;
-            player.shieldHits = saveData.upgrades.shield >= 3 ? 2 : 1;
-            document.getElementById('shield-indicator').style.opacity = '1';
-            document.getElementById('slot-shield').classList.add('active');
-            saveSaveData();
-            updateUI();
-        }
-        
-        while (scene.children.length > 0) scene.remove(scene.children[0]);
-        generateMaze();
-        buildWorld();
-        createKanye();
-        spawnEntities();
-        createEscapeDoor();
-        
-        initAudio();
-        if (!isMobile) renderer.domElement.requestPointerLock();
-    }
-    
-    function createEscapeDoor() {
-        if (escapeDoor && escapeDoor.mesh) {
-            scene.remove(escapeDoor.mesh);
-        }
-        
-        const minDoorDist = 20;
-        const doorCandidates = [];
-        for (let x = 2; x < GRID_SIZE - 2; x++) {
-            for (let z = 2; z < GRID_SIZE - 2; z++) {
-                if (maze[x][z] === 1) {
-                    const adjacent = [
-                        {wx: x-1, wz: z, dir: 'east'},
-                        {wx: x+1, wz: z, dir: 'west'},
-                        {wx: x, wz: z-1, dir: 'south'},
-                        {wx: x, wz: z+1, dir: 'north'}
-                    ];
-                    for (const adj of adjacent) {
-                        if (isWalkableGrid(adj.wx, adj.wz)) {
-                            const doorPos = gridToWorld(x, z);
-                            const adjPos = gridToWorld(adj.wx, adj.wz);
-                            const dist = Math.hypot(doorPos.x - player.x, doorPos.z - player.z);
-                            if (dist < minDoorDist) continue;
-                            let blocked = false;
-                            for (const d of decorations) {
-                                if (Math.hypot(adjPos.x - d.x, adjPos.z - d.z) < d.radius + 0.5) {
-                                    blocked = true;
-                                    break;
-                                }
-                            }
-                            if (!blocked) {
-                                doorCandidates.push({x, z, adjX: adj.wx, adjZ: adj.wz, dir: adj.dir});
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (doorCandidates.length === 0) return;
-        
-        const shuffledDoors = doorCandidates.sort(() => Math.random() - 0.5);
-        const doorData = shuffledDoors[0];
-        const doorWorldPos = gridToWorld(doorData.x, doorData.z);
-        const adjWorldPos = gridToWorld(doorData.adjX, doorData.adjZ);
-        
-        const doorGroup = new THREE.Group();
-        
-        const frameMat = new THREE.MeshBasicMaterial({ color: 0x3d2817 });
-        const doorMat = new THREE.MeshBasicMaterial({ color: 0x5c3a21 });
-        const knobMat = new THREE.MeshBasicMaterial({ color: 0xb8860b });
-        
-        let doorX = doorWorldPos.x;
-        let doorZ = doorWorldPos.z;
-        let rotY = 0;
-        
-        if (doorData.dir === 'east') {
-            doorX = doorWorldPos.x - CELL/2 + 0.3;
-            rotY = Math.PI / 2;
-        } else if (doorData.dir === 'west') {
-            doorX = doorWorldPos.x + CELL/2 - 0.3;
-            rotY = Math.PI / 2;
-        } else if (doorData.dir === 'south') {
-            doorZ = doorWorldPos.z - CELL/2 + 0.3;
-            rotY = 0;
-        } else if (doorData.dir === 'north') {
-            doorZ = doorWorldPos.z + CELL/2 - 0.3;
-            rotY = 0;
-        }
-        
-        const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
-        frameLeft.position.set(-0.55, 1.4, 0);
-        doorGroup.add(frameLeft);
-        
-        const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
-        frameRight.position.set(0.55, 1.4, 0);
-        doorGroup.add(frameRight);
-        
-        const frameTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.15, 0.3), frameMat);
-        frameTop.position.set(0, 2.75, 0);
-        doorGroup.add(frameTop);
-        
-        const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.5, 0.15), doorMat);
-        doorPanel.position.set(0, 1.3, 0.25);
-        doorGroup.add(doorPanel);
-        
-        const doorknob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), knobMat);
-        doorknob.position.set(0.35, 1.1, 0.38);
-        doorGroup.add(doorknob);
-        
-        const knobPlate = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.25, 0.02), knobMat);
-        knobPlate.position.set(0.35, 1.1, 0.34);
-        doorGroup.add(knobPlate);
-        
-        const glow = new THREE.PointLight(0x44ff44, 1.5, 10);
-        glow.position.set(0, 1.5, 0.6);
-        doorGroup.add(glow);
-        
-        doorGroup.position.set(doorX, 0, doorZ);
-        doorGroup.rotation.y = rotY;
-        scene.add(doorGroup);
-        
-        escapeDoor = {
-            mesh: doorGroup,
-            x: adjWorldPos.x,
-            z: adjWorldPos.z,
-            gridX: doorData.x,
-            gridZ: doorData.z
-        };
-    }
-    
-    function checkEscapeDoor() {
-        if (!isEscapeMode || !escapeDoor) return;
-        
-        const doorWorldPos = gridToWorld(escapeDoor.gridX, escapeDoor.gridZ);
-        const dist = Math.hypot(doorWorldPos.x - player.x, doorWorldPos.z - player.z);
-        
-        const indicator = document.getElementById('escape-door-indicator');
-        if (dist < 15) {
-            indicator.textContent = '🚪 EXIT NEARBY!';
-            indicator.classList.add('nearby');
-        } else {
-            indicator.textContent = '🚪 FIND THE EXIT!';
-            indicator.classList.remove('nearby');
-        }
-        
-        if (dist < 2.5) {
-            winEscapeRound();
-        }
-    }
-    
-    function winEscapeRound() {
-        escapeRound++;
-        
-        if (escapeRound - 1 > saveData.escapeRecord) {
-            saveData.escapeRecord = escapeRound - 1;
-            saveSaveData();
-        }
-        
-        const msg = document.getElementById('pickup-msg');
-        msg.textContent = '🚪 ESCAPED! Round ' + escapeRound + ' starting...';
-        msg.style.opacity = '1';
-        setTimeout(() => { msg.style.opacity = '0'; }, 2000);
-        
-        document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
-        
-        while (scene.children.length > 0) scene.remove(scene.children[0]);
-        generateMaze();
-        buildWorld();
-        createKanye();
-        spawnEntities();
-        createEscapeDoor();
-    }
-
-    // ============ INIT ============
-    function init() {
-        loadSaveData();
-        detectMobile();
-        
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
-        scene.fog = new THREE.Fog(0x1a1a1a, 2, 30);
-
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-
-        renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'low-power' });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
-
-        const mmCanvas = document.getElementById('minimap-canvas');
-        mmCanvas.width = 160;
-        mmCanvas.height = 160;
-
-        loadTextures(() => {
-            generateMaze();
-            buildWorld();
-            createKanye();
-        });
-
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            keys[e.code] = true;
-            if (e.code === sprintKeyCode) isSprinting = true;
-            if (e.code === 'Space') e.preventDefault();
-            if (e.code === 'Escape' && gameStarted && !isDead) {
-                e.preventDefault();
-                togglePause();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-            if (e.code === sprintKeyCode) isSprinting = false;
-        });
-
-        // Mouse controls (desktop)
-        document.addEventListener('mousemove', (e) => {
-            if (!isLocked || !gameStarted || isDead || isPaused) return;
-            player.yaw -= e.movementX * mouseSensitivity;
-            player.pitch -= e.movementY * mouseSensitivity;
-            player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
-        });
-
-        document.addEventListener('pointerlockchange', () => {
-            isLocked = document.pointerLockElement === renderer.domElement;
-        });
-
-        renderer.domElement.addEventListener('click', () => {
-            if (gameStarted && !isDead && !isPaused && !isMobile) renderer.domElement.requestPointerLock();
-        });
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Mobile controls setup
-        setupMobileControls();
-    }
-
-    // ============ MOBILE CONTROLS ============
-    function setupMobileControls() {
-        const joystick = document.getElementById('joystick-move');
-        const knob = document.getElementById('joystick-knob');
-        const lookArea = document.getElementById('look-area');
-        const btnJump = document.getElementById('btn-jump');
-        const btnSprint = document.getElementById('btn-sprint');
-        const btnPause = document.getElementById('btn-pause');
-        
-        // Movement joystick
-        let joystickTouchId = null;
-        const joystickRadius = 60;
-        const knobRadius = 25;
-        
-        joystick.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (joystickTouchId !== null) return;
-            const touch = e.changedTouches[0];
-            joystickTouchId = touch.identifier;
-            const rect = joystick.getBoundingClientRect();
-            mobileJoystick.startX = rect.left + rect.width / 2;
-            mobileJoystick.startY = rect.top + rect.height / 2;
-            mobileJoystick.active = true;
-        });
-        
-        joystick.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === joystickTouchId) {
-                    const dx = touch.clientX - mobileJoystick.startX;
-                    const dy = touch.clientY - mobileJoystick.startY;
-                    const dist = Math.hypot(dx, dy);
-                    const maxDist = joystickRadius - knobRadius;
-                    
-                    let clampedX = dx;
-                    let clampedY = dy;
-                    if (dist > maxDist) {
-                        clampedX = (dx / dist) * maxDist;
-                        clampedY = (dy / dist) * maxDist;
-                    }
-                    
-                    knob.style.transform = `translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px))`;
-                    
-                    mobileJoystick.moveX = clampedX / maxDist;
-                    mobileJoystick.moveZ = -clampedY / maxDist;
-                }
-            }
-        });
-        
-        joystick.addEventListener('touchend', (e) => {
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === joystickTouchId) {
-                    joystickTouchId = null;
-                    mobileJoystick.active = false;
-                    mobileJoystick.moveX = 0;
-                    mobileJoystick.moveZ = 0;
-                    knob.style.transform = 'translate(-50%, -50%)';
-                }
-            }
-        });
-        
-        // Look area (right side)
-        lookArea.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (mobileLook.touchId !== null) return;
-            const touch = e.changedTouches[0];
-            mobileLook.touchId = touch.identifier;
-            mobileLook.startX = touch.clientX;
-            mobileLook.startY = touch.clientY;
-            mobileLook.active = true;
-        });
-        
-        lookArea.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === mobileLook.touchId && gameStarted && !isDead && !isPaused) {
-                    const dx = touch.clientX - mobileLook.startX;
-                    const dy = touch.clientY - mobileLook.startY;
-                    
-                    player.yaw -= dx * mouseSensitivity * 2;
-                    player.pitch -= dy * mouseSensitivity * 2;
-                    player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
-                    
-                    mobileLook.startX = touch.clientX;
-                    mobileLook.startY = touch.clientY;
-                }
-            }
-        });
-        
-        lookArea.addEventListener('touchend', (e) => {
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === mobileLook.touchId) {
-                    mobileLook.touchId = null;
-                    mobileLook.active = false;
-                }
-            }
-        });
-        
-        // Jump button
-        btnJump.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            mobileJumpPressed = true;
-        });
-        
-        btnJump.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            mobileJumpPressed = false;
-        });
-        
-        // Sprint button (toggle)
-        btnSprint.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            mobileSprintActive = !mobileSprintActive;
-            btnSprint.classList.toggle('active', mobileSprintActive);
-        });
-        
-        // Pause button
-        btnPause.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (gameStarted && !isDead) togglePause();
-        });
-        
-        // Also allow looking by swiping anywhere on the game canvas (not on controls)
-        renderer.domElement.addEventListener('touchstart', (e) => {
-            if (!gameStarted || isDead || isPaused) return;
-            // Only if not touching other controls
-            const touch = e.changedTouches[0];
-            if (touch.clientY < window.innerHeight - 150) {
-                if (mobileLook.touchId === null) {
-                    mobileLook.touchId = touch.identifier;
-                    mobileLook.startX = touch.clientX;
-                    mobileLook.startY = touch.clientY;
-                    mobileLook.active = true;
-                }
-            }
-        });
-        
-        renderer.domElement.addEventListener('touchmove', (e) => {
-            if (!gameStarted || isDead || isPaused) return;
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === mobileLook.touchId) {
-                    const dx = touch.clientX - mobileLook.startX;
-                    const dy = touch.clientY - mobileLook.startY;
-                    
-                    player.yaw -= dx * mouseSensitivity * 2;
-                    player.pitch -= dy * mouseSensitivity * 2;
-                    player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
-                    
-                    mobileLook.startX = touch.clientX;
-                    mobileLook.startY = touch.clientY;
-                }
-            }
-        });
-        
-        renderer.domElement.addEventListener('touchend', (e) => {
-            for (const touch of e.changedTouches) {
-                if (touch.identifier === mobileLook.touchId) {
-                    mobileLook.touchId = null;
-                    mobileLook.active = false;
-                }
-            }
-        });
-    }
-
-    // ============ GAME LOOP ============
-    let lastTime = 0;
-    function animate(time) {
-        requestAnimationFrame(animate);
-        
-        const dt = Math.min((time - lastTime) / 1000, 0.05);
-        lastTime = time;
-
-        if (gameStarted && !isDead && !isPaused) {
-            updatePlayer(dt);
-            updateKanye(dt);
-            updateMinimap();
-            updateTimer();
+        function quitGame() {
+            sessionCoins = 0;
+            returnToMenu();
         }
 
-        renderer.render(scene, camera);
-    }
-
-    // ============ START / RESTART ============
-    function startGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        gameStarted = true;
-        isEscapeMode = false;
-        startTime = Date.now();
-        stamina = 100;
-        sessionCoins = 0;
-        document.getElementById('hud-coins').textContent = '💰 0';
-        
-        const maps = ['backrooms', 'warehouse', 'hospital'];
-        currentMap = maps[Math.floor(Math.random() * maps.length)];
-        
-        GRID_SIZE = baseGridSize;
-        
-        // Show minimap based on settings
-        if (saveData.settings.minimapEnabled !== false) {
-            document.getElementById('minimap').style.display = 'block';
-            document.getElementById('minimap-floor').style.display = 'block';
-        }
-        document.getElementById('escape-hud').style.display = 'none';
-        
-        while (scene.children.length > 0) scene.remove(scene.children[0]);
-        generateMaze();
-        buildWorld();
-        createKanye();
-        
-        spawnEntities();
-        initAudio();
-        if (!isMobile) renderer.domElement.requestPointerLock();
-    }
-
-    function restartGame() {
-        while (scene.children.length > 0) scene.remove(scene.children[0]);
-        
-        if (isEscapeMode) {
-            escapeRound = 1;
-            GRID_SIZE = baseGridSize * 2;
-            
-            document.getElementById('escape-hud').style.display = 'block';
-            document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
-            
-            document.getElementById('minimap').style.display = 'none';
-            document.getElementById('minimap-floor').style.display = 'none';
-            
-            const escapeMaps = ['backrooms', 'hospital'];
-            currentMap = escapeMaps[Math.floor(Math.random() * escapeMaps.length)];
-            
-            generateMaze();
-            buildWorld();
-            createKanye();
-            spawnEntities();
-            createEscapeDoor();
-        } else {
+        function returnToMenu() {
+            gameStarted = false;
+            isPaused = false;
+            isDead = false;
+            isEscapeMode = false;
             GRID_SIZE = baseGridSize;
+            
+            stopAudio();
+            if (!isMobile) document.exitPointerLock();
+            
+            document.getElementById('death-screen').style.display = 'none';
+            document.getElementById('pause-screen').style.display = 'none';
+            document.getElementById('start-screen').classList.remove('hidden');
             document.getElementById('escape-hud').style.display = 'none';
             
             if (saveData.settings.minimapEnabled !== false) {
@@ -2300,44 +1804,517 @@ player.y = newY;
                 document.getElementById('minimap-floor').style.display = 'block';
             }
             
-            const maps = ['backrooms', 'warehouse', 'hospital'];
-            currentMap = maps[Math.floor(Math.random() * maps.length)];
+            updateUI();
+        }
+
+        // ============ ESCAPE MODE ============
+        function startEscapeMode() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameStarted = true;
+            isEscapeMode = true;
+            escapeRound = 1;
+            startTime = Date.now();
+            stamina = 100;
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
             
+            const escapeMaps = ['backrooms', 'hospital'];
+            currentMap = escapeMaps[Math.floor(Math.random() * escapeMaps.length)];
+            
+            GRID_SIZE = baseGridSize * 2;
+            
+            document.getElementById('minimap').style.display = 'none';
+            document.getElementById('minimap-floor').style.display = 'none';
+            
+            document.getElementById('escape-hud').style.display = 'block';
+            document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
+            document.getElementById('escape-door-indicator').textContent = '🚪 FIND THE EXIT!';
+            document.getElementById('escape-door-indicator').classList.remove('nearby');
+            
+            if (document.getElementById('escape-shield-toggle').checked && saveData.coins >= 5) {
+                saveData.coins -= 5;
+                player.shieldHits = saveData.upgrades.shield >= 3 ? 2 : 1;
+                document.getElementById('shield-indicator').style.opacity = '1';
+                document.getElementById('slot-shield').classList.add('active');
+                saveSaveData();
+                updateUI();
+            }
+            
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
             generateMaze();
             buildWorld();
             createKanye();
             spawnEntities();
+            createEscapeDoor();
+            
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
         }
         
-        isDead = false;
-        stamina = 100;
-        startTime = Date.now();
-        sessionCoins = 0;
-        document.getElementById('hud-coins').textContent = '💰 0';
-        kanye.pathTimer = 0;
-        kanye.frozen = false;
-        kanye.halfSpeed = false;
-        kanye.vx = 0;
-        kanye.vz = 0;
+        function createEscapeDoor() {
+            if (escapeDoor && escapeDoor.mesh) {
+                scene.remove(escapeDoor.mesh);
+            }
+            
+            const minDoorDist = 20;
+            const doorCandidates = [];
+            for (let x = 2; x < GRID_SIZE - 2; x++) {
+                for (let z = 2; z < GRID_SIZE - 2; z++) {
+                    if (maze[x][z] === 1) {
+                        const adjacent = [
+                            {wx: x-1, wz: z, dir: 'east'},
+                            {wx: x+1, wz: z, dir: 'west'},
+                            {wx: x, wz: z-1, dir: 'south'},
+                            {wx: x, wz: z+1, dir: 'north'}
+                        ];
+                        for (const adj of adjacent) {
+                            if (isWalkableGrid(adj.wx, adj.wz)) {
+                                const doorPos = gridToWorld(x, z);
+                                const adjPos = gridToWorld(adj.wx, adj.wz);
+                                const dist = Math.hypot(doorPos.x - player.x, doorPos.z - player.z);
+                                if (dist < minDoorDist) continue;
+                                let blocked = false;
+                                for (const d of decorations) {
+                                    if (Math.hypot(adjPos.x - d.x, adjPos.z - d.z) < d.radius + 0.5) {
+                                        blocked = true;
+                                        break;
+                                    }
+                                }
+                                if (!blocked) {
+                                    doorCandidates.push({x, z, adjX: adj.wx, adjZ: adj.wz, dir: adj.dir});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (doorCandidates.length === 0) return;
+            
+            const shuffledDoors = doorCandidates.sort(() => Math.random() - 0.5);
+            const doorData = shuffledDoors[0];
+            const doorWorldPos = gridToWorld(doorData.x, doorData.z);
+            const adjWorldPos = gridToWorld(doorData.adjX, doorData.adjZ);
+            
+            const doorGroup = new THREE.Group();
+            
+            const frameMat = new THREE.MeshBasicMaterial({ color: 0x3d2817 });
+            const doorMat = new THREE.MeshBasicMaterial({ color: 0x5c3a21 });
+            const knobMat = new THREE.MeshBasicMaterial({ color: 0xb8860b });
+            
+            let doorX = doorWorldPos.x;
+            let doorZ = doorWorldPos.z;
+            let rotY = 0;
+            
+            if (doorData.dir === 'east') {
+                doorX = doorWorldPos.x - CELL/2 + 0.3;
+                rotY = Math.PI / 2;
+            } else if (doorData.dir === 'west') {
+                doorX = doorWorldPos.x + CELL/2 - 0.3;
+                rotY = Math.PI / 2;
+            } else if (doorData.dir === 'south') {
+                doorZ = doorWorldPos.z - CELL/2 + 0.3;
+                rotY = 0;
+            } else if (doorData.dir === 'north') {
+                doorZ = doorWorldPos.z + CELL/2 - 0.3;
+                rotY = 0;
+            }
+            
+            const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
+            frameLeft.position.set(-0.55, 1.4, 0);
+            doorGroup.add(frameLeft);
+            
+            const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
+            frameRight.position.set(0.55, 1.4, 0);
+            doorGroup.add(frameRight);
+            
+            const frameTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.15, 0.3), frameMat);
+            frameTop.position.set(0, 2.75, 0);
+            doorGroup.add(frameTop);
+            
+            const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.5, 0.15), doorMat);
+            doorPanel.position.set(0, 1.3, 0.25);
+            doorGroup.add(doorPanel);
+            
+            const doorknob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), knobMat);
+            doorknob.position.set(0.35, 1.1, 0.38);
+            doorGroup.add(doorknob);
+            
+            const knobPlate = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.25, 0.02), knobMat);
+            knobPlate.position.set(0.35, 1.1, 0.34);
+            doorGroup.add(knobPlate);
+            
+            const glow = new THREE.PointLight(0x44ff44, 1.5, 10);
+            glow.position.set(0, 1.5, 0.6);
+            doorGroup.add(glow);
+            
+            doorGroup.position.set(doorX, 0, doorZ);
+            doorGroup.rotation.y = rotY;
+            scene.add(doorGroup);
+            
+            escapeDoor = {
+                mesh: doorGroup,
+                x: adjWorldPos.x,
+                z: adjWorldPos.z,
+                gridX: doorData.x,
+                gridZ: doorData.z
+            };
+        }
         
-        document.getElementById('death-screen').style.display = 'none';
-        document.getElementById('fear-overlay').style.opacity = 0;
-        document.getElementById('warning').style.opacity = 0;
-        document.getElementById('freeze-overlay').style.opacity = 0;
-        document.getElementById('shield-indicator').style.opacity = 0;
-        document.getElementById('stamina-bar').classList.remove('infinite');
-        document.getElementById('stamina-bar').classList.remove('boosted');
-        document.querySelectorAll('.powerup-slot').forEach(s => s.classList.remove('active'));
+        function checkEscapeDoor() {
+            if (!isEscapeMode || !escapeDoor) return;
+            
+            const doorWorldPos = gridToWorld(escapeDoor.gridX, escapeDoor.gridZ);
+            const dist = Math.hypot(doorWorldPos.x - player.x, doorWorldPos.z - player.z);
+            
+            const indicator = document.getElementById('escape-door-indicator');
+            if (dist < 15) {
+                indicator.textContent = '🚪 EXIT NEARBY!';
+                indicator.classList.add('nearby');
+            } else {
+                indicator.textContent = '🚪 FIND THE EXIT!';
+                indicator.classList.remove('nearby');
+            }
+            
+            if (dist < 2.5) {
+                winEscapeRound();
+            }
+        }
         
-        // Reset mobile sprint state
-        mobileSprintActive = false;
-        document.getElementById('btn-sprint').classList.remove('active');
-        
-        if (!isMobile) renderer.domElement.requestPointerLock();
-    }
+        function winEscapeRound() {
+            escapeRound++;
+            
+            if (escapeRound - 1 > saveData.escapeRecord) {
+                saveData.escapeRecord = escapeRound - 1;
+                saveSaveData();
+            }
+            
+            const msg = document.getElementById('pickup-msg');
+            msg.textContent = '🚪 ESCAPED! Round ' + escapeRound + ' starting...';
+            msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+            
+            document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
+            
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            generateMaze();
+            buildWorld();
+            createKanye();
+            spawnEntities();
+            createEscapeDoor();
+        }
 
-    init();
-    requestAnimationFrame(animate);
-</script>
+        // ============ INIT ============
+        function init() {
+            loadSaveData();
+            detectMobile();
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+            scene.fog = new THREE.Fog(0x1a1a1a, 2, 30);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+
+            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'low-power' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            const mmCanvas = document.getElementById('minimap-canvas');
+            mmCanvas.width = 160;
+            mmCanvas.height = 160;
+
+            loadTextures(() => {
+                generateMaze();
+                buildWorld();
+                createKanye();
+            });
+
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === sprintKeyCode) isSprinting = true;
+                if (e.code === 'Space') e.preventDefault();
+                if (e.code === 'Escape' && gameStarted && !isDead) {
+                    e.preventDefault();
+                    togglePause();
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+                if (e.code === sprintKeyCode) isSprinting = false;
+            });
+
+            // Mouse controls (desktop)
+            document.addEventListener('mousemove', (e) => {
+                if (!isLocked || !gameStarted || isDead || isPaused) return;
+                player.yaw -= e.movementX * mouseSensitivity;
+                player.pitch -= e.movementY * mouseSensitivity;
+                player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isLocked = document.pointerLockElement === renderer.domElement;
+            });
+
+            renderer.domElement.addEventListener('click', () => {
+                if (gameStarted && !isDead && !isPaused && !isMobile) renderer.domElement.requestPointerLock();
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Mobile controls setup
+            setupMobileControls();
+        }
+
+        // ============ MOBILE CONTROLS ============
+        function setupMobileControls() {
+            const joystick = document.getElementById('joystick-move');
+            const knob = document.getElementById('joystick-knob');
+            const btnJump = document.getElementById('btn-jump');
+            const btnSprint = document.getElementById('btn-sprint');
+            const btnPause = document.getElementById('btn-pause');
+            
+            // Movement joystick
+            let joystickTouchId = null;
+            const joystickRadius = 60;
+            const knobRadius = 25;
+            
+            joystick.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (joystickTouchId !== null) return;
+                const touch = e.changedTouches[0];
+                joystickTouchId = touch.identifier;
+                const rect = joystick.getBoundingClientRect();
+                mobileJoystick.startX = rect.left + rect.width / 2;
+                mobileJoystick.startY = rect.top + rect.height / 2;
+                mobileJoystick.active = true;
+            });
+            
+            joystick.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === joystickTouchId) {
+                        const dx = touch.clientX - mobileJoystick.startX;
+                        const dy = touch.clientY - mobileJoystick.startY;
+                        const dist = Math.hypot(dx, dy);
+                        const maxDist = joystickRadius - knobRadius;
+                        
+                        let clampedX = dx;
+                        let clampedY = dy;
+                        if (dist > maxDist) {
+                            clampedX = (dx / dist) * maxDist;
+                            clampedY = (dy / dist) * maxDist;
+                        }
+                        
+                        knob.style.transform = `translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px))`;
+                        
+                        mobileJoystick.moveX = clampedX / maxDist;
+                        mobileJoystick.moveZ = -clampedY / maxDist;
+                    }
+                }
+            });
+            
+            joystick.addEventListener('touchend', (e) => {
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === joystickTouchId) {
+                        joystickTouchId = null;
+                        mobileJoystick.active = false;
+                        mobileJoystick.moveX = 0;
+                        mobileJoystick.moveZ = 0;
+                        knob.style.transform = 'translate(-50%, -50%)';
+                    }
+                }
+            });
+            
+            // Jump button
+            btnJump.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileJumpPressed = true;
+            });
+            
+            btnJump.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                mobileJumpPressed = false;
+            });
+            
+            // Sprint button (toggle)
+            btnSprint.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileSprintActive = !mobileSprintActive;
+                btnSprint.classList.toggle('active', mobileSprintActive);
+            });
+            
+            // Pause button
+            btnPause.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameStarted && !isDead) togglePause();
+            });
+            
+            // Look by swiping anywhere on the game canvas (not on controls)
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                if (!gameStarted || isDead || isPaused) return;
+                const touch = e.changedTouches[0];
+                // Only if not touching joystick area (left side) or buttons (right side bottom)
+                if (touch.clientY < window.innerHeight - 150 || (touch.clientX > 150 && touch.clientX < window.innerWidth - 150)) {
+                    if (mobileLook.touchId === null) {
+                        mobileLook.touchId = touch.identifier;
+                        mobileLook.startX = touch.clientX;
+                        mobileLook.startY = touch.clientY;
+                        mobileLook.active = true;
+                    }
+                }
+            });
+            
+            renderer.domElement.addEventListener('touchmove', (e) => {
+                if (!gameStarted || isDead || isPaused) return;
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === mobileLook.touchId) {
+                        const dx = touch.clientX - mobileLook.startX;
+                        const dy = touch.clientY - mobileLook.startY;
+                        
+                        player.yaw -= dx * mouseSensitivity * 2;
+                        player.pitch -= dy * mouseSensitivity * 2;
+                        player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+                        
+                        mobileLook.startX = touch.clientX;
+                        mobileLook.startY = touch.clientY;
+                    }
+                }
+            });
+            
+            renderer.domElement.addEventListener('touchend', (e) => {
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === mobileLook.touchId) {
+                        mobileLook.touchId = null;
+                        mobileLook.active = false;
+                    }
+                }
+            });
+        }
+
+        // ============ GAME LOOP ============
+        let lastTime = 0;
+        function animate(time) {
+            requestAnimationFrame(animate);
+            
+            const dt = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+
+            if (gameStarted && !isDead && !isPaused) {
+                updatePlayer(dt);
+                updateKanye(dt);
+                updateMinimap();
+                updateTimer();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ============ START / RESTART ============
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameStarted = true;
+            isEscapeMode = false;
+            startTime = Date.now();
+            stamina = 100;
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+            
+            const maps = ['backrooms', 'warehouse', 'hospital'];
+            currentMap = maps[Math.floor(Math.random() * maps.length)];
+            
+            GRID_SIZE = baseGridSize;
+            
+            if (saveData.settings.minimapEnabled !== false) {
+                document.getElementById('minimap').style.display = 'block';
+                document.getElementById('minimap-floor').style.display = 'block';
+            }
+            document.getElementById('escape-hud').style.display = 'none';
+            
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            generateMaze();
+            buildWorld();
+            createKanye();
+            
+            spawnEntities();
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        function restartGame() {
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            
+            if (isEscapeMode) {
+                escapeRound = 1;
+                GRID_SIZE = baseGridSize * 2;
+                
+                document.getElementById('escape-hud').style.display = 'block';
+                document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
+                
+                document.getElementById('minimap').style.display = 'none';
+                document.getElementById('minimap-floor').style.display = 'none';
+                
+                const escapeMaps = ['backrooms', 'hospital'];
+                currentMap = escapeMaps[Math.floor(Math.random() * escapeMaps.length)];
+                
+                generateMaze();
+                buildWorld();
+                createKanye();
+                spawnEntities();
+                createEscapeDoor();
+            } else {
+                GRID_SIZE = baseGridSize;
+                document.getElementById('escape-hud').style.display = 'none';
+                
+                if (saveData.settings.minimapEnabled !== false) {
+                    document.getElementById('minimap').style.display = 'block';
+                    document.getElementById('minimap-floor').style.display = 'block';
+                }
+                
+                const maps = ['backrooms', 'warehouse', 'hospital'];
+                currentMap = maps[Math.floor(Math.random() * maps.length)];
+                
+                generateMaze();
+                buildWorld();
+                createKanye();
+                spawnEntities();
+            }
+            
+            isDead = false;
+            stamina = 100;
+            startTime = Date.now();
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+            kanye.pathTimer = 0;
+            kanye.frozen = false;
+            kanye.halfSpeed = false;
+            kanye.vx = 0;
+            kanye.vz = 0;
+            
+            document.getElementById('death-screen').style.display = 'none';
+            document.getElementById('fear-overlay').style.opacity = 0;
+            document.getElementById('warning').style.opacity = 0;
+            document.getElementById('freeze-overlay').style.opacity = 0;
+            document.getElementById('shield-indicator').style.opacity = 0;
+            document.getElementById('stamina-bar').classList.remove('infinite');
+            document.getElementById('stamina-bar').classList.remove('boosted');
+            document.querySelectorAll('.powerup-slot').forEach(s => s.classList.remove('active'));
+            
+            // Reset mobile sprint state
+            mobileSprintActive = false;
+            document.getElementById('btn-sprint').classList.remove('active');
+            
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        init();
+        requestAnimationFrame(animate);
+    </script>
 </body>
 </html>
