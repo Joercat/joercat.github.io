@@ -108,48 +108,42 @@
         #pause-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 250; padding: 20px; }
         #pause-screen h1 { color: #fff; font-size: clamp(32px, 8vw, 48px); margin-bottom: 15px; }
         
-        /* Mobile Controls */
-        #mobile-controls { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 140px; z-index: 150; pointer-events: none; }
+        /* Mobile Controls - hidden by default, shown via JS */
+        #mobile-controls { position: fixed; bottom: 0; left: 0; width: 100%; height: 140px; z-index: 150; pointer-events: none; display: none; }
         
         .mobile-joystick { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: auto; touch-action: none; }
         .joystick-knob { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: rgba(255,255,255,0.4); border-radius: 50%; pointer-events: none; }
         
-        .mobile-btn { position: absolute; width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: auto; touch-action: manipulation; user-select: none; }
+        .mobile-btn { position: absolute; width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; pointer-events: auto; touch-action: manipulation; user-select: none; }
         .mobile-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
         
         #btn-jump { bottom: 70px; right: 20px; }
         #btn-sprint { bottom: 10px; right: 80px; background: rgba(255,200,0,0.2); border-color: rgba(255,200,0,0.4); }
         #btn-sprint.active { background: rgba(255,200,0,0.5); }
-        #btn-pause { top: 15px; right: 15px; width: 45px; height: 45px; font-size: 20px; position: fixed; z-index: 160; display: none; }
+        #btn-pause { top: 15px; right: 15px; width: 45px; height: 45px; font-size: 20px; position: fixed; z-index: 160; }
         
-        /* Show mobile controls on touch devices */
-        @media (hover: none) and (pointer: coarse) {
-            #mobile-controls { display: block; }
-            #btn-pause { display: flex; }
-            #stamina-container { bottom: 85px; }
-            #powerups-display { bottom: 100px; }
-            .menu-section p { font-size: 12px; }
-            #minimap { width: 100px; height: 100px; }
-            #minimap-floor { top: 105px; width: 100px; }
-        }
+        /* Mobile-specific styles */
+        body.is-mobile #mobile-controls { display: block; }
+        body.is-mobile .mobile-btn { display: flex; }
+        body.is-mobile #stamina-container { bottom: 85px; }
+        body.is-mobile #powerups-display { bottom: 100px; }
+        body.is-mobile .menu-section p { font-size: 12px; }
+        body.is-mobile #minimap { width: 100px; height: 100px; }
+        body.is-mobile #minimap-floor { top: 105px; width: 100px; }
+        body.is-mobile .desktop-controls { display: none; }
+        body.is-mobile .mobile-controls-info { display: block; }
+        
+        /* Desktop-specific styles */
+        body:not(.is-mobile) .desktop-controls { display: block; }
+        body:not(.is-mobile) .mobile-controls-info { display: none; }
         
         @media (max-width: 480px) {
-            .mobile-joystick { width: 100px; height: 100px; left: 15px; bottom: 15px; }
-            .joystick-knob { width: 40px; height: 40px; }
-            .mobile-btn { width: 55px; height: 55px; font-size: 22px; }
-            #btn-jump { bottom: 60px; right: 15px; }
-            #btn-sprint { bottom: 5px; right: 70px; }
-            #mobile-controls { height: 130px; }
-        }
-        
-        /* Hide desktop-only controls info on mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .desktop-controls { display: none; }
-            .mobile-controls-info { display: block; }
-        }
-        @media (hover: hover) and (pointer: fine) {
-            .desktop-controls { display: block; }
-            .mobile-controls-info { display: none; }
+            body.is-mobile .mobile-joystick { width: 100px; height: 100px; left: 15px; bottom: 15px; }
+            body.is-mobile .joystick-knob { width: 40px; height: 40px; }
+            body.is-mobile .mobile-btn { width: 55px; height: 55px; font-size: 22px; }
+            body.is-mobile #btn-jump { bottom: 60px; right: 15px; }
+            body.is-mobile #btn-sprint { bottom: 5px; right: 70px; }
+            body.is-mobile #mobile-controls { height: 130px; }
         }
     </style>
 </head>
@@ -395,8 +389,8 @@
         let startTime = 0;
         let sessionCoins = 0;
         let sprintKeyCode = 'ShiftLeft';
-        let baseSensitivity = 0.0012; // Tripled from 0.0004
-        let mouseSensitivity = baseSensitivity * 5; // Default multiplier of 5
+        let baseSensitivity = 0.0012;
+        let mouseSensitivity = baseSensitivity * 5;
         let musicVolumeMultiplier = 1;
         let isMobile = false;
         
@@ -470,12 +464,22 @@
 
         const textureLoader = new THREE.TextureLoader();
 
-// ============ DETECT MOBILE ============
-function detectMobile() {
-    // Check if the CSS media query for coarse/no-hover pointer is active
-    isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    return isMobile;
-}
+        // ============ DETECT MOBILE ============
+        function detectMobile() {
+            isMobile = ('ontouchstart' in window) || 
+                       (navigator.maxTouchPoints > 0) || 
+                       (navigator.msMaxTouchPoints > 0) ||
+                       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Add class to body for CSS targeting
+            if (isMobile) {
+                document.body.classList.add('is-mobile');
+            } else {
+                document.body.classList.remove('is-mobile');
+            }
+            
+            return isMobile;
+        }
 
         // ============ UI FUNCTIONS ============
         function showTab(tabId) {
@@ -603,7 +607,6 @@ function detectMobile() {
         }
 
         function updateSensitivity() {
-            // Get value from whichever slider was changed
             let val = document.getElementById('sensitivity').value;
             const pauseSensitivity = document.getElementById('pause-sensitivity');
             if (document.activeElement === pauseSensitivity) {
@@ -613,7 +616,6 @@ function detectMobile() {
             saveData.settings.sensitivity = parseInt(val);
             mouseSensitivity = baseSensitivity * saveData.settings.sensitivity;
             
-            // Update both sliders and displays
             document.getElementById('sensitivity').value = val;
             document.getElementById('pause-sensitivity').value = val;
             document.getElementById('sensitivity-display').textContent = val;
@@ -1370,7 +1372,7 @@ function detectMobile() {
             if (standingOnDecor && player.vy <= 0) {
                 newY = decorTopY + 1.6;
                 player.vy = 0;
-                                player.onGround = true;
+                player.onGround = true;
             } else if (newY < 1.6) {
                 newY = 1.6;
                 player.vy = 0;
@@ -1761,7 +1763,6 @@ function detectMobile() {
             isPaused = !isPaused;
             document.getElementById('pause-screen').style.display = isPaused ? 'flex' : 'none';
             
-            // Sync pause screen controls with current values
             document.getElementById('pause-sensitivity').value = saveData.settings.sensitivity;
             document.getElementById('pause-sensitivity-display').textContent = saveData.settings.sensitivity;
             document.getElementById('pause-volume').value = saveData.settings.musicVolume;
@@ -2007,8 +2008,10 @@ function detectMobile() {
 
         // ============ INIT ============
         function init() {
-            loadSaveData();
+            // Detect mobile first and add class to body
             detectMobile();
+            
+            loadSaveData();
             
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a1a);
@@ -2069,9 +2072,10 @@ function detectMobile() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
-    if (isMobile) { // <-- Added condition
-        setupMobileControls();
-    }
+            // Mobile controls setup
+            if (isMobile) {
+                setupMobileControls();
+            }
         }
 
         // ============ MOBILE CONTROLS ============
@@ -2084,8 +2088,14 @@ function detectMobile() {
             
             // Movement joystick
             let joystickTouchId = null;
-            const joystickRadius = 60;
-            const knobRadius = 25;
+            
+            function getJoystickRadius() {
+                return joystick.offsetWidth / 2;
+            }
+            
+            function getKnobRadius() {
+                return knob.offsetWidth / 2;
+            }
             
             joystick.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -2096,7 +2106,7 @@ function detectMobile() {
                 mobileJoystick.startX = rect.left + rect.width / 2;
                 mobileJoystick.startY = rect.top + rect.height / 2;
                 mobileJoystick.active = true;
-            });
+            }, { passive: false });
             
             joystick.addEventListener('touchmove', (e) => {
                 e.preventDefault();
@@ -2105,7 +2115,7 @@ function detectMobile() {
                         const dx = touch.clientX - mobileJoystick.startX;
                         const dy = touch.clientY - mobileJoystick.startY;
                         const dist = Math.hypot(dx, dy);
-                        const maxDist = joystickRadius - knobRadius;
+                        const maxDist = getJoystickRadius() - getKnobRadius();
                         
                         let clampedX = dx;
                         let clampedY = dy;
@@ -2120,7 +2130,7 @@ function detectMobile() {
                         mobileJoystick.moveZ = -clampedY / maxDist;
                     }
                 }
-            });
+            }, { passive: false });
             
             joystick.addEventListener('touchend', (e) => {
                 for (const touch of e.changedTouches) {
@@ -2134,49 +2144,76 @@ function detectMobile() {
                 }
             });
             
+            joystick.addEventListener('touchcancel', (e) => {
+                joystickTouchId = null;
+                mobileJoystick.active = false;
+                mobileJoystick.moveX = 0;
+                mobileJoystick.moveZ = 0;
+                knob.style.transform = 'translate(-50%, -50%)';
+            });
+            
             // Jump button
             btnJump.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 mobileJumpPressed = true;
-            });
+            }, { passive: false });
             
             btnJump.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 mobileJumpPressed = false;
-            });
+            }, { passive: false });
             
             // Sprint button (toggle)
             btnSprint.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 mobileSprintActive = !mobileSprintActive;
                 btnSprint.classList.toggle('active', mobileSprintActive);
-            });
+            }, { passive: false });
             
             // Pause button
             btnPause.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 if (gameStarted && !isDead) togglePause();
-            });
+            }, { passive: false });
             
-            // Look by swiping anywhere on the game canvas (not on controls)
+            // Look by swiping anywhere on the game canvas
+            let lookTouchId = null;
+            
             renderer.domElement.addEventListener('touchstart', (e) => {
                 if (!gameStarted || isDead || isPaused) return;
-                const touch = e.changedTouches[0];
-                // Only if not touching joystick area (left side) or buttons (right side bottom)
-                if (touch.clientY < window.innerHeight - 150 || (touch.clientX > 150 && touch.clientX < window.innerWidth - 150)) {
-                    if (mobileLook.touchId === null) {
-                        mobileLook.touchId = touch.identifier;
+                
+                for (const touch of e.changedTouches) {
+                    // Check if touch is not on control elements
+                    const touchX = touch.clientX;
+                    const touchY = touch.clientY;
+                    const joystickRect = joystick.getBoundingClientRect();
+                    const jumpRect = btnJump.getBoundingClientRect();
+                    const sprintRect = btnSprint.getBoundingClientRect();
+                    const pauseRect = btnPause.getBoundingClientRect();
+                    
+                    const onJoystick = touchX >= joystickRect.left && touchX <= joystickRect.right &&
+                                       touchY >= joystickRect.top && touchY <= joystickRect.bottom;
+                    const onJump = touchX >= jumpRect.left && touchX <= jumpRect.right &&
+                                   touchY >= jumpRect.top && touchY <= jumpRect.bottom;
+                    const onSprint = touchX >= sprintRect.left && touchX <= sprintRect.right &&
+                                     touchY >= sprintRect.top && touchY <= sprintRect.bottom;
+                    const onPause = touchX >= pauseRect.left && touchX <= pauseRect.right &&
+                                    touchY >= pauseRect.top && touchY <= pauseRect.bottom;
+                    
+                    if (!onJoystick && !onJump && !onSprint && !onPause && lookTouchId === null) {
+                        lookTouchId = touch.identifier;
                         mobileLook.startX = touch.clientX;
                         mobileLook.startY = touch.clientY;
                         mobileLook.active = true;
                     }
                 }
-            });
+            }, { passive: true });
             
             renderer.domElement.addEventListener('touchmove', (e) => {
                 if (!gameStarted || isDead || isPaused) return;
+                
                 for (const touch of e.changedTouches) {
-                    if (touch.identifier === mobileLook.touchId) {
+                    if (touch.identifier === lookTouchId) {
                         const dx = touch.clientX - mobileLook.startX;
                         const dy = touch.clientY - mobileLook.startY;
                         
@@ -2188,15 +2225,20 @@ function detectMobile() {
                         mobileLook.startY = touch.clientY;
                     }
                 }
-            });
+            }, { passive: true });
             
             renderer.domElement.addEventListener('touchend', (e) => {
                 for (const touch of e.changedTouches) {
-                    if (touch.identifier === mobileLook.touchId) {
-                        mobileLook.touchId = null;
+                    if (touch.identifier === lookTouchId) {
+                        lookTouchId = null;
                         mobileLook.active = false;
                     }
                 }
+            });
+            
+            renderer.domElement.addEventListener('touchcancel', (e) => {
+                lookTouchId = null;
+                mobileLook.active = false;
             });
         }
 
@@ -2310,7 +2352,8 @@ function detectMobile() {
             
             // Reset mobile sprint state
             mobileSprintActive = false;
-            document.getElementById('btn-sprint').classList.remove('active');
+            const btnSprint = document.getElementById('btn-sprint');
+            if (btnSprint) btnSprint.classList.remove('active');
             
             if (!isMobile) renderer.domElement.requestPointerLock();
         }
