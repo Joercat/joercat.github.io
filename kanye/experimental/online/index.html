@@ -409,8 +409,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         // ============ SERVER CONFIGURATION ============
-        const NORMAL_SERVER_URL = 'wss://jshshdgxh-normal.hf.space';
-        const ESCAPE_SERVER_URL = 'wss://jshshdgxh-escape.hf.space';
+        // UPDATE THESE WITH YOUR ACTUAL SERVER URLs
+        const NORMAL_SERVER_URL = 'wss://YOUR-NORMAL-SERVER.hf.space';
+        const ESCAPE_SERVER_URL = 'wss://YOUR-ESCAPE-SERVER.hf.space';
         
         // ============ CONSTANTS ============
         const NORMAL_RESPAWN_TIME = 15;
@@ -489,6 +490,8 @@
         let gainNode = null;
         let audioReady = false;
         let audioPlaying = false;
+        let currentTargetVolume = 0;
+        let currentActualVolume = 0;
 
         // ============ MAP CONFIG ============
         const CELL = 4;
@@ -498,6 +501,15 @@
         let currentMap = 'backrooms';
         let escapeDoors = [];
 
+        // ============ HELPER: Safe getElementById ============
+        function getEl(id) {
+            const el = document.getElementById(id);
+            if (!el) {
+                console.warn(`Element not found: ${id}`);
+            }
+            return el;
+        }
+
         // ============ LOAD/SAVE ============
         function loadSavedData() {
             try {
@@ -506,9 +518,11 @@
                     const data = JSON.parse(saved);
                     totalCoins = data.coins || 0;
                     customSkinData = data.customSkin || null;
-                    document.getElementById('menu-coins').textContent = totalCoins + ' coins';
+                    const menuCoins = getEl('menu-coins');
+                    if (menuCoins) menuCoins.textContent = totalCoins + ' coins';
                     if (customSkinData) {
-                        document.getElementById('skin-preview').innerHTML = `<img src="${customSkinData}">`;
+                        const skinPreview = getEl('skin-preview');
+                        if (skinPreview) skinPreview.innerHTML = `<img src="${customSkinData}">`;
                     }
                 }
             } catch(e) { console.error('Load error:', e); }
@@ -578,7 +592,8 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 customSkinData = e.target.result;
-                document.getElementById('skin-preview').innerHTML = `<img src="${customSkinData}">`;
+                const skinPreview = getEl('skin-preview');
+                if (skinPreview) skinPreview.innerHTML = `<img src="${customSkinData}">`;
                 saveData();
             };
             reader.readAsDataURL(file);
@@ -586,8 +601,10 @@
 
         function clearSkin() {
             customSkinData = null;
-            document.getElementById('skin-preview').innerHTML = '😊';
-            document.getElementById('skin-upload').value = '';
+            const skinPreview = getEl('skin-preview');
+            if (skinPreview) skinPreview.innerHTML = '😊';
+            const skinUpload = getEl('skin-upload');
+            if (skinUpload) skinUpload.value = '';
             saveData();
         }
 
@@ -595,37 +612,47 @@
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            event.target.classList.add('active');
+            const tab = getEl('tab-' + tabId);
+            if (tab) tab.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
         }
 
         function updateSensitivity() {
-            const val = isPaused ? document.getElementById('pause-sensitivity').value : document.getElementById('sensitivity').value;
+            const pauseSens = getEl('pause-sensitivity');
+            const mainSens = getEl('sensitivity');
+            const val = isPaused ? (pauseSens ? pauseSens.value : 5) : (mainSens ? mainSens.value : 5);
             mouseSensitivity = parseInt(val) * 0.0004;
-            document.getElementById('sensitivity').value = val;
-            document.getElementById('pause-sensitivity').value = val;
+            if (mainSens) mainSens.value = val;
+            if (pauseSens) pauseSens.value = val;
         }
 
         function updateMusicVolume() {
-            const val = isPaused ? document.getElementById('pause-volume').value : document.getElementById('music-volume').value;
+            const pauseVol = getEl('pause-volume');
+            const mainVol = getEl('music-volume');
+            const val = isPaused ? (pauseVol ? pauseVol.value : 100) : (mainVol ? mainVol.value : 100);
             musicVolumeMultiplier = parseInt(val) / 100;
-            document.getElementById('music-volume').value = val;
-            document.getElementById('pause-volume').value = val;
+            if (mainVol) mainVol.value = val;
+            if (pauseVol) pauseVol.value = val;
         }
 
         function updateMinimapToggle() {
-            const enabled = document.getElementById('minimap-toggle').checked;
+            const toggle = getEl('minimap-toggle');
+            const enabled = toggle ? toggle.checked : true;
             if (!isEscapeMode) {
-                document.getElementById('minimap').style.display = enabled ? 'block' : 'none';
-                document.getElementById('minimap-floor').style.display = enabled ? 'block' : 'none';
+                const minimap = getEl('minimap');
+                const minimapFloor = getEl('minimap-floor');
+                if (minimap) minimap.style.display = enabled ? 'block' : 'none';
+                if (minimapFloor) minimapFloor.style.display = enabled ? 'block' : 'none';
             }
         }
 
         function showPickupMessage(text, duration = 2000) {
-            const msg = document.getElementById('pickup-msg');
-            msg.textContent = text;
-            msg.style.opacity = '1';
-            setTimeout(() => { msg.style.opacity = '0'; }, duration);
+            const msg = getEl('pickup-msg');
+            if (msg) {
+                msg.textContent = text;
+                msg.style.opacity = '1';
+                setTimeout(() => { msg.style.opacity = '0'; }, duration);
+            }
         }
 
         function formatTime(s) {
@@ -636,47 +663,62 @@
 
         // ============ SERVER CONNECTIVITY ============
         async function checkServerConnectivity() {
-            const normalEl = document.getElementById('normal-server-status');
-            const escapeEl = document.getElementById('escape-server-status');
+            const normalEl = getEl('normal-server-status');
+            const escapeEl = getEl('escape-server-status');
             
-            normalEl.className = 'server-indicator checking';
-            normalEl.textContent = 'Normal: Checking...';
-            escapeEl.className = 'server-indicator checking';
-            escapeEl.textContent = 'Escape: Checking...';
+            if (normalEl) {
+                normalEl.className = 'server-indicator checking';
+                normalEl.textContent = 'Normal: Checking...';
+            }
+            if (escapeEl) {
+                escapeEl.className = 'server-indicator checking';
+                escapeEl.textContent = 'Escape: Checking...';
+            }
             
             normalServerOnline = await testConnection(NORMAL_SERVER_URL);
             escapeServerOnline = await testConnection(ESCAPE_SERVER_URL);
             
-            normalEl.className = 'server-indicator ' + (normalServerOnline ? 'online' : 'offline');
-            normalEl.textContent = 'Normal: ' + (normalServerOnline ? 'Online ✓' : 'Offline ✗');
+            if (normalEl) {
+                normalEl.className = 'server-indicator ' + (normalServerOnline ? 'online' : 'offline');
+                normalEl.textContent = 'Normal: ' + (normalServerOnline ? 'Online ✓' : 'Offline ✗');
+            }
             
-            escapeEl.className = 'server-indicator ' + (escapeServerOnline ? 'online' : 'offline');
-            escapeEl.textContent = 'Escape: ' + (escapeServerOnline ? 'Online ✓' : 'Offline ✗');
+            if (escapeEl) {
+                escapeEl.className = 'server-indicator ' + (escapeServerOnline ? 'online' : 'offline');
+                escapeEl.textContent = 'Escape: ' + (escapeServerOnline ? 'Online ✓' : 'Offline ✗');
+            }
             
-            document.getElementById('btn-start-normal').disabled = !normalServerOnline;
-            document.getElementById('btn-start-escape').disabled = !escapeServerOnline;
+            const btnNormal = getEl('btn-start-normal');
+            const btnEscape = getEl('btn-start-escape');
+            if (btnNormal) btnNormal.disabled = !normalServerOnline;
+            if (btnEscape) btnEscape.disabled = !escapeServerOnline;
         }
 
         function testConnection(url) {
             return new Promise((resolve) => {
                 try {
+                    console.log('Testing connection to:', url);
                     const testWs = new WebSocket(url);
                     const timeout = setTimeout(() => {
+                        console.log('Connection test timeout:', url);
                         testWs.close();
                         resolve(false);
                     }, 5000);
                     
                     testWs.onopen = () => {
+                        console.log('Connection test success:', url);
                         clearTimeout(timeout);
                         testWs.close();
                         resolve(true);
                     };
                     
-                    testWs.onerror = () => {
+                    testWs.onerror = (e) => {
+                        console.log('Connection test error:', url, e);
                         clearTimeout(timeout);
                         resolve(false);
                     };
                 } catch(e) {
+                    console.log('Connection test exception:', url, e);
                     resolve(false);
                 }
             });
@@ -693,10 +735,13 @@
                 if (!gameStarted) return;
                 
                 const timeSinceLastMessage = Date.now() - lastServerMessage;
+                const connStatus = getEl('connection-status');
                 
                 if (timeSinceLastMessage > 15000) {
-                    document.getElementById('connection-status').style.display = 'block';
-                    document.getElementById('connection-status').textContent = '⚠️ Connection lost - returning to menu...';
+                    if (connStatus) {
+                        connStatus.style.display = 'block';
+                        connStatus.textContent = '⚠️ Connection lost - returning to menu...';
+                    }
                     
                     setTimeout(() => {
                         if (gameStarted && Date.now() - lastServerMessage > 15000) {
@@ -704,10 +749,12 @@
                         }
                     }, 3000);
                 } else if (timeSinceLastMessage > 8000) {
-                    document.getElementById('connection-status').style.display = 'block';
-                    document.getElementById('connection-status').textContent = '⚠️ Connection unstable...';
+                    if (connStatus) {
+                        connStatus.style.display = 'block';
+                        connStatus.textContent = '⚠️ Connection unstable...';
+                    }
                 } else {
-                    document.getElementById('connection-status').style.display = 'none';
+                    if (connStatus) connStatus.style.display = 'none';
                 }
             }, CONNECTION_CHECK_INTERVAL);
         }
@@ -717,35 +764,42 @@
                 clearInterval(connectionCheckInterval);
                 connectionCheckInterval = null;
             }
-            document.getElementById('connection-status').style.display = 'none';
+            const connStatus = getEl('connection-status');
+            if (connStatus) connStatus.style.display = 'none';
         }
 
         // ============ WEBSOCKET ============
         function connectToServer(serverUrl, mode) {
             return new Promise((resolve, reject) => {
+                console.log(`Attempting to connect to ${mode} server: ${serverUrl}`);
+                
                 try {
                     const socket = new WebSocket(serverUrl);
                     
                     const timeout = setTimeout(() => {
+                        console.log('Connection timeout');
                         socket.close();
                         reject(new Error('Connection timeout'));
-                    }, 10000);
+                    }, 15000);
                     
                     socket.onopen = () => {
-                        clearTimeout(timeout);
-                        console.log('Connected to ' + mode);
-                        resolve(socket);
+                        console.log(`WebSocket opened to ${mode} server`);
                     };
                     
                     socket.onerror = (e) => {
+                        console.error('WebSocket error:', e);
                         clearTimeout(timeout);
-                        reject(e);
+                        reject(new Error('WebSocket error'));
                     };
                     
-                    socket.onclose = () => {
+                    socket.onclose = (e) => {
+                        console.log(`WebSocket closed. Code: ${e.code}, Reason: ${e.reason}, Clean: ${e.wasClean}`);
                         if (gameStarted) {
-                            document.getElementById('connection-status').style.display = 'block';
-                            document.getElementById('connection-status').textContent = '⚠️ Server disconnected';
+                            const connStatus = getEl('connection-status');
+                            if (connStatus) {
+                                connStatus.style.display = 'block';
+                                connStatus.textContent = '⚠️ Server disconnected';
+                            }
                             showPickupMessage('⚠️ DISCONNECTED FROM SERVER', 3000);
                             setTimeout(returnToMenu, 2000);
                         }
@@ -753,11 +807,26 @@
                     
                     socket.onmessage = (e) => {
                         try {
+                            const msg = JSON.parse(e.data);
+                            console.log('Received message:', msg.type);
+                            
+                            if (msg.type === 'connected') {
+                                console.log('Received connected confirmation, player ID:', msg.playerId);
+                                clearTimeout(timeout);
+                                playerId = msg.playerId;
+                                lastServerMessage = Date.now();
+                                resolve(socket);
+                                return;
+                            }
+                            
                             lastServerMessage = Date.now();
-                            handleServerMessage(JSON.parse(e.data));
-                        } catch(err) { console.error('Message error:', err); }
+                            handleServerMessage(msg);
+                        } catch(err) { 
+                            console.error('Message parse error:', err); 
+                        }
                     };
                 } catch(e) {
+                    console.error('Failed to create WebSocket:', e);
                     reject(e);
                 }
             });
@@ -766,7 +835,7 @@
         function handleServerMessage(msg) {
             switch (msg.type) {
                 case 'connected':
-                    playerId = msg.playerId;
+                    console.log('Ignoring duplicate connected message');
                     break;
                     
                 case 'ping':
@@ -776,6 +845,7 @@
                     break;
                     
                 case 'error':
+                    console.error('Server error:', msg.message);
                     alert(msg.message);
                     returnToMenu();
                     break;
@@ -805,9 +875,12 @@
                     player.shieldHits = msg.shieldHits;
                     sessionCoins = msg.coins;
                     totalCoins = msg.coins;
-                    document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
-                    document.getElementById('shield-indicator').style.opacity = '1';
-                    document.getElementById('slot-shield').classList.add('active');
+                    const hudCoins = getEl('hud-coins');
+                    if (hudCoins) hudCoins.textContent = '💰 ' + sessionCoins;
+                    const shieldInd = getEl('shield-indicator');
+                    if (shieldInd) shieldInd.style.opacity = '1';
+                    const slotShield = getEl('slot-shield');
+                    if (slotShield) slotShield.classList.add('active');
                     showPickupMessage('🛡️ SHIELD PURCHASED!');
                     updateBuyShieldButton();
                     saveData();
@@ -839,7 +912,8 @@
             deathScreenShown = false;
             
             if (isSpectating) {
-                document.getElementById('spectator-indicator').style.display = 'block';
+                const specInd = getEl('spectator-indicator');
+                if (specInd) specInd.style.display = 'block';
                 showPickupMessage('👁️ Joined as spectator - next round you play!', 4000);
             }
             
@@ -856,9 +930,10 @@
         }
 
         function handleNewRound(msg) {
-            // Hide all overlays
-            document.getElementById('round-end-screen').style.display = 'none';
-            document.getElementById('death-screen').style.display = 'none';
+            const roundEndScreen = getEl('round-end-screen');
+            const deathScreen = getEl('death-screen');
+            if (roundEndScreen) roundEndScreen.style.display = 'none';
+            if (deathScreen) deathScreen.style.display = 'none';
             
             maze = msg.mapUpdate.maze;
             currentMap = msg.mapUpdate.currentMap || 'backrooms';
@@ -886,8 +961,10 @@
             roundEndShown = false;
             deathScreenShown = false;
             
-            document.getElementById('spectator-indicator').style.display = 'none';
-            document.getElementById('respawn-timer').style.display = 'none';
+            const specInd = getEl('spectator-indicator');
+            const respawnTimer = getEl('respawn-timer');
+            if (specInd) specInd.style.display = 'none';
+            if (respawnTimer) respawnTimer.style.display = 'none';
             
             showPickupMessage('🎮 Round ' + msg.round + ' START!', 3000);
             
@@ -904,7 +981,8 @@
             isRespawning = false;
             respawnTimer = 0;
             
-            document.getElementById('respawn-timer').style.display = 'none';
+            const respawnTimerEl = getEl('respawn-timer');
+            if (respawnTimerEl) respawnTimerEl.style.display = 'none';
             showPickupMessage('🔄 RESPAWNED!', 2000);
             
             if (gameStarted && !isPaused) {
@@ -937,28 +1015,37 @@
                     if (p.respawning && !isRespawning) {
                         isRespawning = true;
                         respawnTimer = p.respawnTimer;
-                        document.getElementById('respawn-timer').style.display = 'block';
-                        document.getElementById('respawn-timer').textContent = Math.ceil(respawnTimer);
+                        const respawnTimerEl = getEl('respawn-timer');
+                        if (respawnTimerEl) {
+                            respawnTimerEl.style.display = 'block';
+                            respawnTimerEl.textContent = Math.ceil(respawnTimer);
+                        }
                     } else if (p.respawning) {
                         respawnTimer = p.respawnTimer;
-                        document.getElementById('respawn-timer').textContent = Math.ceil(respawnTimer);
+                        const respawnTimerEl = getEl('respawn-timer');
+                        if (respawnTimerEl) respawnTimerEl.textContent = Math.ceil(respawnTimer);
                     } else if (!p.respawning && isRespawning) {
                         isRespawning = false;
-                        document.getElementById('respawn-timer').style.display = 'none';
+                        const respawnTimerEl = getEl('respawn-timer');
+                        if (respawnTimerEl) respawnTimerEl.style.display = 'none';
                     }
                     
                     player.dead = p.dead;
                     player.escaped = p.escaped;
                     
-                    document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
-                    document.getElementById('pause-coins').textContent = sessionCoins;
+                    const hudCoins = getEl('hud-coins');
+                    const pauseCoins = getEl('pause-coins');
+                    if (hudCoins) hudCoins.textContent = '💰 ' + sessionCoins;
+                    if (pauseCoins) pauseCoins.textContent = sessionCoins;
                     
+                    const shieldInd = getEl('shield-indicator');
+                    const slotShield = getEl('slot-shield');
                     if (p.shieldHits > 0) {
-                        document.getElementById('shield-indicator').style.opacity = '1';
-                        document.getElementById('slot-shield').classList.add('active');
+                        if (shieldInd) shieldInd.style.opacity = '1';
+                        if (slotShield) slotShield.classList.add('active');
                     } else {
-                        document.getElementById('shield-indicator').style.opacity = '0';
-                        document.getElementById('slot-shield').classList.remove('active');
+                        if (shieldInd) shieldInd.style.opacity = '0';
+                        if (slotShield) slotShield.classList.remove('active');
                     }
                     continue;
                 }
@@ -971,12 +1058,10 @@
                     const op = otherPlayers.get(id);
                     op.data = p;
                     if (op.mesh) {
-                        // Show spectators as semi-transparent ghosts at height
                         if (p.isSpectator) {
                             op.mesh.visible = true;
                             op.mesh.position.set(p.x, p.y - 0.7, p.z);
                             op.mesh.rotation.y = -p.yaw;
-                            // Make spectators semi-transparent
                             op.mesh.traverse((child) => {
                                 if (child.material) {
                                     child.material.transparent = true;
@@ -987,7 +1072,6 @@
                             op.mesh.visible = !p.dead;
                             op.mesh.position.set(p.x, 0.9, p.z);
                             op.mesh.rotation.y = -p.yaw;
-                            // Reset opacity for non-spectators
                             op.mesh.traverse((child) => {
                                 if (child.material) {
                                     child.material.transparent = false;
@@ -1024,36 +1108,40 @@
             // UI updates
             const total = Object.keys(state.players).length;
             const alive = Object.values(state.players).filter(p => !p.dead && !p.isSpectator && !p.respawning).length;
-            document.getElementById('player-count').textContent = `Players: ${alive}/${total}`;
+            const playerCount = getEl('player-count');
+            if (playerCount) playerCount.textContent = `Players: ${alive}/${total}`;
             
             updatePlayerList(state.players);
             updatePowerupMeshes(state.powerups);
             updateCoinMeshes(state.coins);
             
             if (state.time !== undefined) {
-                document.getElementById('timer').textContent = formatTime(state.time);
+                const timer = getEl('timer');
+                if (timer) timer.textContent = formatTime(state.time);
             }
             
             if (isEscapeMode) {
-                if (state.round) document.getElementById('escape-round').textContent = 'Round: ' + state.round;
-                if (state.roundTimeRemaining !== undefined) {
-                    document.getElementById('round-timer').textContent = '⏱️ ' + formatTime(state.roundTimeRemaining);
+                const escapeRound = getEl('escape-round');
+                const roundTimer = getEl('round-timer');
+                if (state.round && escapeRound) escapeRound.textContent = 'Round: ' + state.round;
+                if (state.roundTimeRemaining !== undefined && roundTimer) {
+                    roundTimer.textContent = '⏱️ ' + formatTime(state.roundTimeRemaining);
                 }
                 updateDoorIndicator();
             }
             
             if (state.leaderboard) updateInGameLeaderboard(state.leaderboard);
             
-            // Fear effects - only for alive non-spectator players
+            // Fear effects
             if (!isSpectating && !player.dead && !isRespawning && gameStarted && !isPaused) {
                 const dist = Math.hypot(kanye.x - player.x, kanye.z - player.z);
                 updateFearEffects(dist);
             } else {
-                document.getElementById('fear-overlay').style.opacity = 0;
-                document.getElementById('warning').style.opacity = 0;
-                if (gainNode && audioCtx) {
-                    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                }
+                const fearOverlay = getEl('fear-overlay');
+                const warning = getEl('warning');
+                if (fearOverlay) fearOverlay.style.opacity = 0;
+                if (warning) warning.style.opacity = 0;
+                setAudioVolume(0);
             }
         }
 
@@ -1067,19 +1155,23 @@
                             showPickupMessage(msg);
                             
                             if (e.powerupType === 'ice') {
-                                document.getElementById('freeze-overlay').style.opacity = '1';
-                                document.getElementById('slot-ice').classList.add('active');
+                                const freezeOverlay = getEl('freeze-overlay');
+                                const slotIce = getEl('slot-ice');
+                                if (freezeOverlay) freezeOverlay.style.opacity = '1';
+                                if (slotIce) slotIce.classList.add('active');
                                 setTimeout(() => {
-                                    document.getElementById('freeze-overlay').style.opacity = '0';
-                                    document.getElementById('slot-ice').classList.remove('active');
+                                    if (freezeOverlay) freezeOverlay.style.opacity = '0';
+                                    if (slotIce) slotIce.classList.remove('active');
                                 }, 3000);
                             } else if (e.powerupType === 'speed') {
-                                document.getElementById('stamina-bar').classList.add('infinite');
-                                document.getElementById('slot-speed').classList.add('active');
+                                const staminaBar = getEl('stamina-bar');
+                                const slotSpeed = getEl('slot-speed');
+                                if (staminaBar) staminaBar.classList.add('infinite');
+                                if (slotSpeed) slotSpeed.classList.add('active');
                                 player.infiniteStamina = true;
                                 setTimeout(() => {
-                                    document.getElementById('stamina-bar').classList.remove('infinite');
-                                    document.getElementById('slot-speed').classList.remove('active');
+                                    if (staminaBar) staminaBar.classList.remove('infinite');
+                                    if (slotSpeed) slotSpeed.classList.remove('active');
                                     player.infiniteStamina = false;
                                 }, 10000);
                             }
@@ -1100,7 +1192,6 @@
                         if (e.playerId === playerId && !deathScreenShown) {
                             deathScreenShown = true;
                             if (isEscapeMode) {
-                                // Don't show death screen if round end is coming
                                 if (!roundEndShown) {
                                     showDeathScreen(e);
                                 }
@@ -1120,8 +1211,8 @@
                     case 'round_end':
                         if (!roundEndShown) {
                             roundEndShown = true;
-                            // Hide death screen if showing
-                            document.getElementById('death-screen').style.display = 'none';
+                            const deathScreen = getEl('death-screen');
+                            if (deathScreen) deathScreen.style.display = 'none';
                             showRoundEndScreen(e);
                         }
                         break;
@@ -1130,17 +1221,24 @@
         }
 
         function showDeathScreen(e) {
-            document.getElementById('survival-time').textContent = `Survived: ${formatTime(e.survivalTime || 0)}`;
-            document.getElementById('coins-earned').textContent = `Coins: ${sessionCoins}`;
+            const survivalTime = getEl('survival-time');
+            const coinsEarned = getEl('coins-earned');
+            const escapeCountDisplay = getEl('escape-count-display');
+            const respawnInfo = getEl('respawn-info');
+            const spectateBtn = getEl('spectate-btn');
+            const deathScreen = getEl('death-screen');
             
-            if (isEscapeMode && e.escapeCount !== undefined) {
-                document.getElementById('escape-count-display').style.display = 'block';
-                document.getElementById('escape-count-display').textContent = `Escapes: ${e.escapeCount}`;
+            if (survivalTime) survivalTime.textContent = `Survived: ${formatTime(e.survivalTime || 0)}`;
+            if (coinsEarned) coinsEarned.textContent = `Coins: ${sessionCoins}`;
+            
+            if (isEscapeMode && e.escapeCount !== undefined && escapeCountDisplay) {
+                escapeCountDisplay.style.display = 'block';
+                escapeCountDisplay.textContent = `Escapes: ${e.escapeCount}`;
             }
             
-            document.getElementById('respawn-info').textContent = 'You can spectate until next round.';
-            document.getElementById('spectate-btn').style.display = 'inline-block';
-            document.getElementById('death-screen').style.display = 'flex';
+            if (respawnInfo) respawnInfo.textContent = 'You can spectate until next round.';
+            if (spectateBtn) spectateBtn.style.display = 'inline-block';
+            if (deathScreen) deathScreen.style.display = 'flex';
             
             stopAudio();
             document.exitPointerLock();
@@ -1150,16 +1248,23 @@
         }
 
         function showRoundEndScreen(e) {
-            document.getElementById('round-end-screen').style.display = 'flex';
-            document.getElementById('re-escaped').textContent = e.escaped;
-            document.getElementById('re-died').textContent = e.died;
-            document.getElementById('re-didnt').textContent = e.didntEscape;
+            const roundEndScreen = getEl('round-end-screen');
+            const reEscaped = getEl('re-escaped');
+            const reDied = getEl('re-died');
+            const reDidnt = getEl('re-didnt');
+            const reResult = getEl('re-result');
             
-            const resultEl = document.getElementById('re-result');
-            if (e.timeUp) {
-                resultEl.textContent = '⏱️ Time\'s up!';
-            } else {
-                resultEl.textContent = 'Round complete!';
+            if (roundEndScreen) roundEndScreen.style.display = 'flex';
+            if (reEscaped) reEscaped.textContent = e.escaped;
+            if (reDied) reDied.textContent = e.died;
+            if (reDidnt) reDidnt.textContent = e.didntEscape;
+            
+            if (reResult) {
+                if (e.timeUp) {
+                    reResult.textContent = '⏱️ Time\'s up!';
+                } else {
+                    reResult.textContent = 'Round complete!';
+                }
             }
             
             stopAudio();
@@ -1334,6 +1439,8 @@
             powerupMeshes.forEach(m => scene.remove(m));
             powerupMeshes = [];
             
+            if (!serverPowerups) return;
+            
             for (const p of serverPowerups) {
                 let mesh;
                 
@@ -1362,6 +1469,8 @@
             coinMeshes.forEach(m => scene.remove(m));
             coinMeshes = [];
             
+            if (!serverCoins) return;
+            
             for (const c of serverCoins) {
                 const geo = new THREE.CylinderGeometry(0.25, 0.25, 0.08, 16);
                 const mat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
@@ -1375,7 +1484,9 @@
 
         // ============ PLAYER LIST & LEADERBOARD ============
         function updatePlayerList(players) {
-            const list = document.getElementById('player-list');
+            const list = getEl('player-list');
+            if (!list) return;
+            
             list.innerHTML = '<div id="player-list-title">PLAYERS</div>';
             
             const sorted = Object.entries(players).sort((a, b) => {
@@ -1426,7 +1537,9 @@
         }
 
         function updateInGameLeaderboard(leaderboard) {
-            const container = document.getElementById('lb-entries');
+            const container = getEl('lb-entries');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             for (let i = 0; i < Math.min(5, leaderboard.length); i++) {
@@ -1473,7 +1586,9 @@
                 if (dist < minDist) minDist = dist;
             }
             
-            const indicator = document.getElementById('escape-door-indicator');
+            const indicator = getEl('escape-door-indicator');
+            if (!indicator) return;
+            
             if (minDist < 15) {
                 indicator.textContent = '🚪 EXIT NEARBY!';
                 indicator.classList.add('nearby');
@@ -1485,29 +1600,38 @@
 
         function updateFearEffects(dist) {
             if (isPaused || !gameStarted) {
-                if (gainNode && audioCtx) {
-                    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                }
+                setAudioVolume(0);
                 return;
             }
             
-            const range = 60;
-            let vol = dist < range ? Math.pow(1 - dist / range, 0.5) * musicVolumeMultiplier : 0;
-            setAudioVolume(vol);
+            // Audio range and calculation
+            const audioRange = 70;
+            const maxVolumeDistance = 5;
+            
+            let targetVol = 0;
+            if (dist < audioRange) {
+                const normalizedDist = Math.max(0, dist - maxVolumeDistance) / (audioRange - maxVolumeDistance);
+                targetVol = Math.pow(1 - normalizedDist, 2.5);
+            }
+            
+            setAudioVolume(targetVol);
 
-            const fear = document.getElementById('fear-overlay');
-            const warn = document.getElementById('warning');
+            // Visual fear effects
+            const fear = getEl('fear-overlay');
+            const warn = getEl('warning');
             if (dist < 18) {
-                fear.style.opacity = (1 - dist / 18) * 0.5;
-                warn.style.opacity = dist < 8 ? 1 : 0;
+                if (fear) fear.style.opacity = (1 - dist / 18) * 0.5;
+                if (warn) warn.style.opacity = dist < 8 ? 1 : 0;
             } else {
-                fear.style.opacity = 0;
-                warn.style.opacity = 0;
+                if (fear) fear.style.opacity = 0;
+                if (warn) warn.style.opacity = 0;
             }
         }
 
         function updateBuyShieldButton() {
-            const btn = document.getElementById('buy-shield-btn');
+            const btn = getEl('buy-shield-btn');
+            if (!btn) return;
+            
             if (player.shieldHits > 0) {
                 btn.textContent = 'SHIELD ACTIVE';
                 btn.disabled = true;
@@ -1532,17 +1656,20 @@
                 const buf = await resp.arrayBuffer();
                 audioBuffer = await audioCtx.decodeAudioData(buf);
                 audioReady = true;
+                currentActualVolume = 0;
+                currentTargetVolume = 0;
             } catch(e) { 
                 console.log('Audio init error:', e); 
                 audioReady = false;
             }
         }
 
-        function setAudioVolume(vol) {
+        function setAudioVolume(targetVol) {
             if (!audioReady || !audioCtx || !gainNode) return;
             
             if (isPaused) {
-                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
+                currentTargetVolume = 0;
                 return;
             }
             
@@ -1550,7 +1677,8 @@
                 audioCtx.resume();
             }
             
-            if (!audioPlaying && vol > 0 && audioBuffer) {
+            // Start audio if needed
+            if (!audioPlaying && targetVol > 0 && audioBuffer) {
                 try {
                     audioSource = audioCtx.createBufferSource();
                     audioSource.buffer = audioBuffer;
@@ -1558,13 +1686,38 @@
                     audioSource.connect(gainNode);
                     audioSource.start();
                     audioPlaying = true;
+                    gainNode.gain.value = 0;
+                    currentActualVolume = 0;
                 } catch(e) {
                     console.log('Audio start error:', e);
                 }
             }
             
-            const finalVol = Math.min(1, vol * musicVolumeMultiplier);
-            gainNode.gain.setTargetAtTime(finalVol, audioCtx.currentTime, 0.1);
+            currentTargetVolume = targetVol;
+        }
+
+        function updateAudioVolume(dt) {
+            if (!audioReady || !gainNode || !audioCtx) return;
+            if (isPaused || !gameStarted) return;
+            
+            // Slow build up rate, faster fade out
+            const buildUpRate = 0.3;
+            const fadeOutRate = 1.5;
+            
+            const diff = currentTargetVolume - currentActualVolume;
+            
+            if (diff > 0) {
+                currentActualVolume += diff * buildUpRate * dt * 3;
+            } else {
+                currentActualVolume += diff * fadeOutRate * dt * 3;
+            }
+            
+            currentActualVolume = Math.max(0, Math.min(1, currentActualVolume));
+            
+            const finalVol = currentActualVolume * musicVolumeMultiplier;
+            const curvedVol = Math.pow(finalVol, 1.5);
+            
+            gainNode.gain.setTargetAtTime(curvedVol, audioCtx.currentTime, 0.05);
         }
 
         function stopAudio() {
@@ -1578,6 +1731,8 @@
             if (gainNode) {
                 gainNode.gain.value = 0;
             }
+            currentActualVolume = 0;
+            currentTargetVolume = 0;
         }
 
         function cleanupAudio() {
@@ -1592,6 +1747,8 @@
             audioBuffer = null;
             audioReady = false;
             audioPlaying = false;
+            currentActualVolume = 0;
+            currentTargetVolume = 0;
         }
 
         // ============ COORDINATE HELPERS ============
@@ -1712,8 +1869,10 @@
             
             scene.add(new THREE.AmbientLight(0xffffff, 0.9));
             
-            document.getElementById('minimap-floor').textContent = 
-                currentMap === 'backrooms' ? '🏢 Backrooms' : '🏭 Warehouse';
+            const minimapFloor = getEl('minimap-floor');
+            if (minimapFloor) {
+                minimapFloor.textContent = currentMap === 'backrooms' ? '🏢 Backrooms' : '🏭 Warehouse';
+            }
         }
 
         function createEscapeDoorVisuals() {
@@ -1835,7 +1994,10 @@
             const canSprint = wantSprint && (stamina > 0 || player.infiniteStamina);
             const moveSpeed = canSprint ? sprintSpeed : walkSpeed;
             
-            document.getElementById('stamina-bar').style.width = (player.infiniteStamina ? 100 : stamina) + '%';
+            const staminaBar = getEl('stamina-bar');
+            if (staminaBar) {
+                staminaBar.style.width = (player.infiniteStamina ? 100 : stamina) + '%';
+            }
 
             const fx = -Math.sin(player.yaw);
             const fz = -Math.cos(player.yaw);
@@ -1945,9 +2107,13 @@
         // ============ MINIMAP ============
         function updateMinimap() {
             if (isEscapeMode) return;
-            if (!document.getElementById('minimap-toggle').checked) return;
             
-            const canvas = document.getElementById('minimap-canvas');
+            const toggle = getEl('minimap-toggle');
+            if (toggle && !toggle.checked) return;
+            
+            const canvas = getEl('minimap-canvas');
+            if (!canvas) return;
+            
             const ctx = canvas.getContext('2d');
             const w = canvas.width;
             const h = canvas.height;
@@ -2004,7 +2170,8 @@
             if (!gameStarted) return;
             
             isPaused = !isPaused;
-            document.getElementById('pause-screen').style.display = isPaused ? 'flex' : 'none';
+            const pauseScreen = getEl('pause-screen');
+            if (pauseScreen) pauseScreen.style.display = isPaused ? 'flex' : 'none';
             
             if (isPaused) {
                 if (gainNode && audioCtx) {
@@ -2012,7 +2179,8 @@
                 }
                 document.exitPointerLock();
                 updateBuyShieldButton();
-                document.getElementById('pause-coins').textContent = sessionCoins;
+                const pauseCoins = getEl('pause-coins');
+                if (pauseCoins) pauseCoins.textContent = sessionCoins;
             } else {
                 if (!player.dead && !isRespawning && !player.escaped) {
                     renderer.domElement.requestPointerLock();
@@ -2022,7 +2190,8 @@
 
         function resumeGame() {
             isPaused = false;
-            document.getElementById('pause-screen').style.display = 'none';
+            const pauseScreen = getEl('pause-screen');
+            if (pauseScreen) pauseScreen.style.display = 'none';
             if (gameStarted && !player.dead && !isRespawning && !player.escaped) {
                 renderer.domElement.requestPointerLock();
             }
@@ -2038,8 +2207,10 @@
 
         function enterSpectateMode() {
             isSpectating = true;
-            document.getElementById('death-screen').style.display = 'none';
-            document.getElementById('spectator-indicator').style.display = 'block';
+            const deathScreen = getEl('death-screen');
+            const specInd = getEl('spectator-indicator');
+            if (deathScreen) deathScreen.style.display = 'none';
+            if (specInd) specInd.style.display = 'block';
             player.y = 8;
             renderer.domElement.requestPointerLock();
         }
@@ -2083,23 +2254,36 @@
             document.exitPointerLock();
             clearScene();
             
-            document.getElementById('death-screen').style.display = 'none';
-            document.getElementById('pause-screen').style.display = 'none';
-            document.getElementById('round-end-screen').style.display = 'none';
-            document.getElementById('start-screen').classList.remove('hidden');
-            document.getElementById('escape-hud').style.display = 'none';
-            document.getElementById('round-timer').style.display = 'none';
-            document.getElementById('spectator-indicator').style.display = 'none';
-            document.getElementById('respawn-timer').style.display = 'none';
-            document.getElementById('marker-hint').style.display = 'none';
-            document.getElementById('fear-overlay').style.opacity = 0;
-            document.getElementById('warning').style.opacity = 0;
-            document.getElementById('freeze-overlay').style.opacity = 0;
-            document.getElementById('connection-status').style.display = 'none';
-            document.getElementById('minimap').style.display = 'block';
-            document.getElementById('minimap-floor').style.display = 'block';
+            // Hide all screens
+            const elementsToHide = [
+                'death-screen', 'pause-screen', 'round-end-screen', 
+                'escape-hud', 'round-timer', 'spectator-indicator',
+                'respawn-timer', 'marker-hint', 'connection-status'
+            ];
             
-            document.getElementById('menu-coins').textContent = totalCoins + ' coins';
+            elementsToHide.forEach(id => {
+                const el = getEl(id);
+                if (el) el.style.display = 'none';
+            });
+            
+            // Reset overlays
+            const fearOverlay = getEl('fear-overlay');
+            const warning = getEl('warning');
+            const freezeOverlay = getEl('freeze-overlay');
+            if (fearOverlay) fearOverlay.style.opacity = 0;
+            if (warning) warning.style.opacity = 0;
+            if (freezeOverlay) freezeOverlay.style.opacity = 0;
+            
+            // Show menu and minimap
+            const startScreen = getEl('start-screen');
+            const minimap = getEl('minimap');
+            const minimapFloor = getEl('minimap-floor');
+            if (startScreen) startScreen.classList.remove('hidden');
+            if (minimap) minimap.style.display = 'block';
+            if (minimapFloor) minimapFloor.style.display = 'block';
+            
+            const menuCoins = getEl('menu-coins');
+            if (menuCoins) menuCoins.textContent = totalCoins + ' coins';
             
             saveData();
             setTimeout(checkServerConnectivity, 500);
@@ -2121,9 +2305,11 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             document.body.appendChild(renderer.domElement);
 
-            const mmCanvas = document.getElementById('minimap-canvas');
-            mmCanvas.width = 120;
-            mmCanvas.height = 120;
+            const mmCanvas = getEl('minimap-canvas');
+            if (mmCanvas) {
+                mmCanvas.width = 120;
+                mmCanvas.height = 120;
+            }
 
             document.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
@@ -2183,6 +2369,7 @@
             checkServerConnectivity();
         }
 
+        // ============ GAME LOOP ============
         let lastTime = 0;
         function animate(time) {
             requestAnimationFrame(animate);
@@ -2193,6 +2380,7 @@
             if (gameStarted) {
                 if (!isPaused) {
                     updatePlayer(dt);
+                    updateAudioVolume(dt);
                 } else {
                     camera.position.set(player.x, player.y, player.z);
                     camera.rotation.order = 'YXZ';
@@ -2236,18 +2424,28 @@
                 deathScreenShown = false;
                 
                 // Show minimap for normal mode
-                const showMinimap = document.getElementById('minimap-toggle').checked;
-                document.getElementById('minimap').style.display = showMinimap ? 'block' : 'none';
-                document.getElementById('minimap-floor').style.display = showMinimap ? 'block' : 'none';
-                document.getElementById('escape-hud').style.display = 'none';
-                document.getElementById('round-timer').style.display = 'none';
-                document.getElementById('marker-hint').style.display = 'none';
-                document.getElementById('game-leaderboard').style.display = 'block';
+                const toggle = getEl('minimap-toggle');
+                const showMinimap = toggle ? toggle.checked : true;
+                const minimap = getEl('minimap');
+                const minimapFloor = getEl('minimap-floor');
+                const escapeHud = getEl('escape-hud');
+                const roundTimer = getEl('round-timer');
+                const markerHint = getEl('marker-hint');
+                const gameLb = getEl('game-leaderboard');
+                
+                if (minimap) minimap.style.display = showMinimap ? 'block' : 'none';
+                if (minimapFloor) minimapFloor.style.display = showMinimap ? 'block' : 'none';
+                if (escapeHud) escapeHud.style.display = 'none';
+                if (roundTimer) roundTimer.style.display = 'none';
+                if (markerHint) markerHint.style.display = 'none';
+                if (gameLb) gameLb.style.display = 'block';
                 
                 ws = await connectToServer(NORMAL_SERVER_URL, 'normal');
                 
-                const name = document.getElementById('player-name').value.trim() || 'Player';
-                const useShield = document.getElementById('start-shield-toggle').checked && totalCoins >= 5;
+                const nameInput = getEl('player-name');
+                const shieldToggle = getEl('start-shield-toggle');
+                const name = nameInput ? (nameInput.value.trim() || 'Player') : 'Player';
+                const useShield = shieldToggle ? (shieldToggle.checked && totalCoins >= 5) : false;
                 
                 if (useShield) {
                     totalCoins -= 5;
@@ -2262,7 +2460,9 @@
                     customSkin: customSkinData
                 }));
                 
-                document.getElementById('start-screen').classList.add('hidden');
+                const startScreen = getEl('start-screen');
+                if (startScreen) startScreen.classList.add('hidden');
+                
                 gameStarted = true;
                 isRespawning = false;
                 isSpectating = false;
@@ -2272,41 +2472,51 @@
                 player.escaped = false;
                 player.shieldHits = useShield ? 1 : 0;
                 
-                document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
+                const hudCoins = getEl('hud-coins');
+                if (hudCoins) hudCoins.textContent = '💰 ' + sessionCoins;
                 
                 initAudio();
             } catch (e) {
                 console.error('Failed to start:', e);
-                alert('Failed to connect to server');
+                alert('Failed to connect to server: ' + e.message);
                 checkServerConnectivity();
             }
         }
 
         async function startEscapeMode() {
             if (!escapeServerOnline) {
-                alert(' mode server is offline');
+                alert('Escape mode server is offline');
                 return;
             }
             
             try {
-                isMode = true;
+                isEscapeMode = true;
                 GRID_SIZE = 38;
                 roundEndShown = false;
                 deathScreenShown = false;
                 
-                // NO minimap in  mode
-                document.getElementById('minimap').style.display = 'none';
-                document.getElementById('minimap-floor').style.display = 'none';
-                document.getElementById('-hud').style.display = 'block';
-                document.getElementById('round-timer').style.display = 'block';
-                document.getElementById('marker-hint').style.display = 'block';
-                document.getElementById('game-leaderboard').style.display = 'block';
+                // NO minimap in escape mode
+                const minimap = getEl('minimap');
+                const minimapFloor = getEl('minimap-floor');
+                const escapeHud = getEl('escape-hud');
+                const roundTimer = getEl('round-timer');
+                const markerHint = getEl('marker-hint');
+                const gameLb = getEl('game-leaderboard');
                 
-                ws = await connectToServer(_SERVER_URL, '');
+                if (minimap) minimap.style.display = 'none';
+                if (minimapFloor) minimapFloor.style.display = 'none';
+                if (escapeHud) escapeHud.style.display = 'block';
+                if (roundTimer) roundTimer.style.display = 'block';
+                if (markerHint) markerHint.style.display = 'block';
+                if (gameLb) gameLb.style.display = 'block';
                 
-                // Use  mode name field
-                const name = document.getElementById('escape-player-name').value.trim() || 'Player';
-                const useShield = document.getElementById('escape-shield-toggle').checked && totalCoins >= 5;
+                ws = await connectToServer(ESCAPE_SERVER_URL, 'escape');
+                
+                // Use escape mode name field
+                const nameInput = getEl('escape-player-name');
+                const shieldToggle = getEl('escape-shield-toggle');
+                const name = nameInput ? (nameInput.value.trim() || 'Player') : 'Player';
+                const useShield = shieldToggle ? (shieldToggle.checked && totalCoins >= 5) : false;
                 
                 if (useShield) {
                     totalCoins -= 5;
@@ -2321,7 +2531,9 @@
                     customSkin: customSkinData
                 }));
                 
-                document.getElementById('start-screen').classList.add('hidden');
+                const startScreen = getEl('start-screen');
+                if (startScreen) startScreen.classList.add('hidden');
+                
                 gameStarted = true;
                 isRespawning = false;
                 isSpectating = false;
@@ -2331,12 +2543,13 @@
                 player.escaped = false;
                 player.shieldHits = useShield ? 1 : 0;
                 
-                document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
+                const hudCoins = getEl('hud-coins');
+                if (hudCoins) hudCoins.textContent = '💰 ' + sessionCoins;
                 
                 initAudio();
             } catch (e) {
                 console.error('Failed to start:', e);
-                alert('Failed to connect to server');
+                alert('Failed to connect to server: ' + e.message);
                 checkServerConnectivity();
             }
         }
