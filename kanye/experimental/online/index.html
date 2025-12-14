@@ -110,6 +110,12 @@
             color: #88ccff; font-size: 14px; display: none; text-shadow: 0 0 10px #000;
         }
         
+        #connection-status {
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            color: #ff6b6b; font-size: 12px; display: none; text-shadow: 0 0 10px #000;
+            background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 4px;
+        }
+        
         #escape-hud { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
         #escape-round { color: #4ade80; font-size: 18px; font-weight: bold; text-shadow: 0 0 10px #000; }
         #escape-door-indicator { color: #22ff22; font-size: 12px; margin-top: 2px; text-shadow: 0 0 15px #00ff00; }
@@ -218,7 +224,7 @@
 <body>
     <div id="start-screen" class="menu-overlay">
         <h1>🫒 OLIVE DELIGHTS 🫒</h1>
-        <h2>Multiplayer Edition v3.2</h2>
+        <h2>Multiplayer Edition v3.3</h2>
         
         <div class="server-status">
             <div class="server-indicator checking" id="normal-server-status">Normal: Checking...</div>
@@ -361,6 +367,7 @@
             <div id="escape-round">Round: 1</div>
             <div id="escape-door-indicator">🚪 FIND THE EXIT!</div>
         </div>
+        <div id="connection-status">⚠️ Connection lost...</div>
     </div>
     
     <div class="vignette"></div>
@@ -408,6 +415,7 @@
         // ============ CONSTANTS ============
         const NORMAL_RESPAWN_TIME = 15;
         const MAX_SPECTATOR_HEIGHT = 12;
+        const CONNECTION_CHECK_INTERVAL = 5000;
         
         // ============ GAME STATE ============
         let ws = null;
@@ -428,6 +436,10 @@
         let respawnTimer = 0;
         let customSkinData = null;
         let joinedMidRound = false;
+        let lastServerMessage = 0;
+        let connectionCheckInterval = null;
+        let roundEndShown = false;
+        let deathScreenShown = false;
         
         // ============ TEXTURES ============
         let powerupTextures = {};
@@ -513,7 +525,6 @@
 
         // ============ TEXTURE LOADING ============
         function loadTextures() {
-            // Wall texture for backrooms
             textureLoader.load('https://joercat.github.io/wall.png', 
                 (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
@@ -527,7 +538,6 @@
                 (err) => console.log('Wall texture failed to load')
             );
             
-            // Floor texture
             textureLoader.load('https://joercat.github.io/floor.jpg', 
                 (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
@@ -539,7 +549,6 @@
                 (err) => console.log('Floor texture failed to load')
             );
             
-            // Powerup textures
             textureLoader.load('https://joercat.github.io/ice.png', (tex) => {
                 tex.magFilter = THREE.NearestFilter;
                 powerupTextures.ice = tex;
@@ -606,7 +615,6 @@
 
         function updateMinimapToggle() {
             const enabled = document.getElementById('minimap-toggle').checked;
-            // Only show minimap in normal mode
             if (!isEscapeMode) {
                 document.getElementById('minimap').style.display = enabled ? 'block' : 'none';
                 document.getElementById('minimap-floor').style.display = enabled ? 'block' : 'none';
@@ -674,6 +682,44 @@
             });
         }
 
+        function startConnectionMonitor() {
+            lastServerMessage = Date.now();
+            
+            if (connectionCheckInterval) {
+                clearInterval(connectionCheckInterval);
+            }
+            
+            connectionCheckInterval = setInterval(() => {
+                if (!gameStarted) return;
+                
+                const timeSinceLastMessage = Date.now() - lastServerMessage;
+                
+                if (timeSinceLastMessage > 15000) {
+                    document.getElementById('connection-status').style.display = 'block';
+                    document.getElementById('connection-status').textContent = '⚠️ Connection lost - returning to menu...';
+                    
+                    setTimeout(() => {
+                        if (gameStarted && Date.now() - lastServerMessage > 15000) {
+                            returnToMenu();
+                        }
+                    }, 3000);
+                } else if (timeSinceLastMessage > 8000) {
+                    document.getElementById('connection-status').style.display = 'block';
+                    document.getElementById('connection-status').textContent = '⚠️ Connection unstable...';
+                } else {
+                    document.getElementById('connection-status').style.display = 'none';
+                }
+            }, CONNECTION_CHECK_INTERVAL);
+        }
+
+        function stopConnectionMonitor() {
+            if (connectionCheckInterval) {
+                clearInterval(connectionCheckInterval);
+                connectionCheckInterval = null;
+            }
+            document.getElementById('connection-status').style.display = 'none';
+        }
+
         // ============ WEBSOCKET ============
         function connectToServer(serverUrl, mode) {
             return new Promise((resolve, reject) => {
@@ -698,13 +744,16 @@
                     
                     socket.onclose = () => {
                         if (gameStarted) {
-                            showPickupMessage('⚠️ DISCONNECTED', 3000);
+                            document.getElementById('connection-status').style.display = 'block';
+                            document.getElementById('connection-status').textContent = '⚠️ Server disconnected';
+                            showPickupMessage('⚠️ DISCONNECTED FROM SERVER', 3000);
                             setTimeout(returnToMenu, 2000);
                         }
                     };
                     
                     socket.onmessage = (e) => {
                         try {
+                            lastServerMessage = Date.now();
                             handleServerMessage(JSON.parse(e.data));
                         } catch(err) { console.error('Message error:', err); }
                     };
@@ -718,6 +767,12 @@
             switch (msg.type) {
                 case 'connected':
                     playerId = msg.playerId;
+                    break;
+                    
+                case 'ping':
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'pong' }));
+                    }
                     break;
                     
                 case 'error':
@@ -780,6 +835,8 @@
             player.escaped = false;
             player.shieldHits = 0;
             isRespawning = false;
+            roundEndShown = false;
+            deathScreenShown = false;
             
             if (isSpectating) {
                 document.getElementById('spectator-indicator').style.display = 'block';
@@ -794,11 +851,14 @@
                 createEscapeDoorVisuals();
             }
             
+            startConnectionMonitor();
             renderer.domElement.requestPointerLock();
         }
 
         function handleNewRound(msg) {
+            // Hide all overlays
             document.getElementById('round-end-screen').style.display = 'none';
+            document.getElementById('death-screen').style.display = 'none';
             
             maze = msg.mapUpdate.maze;
             currentMap = msg.mapUpdate.currentMap || 'backrooms';
@@ -823,6 +883,8 @@
             isSpectating = false;
             isRespawning = false;
             joinedMidRound = false;
+            roundEndShown = false;
+            deathScreenShown = false;
             
             document.getElementById('spectator-indicator').style.display = 'none';
             document.getElementById('respawn-timer').style.display = 'none';
@@ -909,13 +971,41 @@
                     const op = otherPlayers.get(id);
                     op.data = p;
                     if (op.mesh) {
-                        op.mesh.visible = !p.dead && !p.isSpectator;
-                        op.mesh.position.set(p.x, 0.9, p.z);
-                        op.mesh.rotation.y = -p.yaw;
+                        // Show spectators as semi-transparent ghosts at height
+                        if (p.isSpectator) {
+                            op.mesh.visible = true;
+                            op.mesh.position.set(p.x, p.y - 0.7, p.z);
+                            op.mesh.rotation.y = -p.yaw;
+                            // Make spectators semi-transparent
+                            op.mesh.traverse((child) => {
+                                if (child.material) {
+                                    child.material.transparent = true;
+                                    child.material.opacity = 0.4;
+                                }
+                            });
+                        } else {
+                            op.mesh.visible = !p.dead;
+                            op.mesh.position.set(p.x, 0.9, p.z);
+                            op.mesh.rotation.y = -p.yaw;
+                            // Reset opacity for non-spectators
+                            op.mesh.traverse((child) => {
+                                if (child.material) {
+                                    child.material.transparent = false;
+                                    child.material.opacity = 1;
+                                }
+                            });
+                        }
                     }
                     if (op.nameTag) {
-                        op.nameTag.visible = op.mesh.visible;
-                        op.nameTag.position.set(p.x, 2.2, p.z);
+                        if (p.isSpectator) {
+                            op.nameTag.visible = true;
+                            op.nameTag.position.set(p.x, p.y + 0.6, p.z);
+                            op.nameTag.material.opacity = 0.4;
+                        } else {
+                            op.nameTag.visible = !p.dead;
+                            op.nameTag.position.set(p.x, 2.2, p.z);
+                            op.nameTag.material.opacity = 1;
+                        }
                     }
                 }
             }
@@ -1007,9 +1097,13 @@
                         break;
                         
                     case 'death':
-                        if (e.playerId === playerId) {
+                        if (e.playerId === playerId && !deathScreenShown) {
+                            deathScreenShown = true;
                             if (isEscapeMode) {
-                                showDeathScreen(e);
+                                // Don't show death screen if round end is coming
+                                if (!roundEndShown) {
+                                    showDeathScreen(e);
+                                }
                             } else {
                                 showPickupMessage('💀 Respawning in ' + NORMAL_RESPAWN_TIME + 's...', 3000);
                             }
@@ -1024,7 +1118,12 @@
                         break;
                         
                     case 'round_end':
-                        showRoundEndScreen(e);
+                        if (!roundEndShown) {
+                            roundEndShown = true;
+                            // Hide death screen if showing
+                            document.getElementById('death-screen').style.display = 'none';
+                            showRoundEndScreen(e);
+                        }
                         break;
                 }
             }
@@ -1062,6 +1161,9 @@
             } else {
                 resultEl.textContent = 'Round complete!';
             }
+            
+            stopAudio();
+            document.exitPointerLock();
         }
 
         // ============ OTHER PLAYERS ============
@@ -1069,7 +1171,11 @@
             const group = new THREE.Group();
             
             const bodyGeo = new THREE.BoxGeometry(0.8, 1.6, 0.8);
-            const bodyMat = new THREE.MeshBasicMaterial({ color: data.color || '#4488ff' });
+            const bodyMat = new THREE.MeshBasicMaterial({ 
+                color: data.color || '#4488ff',
+                transparent: data.isSpectator,
+                opacity: data.isSpectator ? 0.4 : 1
+            });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 0.8;
             group.add(body);
@@ -1080,7 +1186,11 @@
             if (data.customSkin) {
                 const tex = textureLoader.load(data.customSkin);
                 tex.magFilter = THREE.NearestFilter;
-                faceMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+                faceMat = new THREE.MeshBasicMaterial({ 
+                    map: tex, 
+                    transparent: true,
+                    opacity: data.isSpectator ? 0.4 : 1
+                });
             } else {
                 const canvas = document.createElement('canvas');
                 canvas.width = 64;
@@ -1101,14 +1211,22 @@
                 ctx.stroke();
                 
                 const tex = new THREE.CanvasTexture(canvas);
-                faceMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+                faceMat = new THREE.MeshBasicMaterial({ 
+                    map: tex, 
+                    transparent: true,
+                    opacity: data.isSpectator ? 0.4 : 1
+                });
             }
             
             const face = new THREE.Mesh(faceGeo, faceMat);
             face.position.set(0, 1.2, 0.41);
             group.add(face);
             
-            group.position.set(data.x, 0.9, data.z);
+            if (data.isSpectator) {
+                group.position.set(data.x, data.y - 0.7, data.z);
+            } else {
+                group.position.set(data.x, 0.9, data.z);
+            }
             scene.add(group);
             
             // Name tag
@@ -1121,13 +1239,23 @@
             nameCtx.fillStyle = data.color || '#fff';
             nameCtx.font = 'bold 16px Arial';
             nameCtx.textAlign = 'center';
-            nameCtx.fillText(data.name, 64, 22);
+            let displayName = data.name;
+            if (data.isSpectator) displayName = '👁️ ' + data.name;
+            nameCtx.fillText(displayName, 64, 22);
             
             const nameTex = new THREE.CanvasTexture(nameCanvas);
-            const nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex });
+            const nameSpriteMat = new THREE.SpriteMaterial({ 
+                map: nameTex,
+                transparent: true,
+                opacity: data.isSpectator ? 0.4 : 1
+            });
             const nameSprite = new THREE.Sprite(nameSpriteMat);
             nameSprite.scale.set(1.5, 0.4, 1);
-            nameSprite.position.set(data.x, 2.2, data.z);
+            if (data.isSpectator) {
+                nameSprite.position.set(data.x, data.y + 0.6, data.z);
+            } else {
+                nameSprite.position.set(data.x, 2.2, data.z);
+            }
             scene.add(nameSprite);
             
             otherPlayers.set(id, { mesh: group, nameTag: nameSprite, data });
@@ -1150,7 +1278,6 @@
                 seenIds.add(id);
                 
                 if (!markerMeshes.has(id)) {
-                    // Tall beam visible from far
                     const beamGeo = new THREE.CylinderGeometry(0.3, 0.3, m.y * 2, 8);
                     const beamMat = new THREE.MeshBasicMaterial({ 
                         color: m.color, 
@@ -1163,7 +1290,6 @@
                     beam.renderOrder = 999;
                     scene.add(beam);
                     
-                    // Sphere on top
                     const sphereGeo = new THREE.SphereGeometry(1.5, 12, 12);
                     const sphereMat = new THREE.MeshBasicMaterial({ 
                         color: m.color,
@@ -1531,6 +1657,11 @@
             let floorColor = 0x8b7355;
             let fogColor = 0x1a1a0a;
             
+            // Always backrooms in escape mode
+            if (isEscapeMode) {
+                currentMap = 'backrooms';
+            }
+            
             if (currentMap === 'warehouse') {
                 wallColor = 0x4a4a4a;
                 floorColor = 0x3a3a3a;
@@ -1540,7 +1671,6 @@
             scene.background = new THREE.Color(fogColor);
             scene.fog = new THREE.Fog(fogColor, 3, 50);
 
-            // Create wall material - try texture first
             let wallMat;
             if (wallTexture && currentMap === 'backrooms') {
                 const clonedTex = wallTexture.clone();
@@ -1550,7 +1680,6 @@
                 wallMat = new THREE.MeshBasicMaterial({ color: wallColor });
             }
             
-            // Create floor material
             let floorMat;
             if (floorTexture && currentMap === 'backrooms') {
                 const clonedFloorTex = floorTexture.clone();
@@ -1561,7 +1690,6 @@
                 floorMat = new THREE.MeshBasicMaterial({ color: floorColor });
             }
 
-            // Build walls - NO CEILING
             wallMeshes = [];
             for (let x = 0; x < GRID_SIZE; x++) {
                 for (let z = 0; z < GRID_SIZE; z++) {
@@ -1576,17 +1704,14 @@
                 }
             }
 
-            // Floor only - NO CEILING
             const floorGeo = new THREE.PlaneGeometry(GRID_SIZE * CELL, GRID_SIZE * CELL);
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
             floor.position.y = 0.01;
             scene.add(floor);
             
-            // Lighting
             scene.add(new THREE.AmbientLight(0xffffff, 0.9));
             
-            // Update minimap label
             document.getElementById('minimap-floor').textContent = 
                 currentMap === 'backrooms' ? '🏢 Backrooms' : '🏭 Warehouse';
         }
@@ -1601,13 +1726,11 @@
                 const frameMat = new THREE.MeshBasicMaterial({ color: 0x3d2817 });
                 const doorMat = new THREE.MeshBasicMaterial({ color: 0x5c3a21 });
                 
-                // Determine rotation based on direction
                 let rotY = 0;
                 if (door.dir === 'east' || door.dir === 'west') {
                     rotY = Math.PI / 2;
                 }
                 
-                // Frame pieces
                 const frameL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
                 frameL.position.set(-0.55, 1.4, 0);
                 group.add(frameL);
@@ -1620,12 +1743,10 @@
                 frameT.position.set(0, 2.75, 0);
                 group.add(frameT);
                 
-                // Door panel
                 const panel = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.5, 0.15), doorMat);
                 panel.position.set(0, 1.3, 0.1);
                 group.add(panel);
                 
-                // EXIT sign
                 const signCanvas = document.createElement('canvas');
                 signCanvas.width = 64;
                 signCanvas.height = 32;
@@ -1644,12 +1765,10 @@
                 sign.position.set(0, 3.2, 0);
                 group.add(sign);
                 
-                // Glow
                 const glow = new THREE.PointLight(0x44ff44, 2, 15);
                 glow.position.set(0, 1.5, 0.5);
                 group.add(glow);
                 
-                // Position door at the wall face
                 group.position.set(door.x, 0, door.z);
                 group.rotation.y = rotY;
                 scene.add(group);
@@ -1678,13 +1797,11 @@
         function updatePlayer(dt) {
             if (!gameStarted) return;
             
-            // Spectator fly mode
             if (isSpectating) {
                 updateSpectatorCamera(dt);
                 return;
             }
             
-            // Dead/respawning - just update camera look
             if (player.dead || isRespawning) {
                 camera.position.set(player.x, player.y, player.z);
                 camera.rotation.order = 'YXZ';
@@ -1693,7 +1810,6 @@
                 return;
             }
             
-            // Escaped - stand still
             if (player.escaped) {
                 camera.position.set(player.x, player.y, player.z);
                 camera.rotation.order = 'YXZ';
@@ -1749,7 +1865,6 @@
             let nz = player.z + mz * dt;
             let ny = player.y + player.vy * dt;
 
-            // Collision
             if (!isWalkableWorld(nx, player.z, 0.35)) nx = player.x;
             if (!isWalkableWorld(player.x, nz, 0.35)) nz = player.z;
             if (!isWalkableWorld(nx, nz, 0.35)) { nx = player.x; nz = player.z; }
@@ -1770,7 +1885,6 @@
         }
 
         function updateSpectatorCamera(dt) {
-            // Free fly mode for spectators with height limit
             const speed = 15;
             
             const fx = -Math.sin(player.yaw);
@@ -1802,11 +1916,10 @@
             player.y += my * speed * dt;
             player.z += mz * speed * dt;
             
-            // Keep in bounds with height limit
             const half = (GRID_SIZE * CELL) / 2;
             player.x = Math.max(-half + 1, Math.min(half - 1, player.x));
             player.z = Math.max(-half + 1, Math.min(half - 1, player.z));
-            player.y = Math.max(1, Math.min(MAX_SPECTATOR_HEIGHT, player.y));
+            player.y = Math.max(2, Math.min(MAX_SPECTATOR_HEIGHT, player.y));
 
             camera.position.set(player.x, player.y, player.z);
             camera.rotation.order = 'YXZ';
@@ -1831,7 +1944,6 @@
 
         // ============ MINIMAP ============
         function updateMinimap() {
-            // No minimap in escape mode
             if (isEscapeMode) return;
             if (!document.getElementById('minimap-toggle').checked) return;
             
@@ -1844,7 +1956,6 @@
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, w, h);
 
-            // Walls
             ctx.fillStyle = '#444';
             for (let x = 0; x < GRID_SIZE; x++) {
                 for (let z = 0; z < GRID_SIZE; z++) {
@@ -1854,7 +1965,6 @@
                 }
             }
             
-            // Other players
             for (const [id, op] of otherPlayers) {
                 if (op.data && !op.data.dead && !op.data.isSpectator) {
                     const px = (op.data.x / CELL + GRID_SIZE / 2) * scale;
@@ -1866,7 +1976,6 @@
                 }
             }
 
-            // Player
             const playerMapX = (player.x / CELL + GRID_SIZE / 2) * scale;
             const playerMapZ = (player.z / CELL + GRID_SIZE / 2) * scale;
             
@@ -1875,7 +1984,6 @@
             ctx.arc(playerMapX, playerMapZ, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // Direction
             ctx.strokeStyle = myColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1883,7 +1991,6 @@
             ctx.lineTo(playerMapX - Math.sin(player.yaw) * 10, playerMapZ - Math.cos(player.yaw) * 10);
             ctx.stroke();
 
-            // Kanye
             if (!isSpectating) {
                 ctx.fillStyle = kanye.frozen ? '#88ccff' : '#ff4444';
                 ctx.beginPath();
@@ -1907,7 +2014,7 @@
                 updateBuyShieldButton();
                 document.getElementById('pause-coins').textContent = sessionCoins;
             } else {
-                if (!player.dead && !isRespawning) {
+                if (!player.dead && !isRespawning && !player.escaped) {
                     renderer.domElement.requestPointerLock();
                 }
             }
@@ -1916,7 +2023,7 @@
         function resumeGame() {
             isPaused = false;
             document.getElementById('pause-screen').style.display = 'none';
-            if (gameStarted && !player.dead && !isRespawning) {
+            if (gameStarted && !player.dead && !isRespawning && !player.escaped) {
                 renderer.domElement.requestPointerLock();
             }
         }
@@ -1956,7 +2063,10 @@
             isEscapeMode = false;
             respawnTimer = 0;
             joinedMidRound = false;
+            roundEndShown = false;
+            deathScreenShown = false;
             
+            stopConnectionMonitor();
             cleanupAudio();
             
             if (ws) {
@@ -1973,7 +2083,6 @@
             document.exitPointerLock();
             clearScene();
             
-            // Hide all screens
             document.getElementById('death-screen').style.display = 'none';
             document.getElementById('pause-screen').style.display = 'none';
             document.getElementById('round-end-screen').style.display = 'none';
@@ -1986,6 +2095,7 @@
             document.getElementById('fear-overlay').style.opacity = 0;
             document.getElementById('warning').style.opacity = 0;
             document.getElementById('freeze-overlay').style.opacity = 0;
+            document.getElementById('connection-status').style.display = 'none';
             document.getElementById('minimap').style.display = 'block';
             document.getElementById('minimap-floor').style.display = 'block';
             
@@ -2015,7 +2125,6 @@
             mmCanvas.width = 120;
             mmCanvas.height = 120;
 
-            // Keyboard
             document.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
                 
@@ -2037,7 +2146,6 @@
                 if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') isSprinting = false;
             });
 
-            // Mouse
             document.addEventListener('mousemove', (e) => {
                 if (!isLocked || !gameStarted) return;
                 if (isPaused) return;
@@ -2075,7 +2183,6 @@
             checkServerConnectivity();
         }
 
-        // ============ GAME LOOP ============
         let lastTime = 0;
         function animate(time) {
             requestAnimationFrame(animate);
@@ -2125,6 +2232,8 @@
             try {
                 isEscapeMode = false;
                 GRID_SIZE = 25;
+                roundEndShown = false;
+                deathScreenShown = false;
                 
                 // Show minimap for normal mode
                 const showMinimap = document.getElementById('minimap-toggle').checked;
@@ -2175,25 +2284,27 @@
 
         async function startEscapeMode() {
             if (!escapeServerOnline) {
-                alert('Escape mode server is offline');
+                alert(' mode server is offline');
                 return;
             }
             
             try {
-                isEscapeMode = true;
+                isMode = true;
                 GRID_SIZE = 38;
+                roundEndShown = false;
+                deathScreenShown = false;
                 
-                // NO minimap in escape mode
+                // NO minimap in  mode
                 document.getElementById('minimap').style.display = 'none';
                 document.getElementById('minimap-floor').style.display = 'none';
-                document.getElementById('escape-hud').style.display = 'block';
+                document.getElementById('-hud').style.display = 'block';
                 document.getElementById('round-timer').style.display = 'block';
                 document.getElementById('marker-hint').style.display = 'block';
                 document.getElementById('game-leaderboard').style.display = 'block';
                 
-                ws = await connectToServer(ESCAPE_SERVER_URL, 'escape');
+                ws = await connectToServer(_SERVER_URL, '');
                 
-                // Use escape mode name field
+                // Use  mode name field
                 const name = document.getElementById('escape-player-name').value.trim() || 'Player';
                 const useShield = document.getElementById('escape-shield-toggle').checked && totalCoins >= 5;
                 
