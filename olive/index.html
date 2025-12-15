@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Olive Delights - Choose Version</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="icon" type="image/png" href="/kanye.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 50%, #1a1a2e 100%);
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ffd700;
+            font-size: clamp(28px, 7vw, 52px);
+            text-shadow: 0 0 30px #ff8c00, 0 0 60px #ff4500;
+            margin-bottom: 8px;
+            margin-top: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+            line-height: 1.2;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 30px #ff8c00, 0 0 60px #ff4500;
+            }
+            to {
+                text-shadow: 0 0 40px #ffd700, 0 0 80px #ff8c00, 0 0 100px #ff4500;
+            }
+        }
+
+        .subtitle {
+            color: #ccc;
+            font-size: clamp(13px, 3vw, 18px);
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            background: rgba(255, 180, 50, 0.1);
+            border: 1px solid rgba(255, 180, 50, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .warning-banner .icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .warning-banner .text {
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: #ffcc66;
+            line-height: 1.4;
+        }
+
+        .warning-banner .text strong {
+            color: #ffd700;
+        }
+
+        /* Auto Detect Section */
+        .auto-detect {
+            background: rgba(255, 215, 0, 0.08);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .auto-detect h3 {
+            color: #ffd700;
+            font-size: clamp(16px, 4vw, 20px);
+            margin-bottom: 8px;
+        }
+
+        .auto-detect p {
+            color: #aaa;
+            font-size: clamp(12px, 2.8vw, 14px);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .detected-device {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .auto-btn {
+            display: inline-block;
+            padding: 14px 35px;
+            background: linear-gradient(135deg, #ff8c00, #ff4500);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: clamp(15px, 4vw, 18px);
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .auto-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 30px rgba(255, 140, 0, 0.5);
+        }
+
+        .auto-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Section Title */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 25px 0 15px 0;
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        .section-title span {
+            color: #888;
+            font-size: clamp(11px, 2.5vw, 13px);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        /* Version Grid */
+        .version-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 550px) {
+            .version-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        /* Version Cards */
+        .version-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: block;
+            touch-action: manipulation;
+        }
+
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 140, 0, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .version-card:hover,
+        .version-card:active {
+            transform: translateY(-3px);
+            border-color: #ff8c00;
+            box-shadow: 0 8px 30px rgba(255, 140, 0, 0.25);
+        }
+
+        .version-card:hover::before,
+        .version-card:active::before {
+            opacity: 1;
+        }
+
+        .version-card.singleplayer {
+            border-color: rgba(74, 222, 128, 0.25);
+        }
+
+        .version-card.singleplayer:hover,
+        .version-card.singleplayer:active {
+            border-color: #4ade80;
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.25);
+        }
+
+        .version-card.online {
+            border-color: rgba(96, 165, 250, 0.25);
+        }
+
+        .version-card.online:hover,
+        .version-card.online:active {
+            border-color: #60a5fa;
+            box-shadow: 0 8px 30px rgba(96, 165, 250, 0.25);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: clamp(32px, 8vw, 42px);
+        }
+
+        .card-title {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .version-card.singleplayer .card-title {
+            color: #4ade80;
+        }
+
+        .version-card.online .card-title {
+            color: #60a5fa;
+        }
+
+        .card-description {
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: #999;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+        }
+
+        .card-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: clamp(10px, 2.2vw, 11px);
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge-desktop {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .badge-mobile {
+            background: rgba(255, 140, 0, 0.15);
+            color: #ff8c00;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+        }
+
+        .badge-recommended {
+            background: linear-gradient(135deg, #ff8c00, #ff4500);
+            color: white;
+            border: none;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .features {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: clamp(9px, 2vw, 10px);
+            color: #777;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(100, 150, 255, 0.08);
+            border: 1px solid rgba(100, 150, 255, 0.25);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .info-box h4 {
+            color: #60a5fa;
+            font-size: clamp(12px, 3vw, 14px);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            font-size: clamp(11px, 2.5vw, 12px);
+            color: #888;
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        .info-box li::before {
+            content: '•';
+            position: absolute;
+            left: 6px;
+            color: #60a5fa;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            color: #444;
+            font-size: clamp(10px, 2.5vw, 12px);
+        }
+
+        .footer a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #ffd700;
+        }
+
+        /* Floating Background Olives */
+        .bg-olive {
+            position: fixed;
+            font-size: clamp(20px, 5vw, 30px);
+            opacity: 0.08;
+            animation: float 25s infinite linear;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.08;
+            }
+            90% {
+                opacity: 0.08;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dark Mode Adjustments (already dark, but for consistency) */
+        @media (prefers-color-scheme: light) {
+            /* Keep dark theme regardless */
+        }
+
+        /* Landscape Phone Adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px 20px;
+            }
+            
+            h1 {
+                font-size: 28px;
+                margin-top: 10px;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                margin-bottom: 15px;
+            }
+            
+            .auto-detect {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .version-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .version-card {
+                padding: 15px 12px;
+            }
+        }
+
+        /* Very Small Screens */
+        @media (max-width: 350px) {
+            body {
+                padding: 15px 12px;
+            }
+            
+            .warning-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+            
+            .auto-detect {
+                padding: 15px 12px;
+            }
+            
+            .card-badges {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+
+        /* Touch Device Hover Fix */
+        @media (hover: none) {
+            .version-card:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .version-card:active {
+                transform: scale(0.98);
+            }
+            
+            .auto-btn:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .auto-btn:active {
+                transform: scale(0.95);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating olives background -->
+    <div class="bg-olive" style="left: 5%; animation-delay: 0s;">🫒</div>
+    <div class="bg-olive" style="left: 20%; animation-delay: 6s;">🫒</div>
+    <div class="bg-olive" style="left: 40%; animation-delay: 12s;">🫒</div>
+    <div class="bg-olive" style="left: 60%; animation-delay: 4s;">🫒</div>
+    <div class="bg-olive" style="left: 80%; animation-delay: 18s;">🫒</div>
+    <div class="bg-olive" style="left: 95%; animation-delay: 10s;">🫒</div>
+
+    <div class="container">
+        <h1>🫒 OLIVE DELIGHTS 🫒</h1>
+        <p class="subtitle">Escape the Nextbot</p>
+
+        <!-- Progress Warning -->
+        <div class="warning-banner">
+            <span class="icon">⚠️</span>
+            <div class="text">
+                <strong>Progress does not sync between versions.</strong><br>
+                Your coins, upgrades, and unlocks are saved separately for each version. Pick one and stick with it!
+            </div>
+        </div>
+
+        <!-- Auto Detect Section -->
+        <div class="auto-detect">
+            <h3>🎮 Quick Play</h3>
+            <p>We'll pick the best version for your device</p>
+            <div class="detected-device" id="detected-device">
+                <span id="device-icon">🔍</span>
+                <span id="device-text">Detecting...</span>
+            </div>
+            <br>
+            <a href="#" class="auto-btn" id="auto-play-btn">PLAY NOW</a>
+        </div>
+
+        <!-- Singleplayer Section -->
+        <div class="section-title">
+            <span>🎮 Singleplayer</span>
+        </div>
+
+        <div class="version-grid">
+            <a href="singleplayer/" class="version-card singleplayer" id="card-sp-desktop">
+                <div class="card-header">
+                    <span class="card-icon">🖥️</span>
+                </div>
+                <div class="card-title">Singleplayer Desktop</div>
+                <div class="card-description">
+                    Full experience with keyboard & mouse controls. Best for PC players.
+                </div>
+                <div class="card-badges">
+                    <span class="card-badge badge-desktop">🖥️ Desktop</span>
+                    <span class="card-badge badge-recommended" id="badge-sp-desktop" style="display: none;">✓ Recommended</span>
+                </div>
+                <div class="features">
+                    <span class="feature-tag">Offline</span>
+                    <span class="feature-tag">3 Maps</span>
+                    <span class="feature-tag">Upgrades</span>
+                    <span class="feature-tag">Skins</span>
+                </div>
+            </a>
+
+            <a href="singleplayer/mobile" class="version-card singleplayer" id="card-sp-mobile">
+                <div class="card-header">
+                    <span class="card-icon">📱</span>
+                </div>
+                <div class="card-title">Singleplayer Mobile</div>
+                <div class="card-description">
+                    Touch controls with virtual joystick. Optimized for phones & tablets.
+                </div>
+                <div class="card-badges">
+                    <span class="card-badge badge-mobile">📱 Mobile</span>
+                    <span class="card-badge badge-recommended" id="badge-sp-mobile" style="display: none;">✓ Recommended</span>
+                </div>
+                <div class="features">
+                    <span class="feature-tag">Touch Controls</span>
+                    <span class="feature-tag">Offline</span>
+                    <span class="feature-tag">All Features</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Multiplayer Section -->
+        <div class="section-title">
+            <span>🌐 Multiplayer</span>
+        </div>
+
+        <div class="version-grid">
+            <a href="online/" class="version-card online" id="card-mp-desktop">
+                <div class="card-header">
+                    <span class="card-icon">🖥️</span>
+                </div>
+                <div class="card-title">Online Desktop</div>
+                <div class="card-description">
+                    Play with others online! Normal and Escape modes with real-time action.
+                </div>
+                <div class="card-badges">
+                    <span class="card-badge badge-desktop">🖥️ Desktop</span>
+                    <span class="card-badge badge-recommended" id="badge-mp-desktop" style="display: none;">✓ Recommended</span>
+                </div>
+                <div class="features">
+                    <span class="feature-tag">Multiplayer</span>
+                    <span class="feature-tag">Escape Mode</span>
+                    <span class="feature-tag">Leaderboards</span>
+                </div>
+            </a>
+
+            <a href="online/mobile" class="version-card online" id="card-mp-mobile">
+                <div class="card-header">
+                    <span class="card-icon">📲</span>
+                </div>
+                <div class="card-title">Online Mobile</div>
+                <div class="card-description">
+                    Multiplayer on the go! Touch-optimized controls for mobile gaming.
+                </div>
+                <div class="card-badges">
+                    <span class="card-badge badge-mobile">📱 Mobile</span>
+                    <span class="card-badge badge-recommended" id="badge-mp-mobile" style="display: none;">✓ Recommended</span>
+                </div>
+                <div class="features">
+                    <span class="feature-tag">Touch Controls</span>
+                    <span class="feature-tag">Multiplayer</span>
+                    <span class="feature-tag">Cross-play</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h4>💡 Good to Know</h4>
+            <ul>
+                <li><strong>Singleplayer</strong> works offline and saves progress locally</li>
+                <li><strong>Multiplayer</strong> requires internet and connects to game servers</li>
+                <li><strong>Mobile versions</strong> use touch controls with a virtual joystick</li>
+                <li><strong>Desktop versions</strong> use keyboard (WASD) and mouse</li>
+                <li>You can upload a <strong>custom skin</strong> in the multiplayer versions</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Made with 🫒 by Joercat</p>
+        </div>
+    </div>
+
+    <script>
+        // Detect device type
+        function detectDevice() {
+            const isTouchDevice = ('ontouchstart' in window) || 
+                                  (navigator.maxTouchPoints > 0) || 
+                                  (navigator.msMaxTouchPoints > 0);
+            
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            const isSmallScreen = window.innerWidth <= 768;
+            
+            // Consider it mobile if it has touch AND (mobile UA OR small screen)
+            const isMobile = isTouchDevice && (isMobileUA || isSmallScreen);
+            
+            // Detect specific device type for display
+            let deviceType = 'Desktop';
+            let deviceIcon = '🖥️';
+            
+            if (/iPhone/i.test(navigator.userAgent)) {
+                deviceType = 'iPhone';
+                deviceIcon = '📱';
+            } else if (/iPad/i.test(navigator.userAgent)) {
+                deviceType = 'iPad';
+                deviceIcon = '📱';
+            } else if (/Android/i.test(navigator.userAgent)) {
+                if (isSmallScreen) {
+                    deviceType = 'Android Phone';
+                    deviceIcon = '📱';
+                } else {
+                    deviceType = 'Android Tablet';
+                    deviceIcon = '📱';
+                }
+            } else if (isTouchDevice && isSmallScreen) {
+                deviceType = 'Mobile Device';
+                deviceIcon = '📱';
+            } else if (isTouchDevice) {
+                deviceType = 'Touch Device';
+                deviceIcon = '💻';
+            }
+            
+            return {
+                isMobile,
+                deviceType,
+                deviceIcon
+            };
+        }
+
+        // Initialize page
+        function init() {
+            const device = detectDevice();
+            const autoPlayBtn = document.getElementById('auto-play-btn');
+            const deviceIconEl = document.getElementById('device-icon');
+            const deviceTextEl = document.getElementById('device-text');
+            
+            // Update detected device display
+            deviceIconEl.textContent = device.deviceIcon;
+            deviceTextEl.textContent = 'Detected: ' + device.deviceType;
+            
+            // Set recommended versions and auto-play link
+            if (device.isMobile) {
+                autoPlayBtn.href = 'singleplayer/mobile';
+                document.getElementById('badge-sp-mobile').style.display = 'inline-flex';
+                document.getElementById('badge-mp-mobile').style.display = 'inline-flex';
+                
+                // Highlight recommended cards
+                document.getElementById('card-sp-mobile').style.borderColor = 'rgba(255, 140, 0, 0.5)';
+                document.getElementById('card-mp-mobile').style.borderColor = 'rgba(255, 140, 0, 0.5)';
+            } else {
+                autoPlayBtn.href = 'singleplayer/';
+                document.getElementById('badge-sp-desktop').style.display = 'inline-flex';
+                document.getElementById('badge-mp-desktop').style.display = 'inline-flex';
+                
+                // Highlight recommended cards
+                document.getElementById('card-sp-desktop').style.borderColor = 'rgba(255, 140, 0, 0.5)';
+                document.getElementById('card-mp-desktop').style.borderColor = 'rgba(255, 140, 0, 0.5)';
+            }
+        }
+
+        // Handle visibility change (for when user returns to page)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Re-detect in case device orientation or setup changed
+                init();
+            }
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(init, 100);
+        });
+
+        // Handle resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(init, 250);
+        });
+
+        // Initialize on load
+        init();
+
+        // Prevent double-tap zoom on iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+    </script>
+</body>
+  </html>
