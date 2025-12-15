@@ -1,0 +1,4043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sakura Chronicles: Echoes of Destiny</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Cinzel:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #renderCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Loading Screen */
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+        
+        #loadingScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loadingTitle {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            color: #fff;
+            text-shadow: 0 0 20px #ff6b9d, 0 0 40px #c44569, 0 0 60px #ff6b9d;
+            margin-bottom: 2rem;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 20px #ff6b9d, 0 0 40px #c44569, 0 0 60px #ff6b9d; }
+            50% { text-shadow: 0 0 40px #ff6b9d, 0 0 80px #c44569, 0 0 120px #ff6b9d; }
+        }
+        
+        .loadingBar {
+            width: 400px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .loadingProgress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #c44569, #ff6b9d);
+            background-size: 200% 100%;
+            animation: loadingAnim 1.5s ease-in-out infinite;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes loadingAnim {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .loadingText {
+            color: rgba(255,255,255,0.7);
+            margin-top: 1rem;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        /* Title Screen */
+        #titleScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        #titleScreen.active {
+            display: flex;
+        }
+        
+        .titleContainer {
+            text-align: center;
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .gameTitle {
+            font-family: 'Cinzel', serif;
+            font-size: 5rem;
+            color: #fff;
+            text-shadow: 0 0 30px #ff6b9d, 0 0 60px #c44569;
+            margin-bottom: 0.5rem;
+        }
+        
+        .gameSubtitle {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 8px;
+            margin-bottom: 3rem;
+        }
+        
+        .menuButton {
+            display: block;
+            width: 300px;
+            padding: 1rem 2rem;
+            margin: 0.8rem auto;
+            background: linear-gradient(135deg, rgba(255,107,157,0.2), rgba(196,69,105,0.2));
+            border: 2px solid rgba(255,107,157,0.5);
+            color: #fff;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menuButton::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .menuButton:hover::before {
+            left: 100%;
+        }
+        
+        .menuButton:hover {
+            background: linear-gradient(135deg, rgba(255,107,157,0.4), rgba(196,69,105,0.4));
+            border-color: #ff6b9d;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,107,157,0.5);
+        }
+        
+        /* Dialogue System */
+        #dialogueBox {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background: linear-gradient(180deg, rgba(10,10,30,0.95), rgba(20,20,50,0.98));
+            border: 3px solid rgba(255,107,157,0.6);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 0 50px rgba(255,107,157,0.3), inset 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        #dialogueBox.active {
+            display: block;
+            animation: dialogueAppear 0.3s ease;
+        }
+        
+        @keyframes dialogueAppear {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .speakerName {
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            padding: 0.5rem 2rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #fff;
+            box-shadow: 0 5px 20px rgba(255,107,157,0.5);
+        }
+        
+        .dialogueText {
+            color: #fff;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-top: 1rem;
+            min-height: 80px;
+        }
+        
+        .dialogueIndicator {
+            position: absolute;
+            bottom: 15px;
+            right: 30px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            animation: blink 1s ease infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* Character Portrait */
+        .characterPortrait {
+            position: absolute;
+            bottom: 0;
+            width: 400px;
+            height: 600px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+        }
+        
+        .portraitLeft {
+            left: 5%;
+        }
+        
+        .portraitRight {
+            right: 5%;
+        }
+        
+        /* Choice System */
+        #choiceContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 60;
+        }
+        
+        #choiceContainer.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .choiceButton {
+            padding: 1.2rem 3rem;
+            background: linear-gradient(135deg, rgba(30,30,60,0.95), rgba(50,50,100,0.95));
+            border: 2px solid rgba(100,200,255,0.5);
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            min-width: 400px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .choiceButton::before {
+            content: '▶';
+            position: absolute;
+            left: 15px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .choiceButton:hover::before {
+            opacity: 1;
+        }
+        
+        .choiceButton:hover {
+            background: linear-gradient(135deg, rgba(100,200,255,0.3), rgba(50,100,200,0.3));
+            border-color: #64c8ff;
+            padding-left: 3.5rem;
+            box-shadow: 0 0 30px rgba(100,200,255,0.4);
+        }
+        
+        /* HUD */
+        #gameHUD {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: none;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 40;
+            pointer-events: none;
+        }
+        
+        #gameHUD.active {
+            display: flex;
+        }
+        
+        .hudLeft, .hudRight {
+            pointer-events: auto;
+        }
+        
+        .chapterIndicator {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(30,30,60,0.7));
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,107,157,0.3);
+        }
+        
+        .chapterTitle {
+            color: #ff6b9d;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            margin-bottom: 0.3rem;
+        }
+        
+        .chapterName {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .hudButton {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .hudButton:hover {
+            background: rgba(255,107,157,0.3);
+            border-color: #ff6b9d;
+        }
+        
+        /* Status Panel */
+        #statusPanel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            background: linear-gradient(135deg, rgba(10,10,30,0.98), rgba(30,20,50,0.98));
+            border: 3px solid rgba(255,107,157,0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+            z-index: 200;
+            overflow-y: auto;
+        }
+        
+        #statusPanel.active {
+            display: block;
+            animation: panelAppear 0.3s ease;
+        }
+        
+        @keyframes panelAppear {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .panelHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,107,157,0.3);
+        }
+        
+        .panelTitle {
+            font-size: 1.8rem;
+            color: #ff6b9d;
+            font-weight: bold;
+        }
+        
+        .closeButton {
+            background: none;
+            border: 2px solid rgba(255,255,255,0.5);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .closeButton:hover {
+            background: rgba(255,107,157,0.3);
+            border-color: #ff6b9d;
+        }
+        
+        .characterStats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .statCard {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .statLabel {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .statValue {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .statBar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .statBarFill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .statBarFill.health { background: linear-gradient(90deg, #4ade80, #22c55e); }
+        .statBarFill.mana { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+        .statBarFill.affection { background: linear-gradient(90deg, #ff6b9d, #ec4899); }
+        
+        /* Relationship Panel */
+        .relationshipGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .relationshipCard {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .relationshipCard:hover {
+            background: rgba(255,107,157,0.1);
+            border-color: rgba(255,107,157,0.3);
+        }
+        
+        .relationAvatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        
+        .relationInfo {
+            flex: 1;
+        }
+        
+        .relationName {
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        
+        .relationLevel {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* Inventory Panel */
+        .inventoryGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+        }
+        
+        .inventorySlot {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .inventorySlot:hover {
+            background: rgba(255,107,157,0.2);
+            border-color: rgba(255,107,157,0.5);
+            transform: scale(1.05);
+        }
+        
+        .inventorySlot.empty {
+            opacity: 0.5;
+        }
+        
+        .itemCount {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        /* Save/Load Panel */
+        .saveSlotGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .saveSlot {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .saveSlot:hover {
+            background: rgba(255,107,157,0.1);
+            border-color: rgba(255,107,157,0.5);
+        }
+        
+        .saveSlotTitle {
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .saveSlotInfo {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* Effects */
+        .screenEffect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 30;
+        }
+        
+        .fadeOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 500;
+            transition: opacity 0.5s ease;
+        }
+        
+        .fadeOverlay.active {
+            opacity: 1;
+        }
+        
+        /* Particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 25;
+        }
+        
+        .sakuraPetal {
+            width: 15px;
+            height: 15px;
+            background: linear-gradient(135deg, #ffb7c5, #ff6b9d);
+            border-radius: 100% 0 100% 0;
+            animation: petalFall linear infinite;
+        }
+        
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0.5;
+            }
+        }
+        
+        /* Notification */
+        #notification {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(100,200,100,0.9), rgba(50,150,50,0.9));
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 1.2rem;
+            display: none;
+            z-index: 300;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        #notification.active {
+            display: block;
+            animation: notificationPop 0.5s ease, notificationFade 0.5s ease 2s forwards;
+        }
+        
+        @keyframes notificationPop {
+            0% { transform: translateX(-50%) scale(0); }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        
+        @keyframes notificationFade {
+            to { opacity: 0; }
+        }
+        
+        /* Combat UI */
+        #combatUI {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent);
+            display: none;
+            z-index: 45;
+        }
+        
+        #combatUI.active {
+            display: block;
+        }
+        
+        .combatActions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .combatButton {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, rgba(255,100,100,0.8), rgba(200,50,50,0.8));
+            border: 2px solid rgba(255,150,150,0.5);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .combatButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255,100,100,0.5);
+        }
+        
+        .combatButton.magic {
+            background: linear-gradient(135deg, rgba(100,100,255,0.8), rgba(50,50,200,0.8));
+            border-color: rgba(150,150,255,0.5);
+        }
+        
+        .combatButton.magic:hover {
+            box-shadow: 0 0 30px rgba(100,100,255,0.5);
+        }
+        
+        .combatButton.item {
+            background: linear-gradient(135deg, rgba(100,200,100,0.8), rgba(50,150,50,0.8));
+            border-color: rgba(150,255,150,0.5);
+        }
+        
+        .combatButton.item:hover {
+            box-shadow: 0 0 30px rgba(100,200,100,0.5);
+        }
+        
+        .combatButton.defend {
+            background: linear-gradient(135deg, rgba(200,200,100,0.8), rgba(150,150,50,0.8));
+            border-color: rgba(255,255,150,0.5);
+        }
+        
+        .combatButton.defend:hover {
+            box-shadow: 0 0 30px rgba(200,200,100,0.5);
+        }
+        
+        /* Enemy Health Bar */
+        .enemyHealthContainer {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        
+        .enemyName {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        
+        .enemyHealthBar {
+            width: 400px;
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,100,100,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .enemyHealthFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #cc0000);
+            transition: width 0.3s ease;
+        }
+        
+        /* Mini Map */
+        #miniMap {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid rgba(255,107,157,0.5);
+            border-radius: 10px;
+            display: none;
+            z-index: 35;
+        }
+        
+        #miniMap.active {
+            display: block;
+        }
+        
+        .mapDot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .mapDot.player {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+            animation: pulse 1s ease infinite;
+        }
+        
+        .mapDot.npc {
+            background: #60a5fa;
+        }
+        
+        .mapDot.enemy {
+            background: #ef4444;
+        }
+        
+        .mapDot.item {
+            background: #fbbf24;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+        
+        /* Quest Log */
+        #questLog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: linear-gradient(135deg, rgba(10,10,30,0.98), rgba(30,20,50,0.98));
+            border: 3px solid rgba(255,200,100,0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+            z-index: 200;
+            overflow-y: auto;
+        }
+        
+        #questLog.active {
+            display: block;
+            animation: panelAppear 0.3s ease;
+        }
+        
+        .questItem {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #fbbf24;
+        }
+        
+        .questItem.completed {
+            border-left-color: #4ade80;
+            opacity: 0.7;
+        }
+        
+        .questTitle {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .questItem.completed .questTitle {
+            color: #4ade80;
+        }
+        
+        .questDescription {
+            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .questObjective {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Settings Panel */
+        #settingsPanel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            background: linear-gradient(135deg, rgba(10,10,30,0.98), rgba(30,20,50,0.98));
+            border: 3px solid rgba(100,200,255,0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+            z-index: 200;
+        }
+        
+        #settingsPanel.active {
+            display: block;
+            animation: panelAppear 0.3s ease;
+        }
+        
+        .settingRow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .settingLabel {
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        
+        .settingSlider {
+            width: 200px;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .settingSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .settingToggle {
+            width: 60px;
+            height: 30px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .settingToggle.active {
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+        }
+        
+        .settingToggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            transition: left 0.3s ease;
+        }
+        
+        .settingToggle.active::after {
+            left: 33px;
+        }
+        
+        /* Gallery */
+        #galleryPanel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85vh;
+            background: linear-gradient(135deg, rgba(10,10,30,0.98), rgba(30,20,50,0.98));
+            border: 3px solid rgba(200,100,255,0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            display: none;
+            z-index: 200;
+            overflow-y: auto;
+        }
+        
+        #galleryPanel.active {
+            display: block;
+            animation: panelAppear 0.3s ease;
+        }
+        
+        .galleryGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .galleryItem {
+            aspect-ratio: 16/9;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .galleryItem:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(200,100,255,0.3);
+        }
+        
+        .galleryItem.locked {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+        
+        .galleryItem.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid rgba(255,107,157,0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            max-width: 300px;
+            z-index: 1000;
+            pointer-events: none;
+            display: none;
+        }
+        
+        .tooltip.active {
+            display: block;
+        }
+        
+        .tooltipTitle {
+            color: #ff6b9d;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tooltipDesc {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .gameTitle {
+                font-size: 2.5rem;
+            }
+            
+            .gameSubtitle {
+                font-size: 1rem;
+                letter-spacing: 4px;
+            }
+            
+            .menuButton {
+                width: 250px;
+                font-size: 1rem;
+            }
+            
+            .dialogueText {
+                font-size: 1rem;
+            }
+            
+            .choiceButton {
+                min-width: 300px;
+                font-size: 0.9rem;
+            }
+            
+            .characterPortrait {
+                width: 200px;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="renderCanvas"></canvas>
+        
+        <!-- Loading Screen -->
+        <div id="loadingScreen">
+            <h1 class="loadingTitle">桜物語</h1>
+            <div class="loadingBar">
+                <div class="loadingProgress" id="loadingProgress"></div>
+            </div>
+            <p class="loadingText" id="loadingText">Initializing World...</p>
+        </div>
+        
+        <!-- Fade Overlay -->
+        <div class="fadeOverlay" id="fadeOverlay"></div>
+        
+        <!-- Title Screen -->
+        <div id="titleScreen">
+            <div class="titleContainer">
+                <h1 class="gameTitle">Sakura Chronicles</h1>
+                <p class="gameSubtitle">ECHOES OF DESTINY</p>
+                <button class="menuButton" id="newGameBtn">NEW GAME</button>
+                <button class="menuButton" id="continueBtn">CONTINUE</button>
+                <button class="menuButton" id="galleryBtn">GALLERY</button>
+                <button class="menuButton" id="settingsBtn">SETTINGS</button>
+            </div>
+        </div>
+        
+        <!-- Game HUD -->
+        <div id="gameHUD">
+            <div class="hudLeft">
+                <div class="chapterIndicator">
+                    <div class="chapterTitle">CHAPTER <span id="chapterNum">1</span></div>
+                    <div class="chapterName" id="chapterName">The Awakening</div>
+                </div>
+            </div>
+            <div class="hudRight">
+                <button class="hudButton" id="hudMenuBtn">MENU</button>
+                <button class="hudButton" id="hudLogBtn">LOG</button>
+                <button class="hudButton" id="hudSaveBtn">SAVE</button>
+            </div>
+        </div>
+        
+        <!-- Mini Map -->
+        <div id="miniMap">
+            <div class="mapDot player" style="left: 50%; top: 50%;"></div>
+        </div>
+        
+        <!-- Dialogue Box -->
+        <div id="dialogueBox">
+            <div class="speakerName" id="speakerName">???</div>
+            <div class="dialogueText" id="dialogueText"></div>
+            <div class="dialogueIndicator">▼ Click to continue</div>
+        </div>
+        
+        <!-- Choice Container -->
+        <div id="choiceContainer"></div>
+        
+        <!-- Combat UI -->
+        <div id="combatUI">
+            <div class="enemyHealthContainer">
+                <div class="enemyName" id="enemyName">Shadow Beast</div>
+                <div class="enemyHealthBar">
+                    <div class="enemyHealthFill" id="enemyHealthFill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="combatActions">
+                <button class="combatButton attack" id="combatAttack">⚔️ Attack</button>
+                <button class="combatButton magic" id="combatMagic">✨ Magic</button>
+                <button class="combatButton item" id="combatItem">🎒 Item</button>
+                <button class="combatButton defend" id="combatDefend">🛡️ Defend</button>
+            </div>
+        </div>
+        
+        <!-- Status Panel -->
+        <div id="statusPanel">
+            <div class="panelHeader">
+                <h2 class="panelTitle">CHARACTER STATUS</h2>
+                <button class="closeButton" id="closeStatus">×</button>
+            </div>
+            <div class="characterStats">
+                <div class="statCard">
+                    <div class="statLabel">HEALTH</div>
+                    <div class="statValue" id="statHealth">100/100</div>
+                    <div class="statBar"><div class="statBarFill health" id="healthBar" style="width: 100%;"></div></div>
+                </div>
+                <div class="statCard">
+                    <div class="statLabel">MANA</div>
+                    <div class="statValue" id="statMana">50/50</div>
+                    <div class="statBar"><div class="statBarFill mana" id="manaBar" style="width: 100%;"></div></div>
+                </div>
+                <div class="statCard">
+                    <div class="statLabel">LEVEL</div>
+                    <div class="statValue" id="statLevel">1</div>
+                </div>
+                <div class="statCard">
+                    <div class="statLabel">EXPERIENCE</div>
+                    <div class="statValue" id="statExp">0/100</div>
+                </div>
+            </div>
+            <h3 style="color: #ff6b9d; margin-bottom: 1rem;">RELATIONSHIPS</h3>
+            <div class="relationshipGrid" id="relationshipGrid"></div>
+        </div>
+        
+        <!-- Quest Log -->
+        <div id="questLog">
+            <div class="panelHeader">
+                <h2 class="panelTitle">QUEST LOG</h2>
+                <button class="closeButton" id="closeQuest">×</button>
+            </div>
+            <div id="questList"></div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div id="settingsPanel">
+            <div class="panelHeader">
+                <h2 class="panelTitle">SETTINGS</h2>
+                <button class="closeButton" id="closeSettings">×</button>
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Master Volume</span>
+                <input type="range" class="settingSlider" id="masterVolume" min="0" max="100" value="80">
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Music Volume</span>
+                <input type="range" class="settingSlider" id="musicVolume" min="0" max="100" value="70">
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">SFX Volume</span>
+                <input type="range" class="settingSlider" id="sfxVolume" min="0" max="100" value="80">
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Text Speed</span>
+                <input type="range" class="settingSlider" id="textSpeed" min="1" max="10" value="5">
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Auto Mode</span>
+                <div class="settingToggle" id="autoMode"></div>
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Skip Read Text</span>
+                <div class="settingToggle active" id="skipRead"></div>
+            </div>
+            <div class="settingRow">
+                <span class="settingLabel">Particle Effects</span>
+                <div class="settingToggle active" id="particleToggle"></div>
+            </div>
+        </div>
+        
+        <!-- Gallery Panel -->
+        <div id="galleryPanel">
+            <div class="panelHeader">
+                <h2 class="panelTitle">CG GALLERY</h2>
+                <button class="closeButton" id="closeGallery">×</button>
+            </div>
+            <div class="galleryGrid" id="galleryGrid"></div>
+        </div>
+        
+        <!-- Save/Load Panel -->
+        <div id="saveLoadPanel" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 900px; max-height: 80vh; background: linear-gradient(135deg, rgba(10,10,30,0.98), rgba(30,20,50,0.98)); border: 3px solid rgba(100,255,100,0.5); border-radius: 20px; padding: 2rem; display: none; z-index: 200; overflow-y: auto;">
+            <div class="panelHeader">
+                <h2 class="panelTitle" id="saveLoadTitle">SAVE GAME</h2>
+                <button class="closeButton" id="closeSaveLoad">×</button>
+            </div>
+            <div class="saveSlotGrid" id="saveSlotGrid"></div>
+        </div>
+        
+        <!-- Notification -->
+        <div id="notification"></div>
+        
+        <!-- Tooltip -->
+        <div class="tooltip" id="tooltip">
+            <div class="tooltipTitle"></div>
+            <div class="tooltipDesc"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================
+        // SAKURA CHRONICLES: ECHOES OF DESTINY
+        // Complete 3D Anime Story Game Engine
+        // ============================================
+
+        // Game Configuration
+        const CONFIG = {
+            textSpeed: 30,
+            autoModeDelay: 3000,
+            particlesEnabled: true,
+            masterVolume: 0.8,
+            musicVolume: 0.7,
+            sfxVolume: 0.8
+        };
+
+        // Game State
+        const GameState = {
+            currentScene: 'title',
+            currentChapter: 1,
+            currentDialogue: 0,
+            playerName: 'Hikari',
+            health: 100,
+            maxHealth: 100,
+            mana: 50,
+            maxMana: 50,
+            level: 1,
+            experience: 0,
+            inventory: [],
+            flags: {},
+            relationships: {
+                yuki: { name: 'Yuki Tanaka', level: 0, maxLevel: 100, title: 'Mysterious Transfer Student' },
+                akira: { name: 'Akira Mizuki', level: 0, maxLevel: 100, title: 'Childhood Friend' },
+                rei: { name: 'Rei Sakamoto', level: 0, maxLevel: 100, title: 'Student Council President' },
+                luna: { name: 'Luna', level: 0, maxLevel: 100, title: 'Guardian Spirit' },
+                kuro: { name: 'Kuro Yamamoto', level: 0, maxLevel: 100, title: 'Rival' }
+            },
+            quests: [],
+            unlockedGallery: [0, 1],
+            dialogueHistory: [],
+            isTyping: false,
+            autoMode: false,
+            inCombat: false,
+            currentEnemy: null
+        };
+
+        // Character Database
+        const Characters = {
+            narrator: { name: '', color: '#ffffff' },
+            hikari: { name: 'Hikari', color: '#ff6b9d' },
+            yuki: { name: 'Yuki', color: '#64c8ff' },
+            akira: { name: 'Akira', color: '#ffa500' },
+            rei: { name: 'Rei', color: '#c44569' },
+            luna: { name: 'Luna', color: '#c8a8ff' },
+            kuro: { name: 'Kuro', color: '#8b0000' },
+            mysterious: { name: '???', color: '#888888' }
+        };
+
+        // Complete Story Script with Branching Paths
+        const StoryScript = {
+            prologue: [
+                { speaker: 'narrator', text: '―― The world exists in delicate balance between realms unseen. In the ancient city of Sakura Heights, where cherry blossoms bloom eternal, a young girl is about to discover her destiny.', background: 'shrine_night' },
+                { speaker: 'narrator', text: 'It is the spring of her seventeenth year, and the veil between worlds grows thin...', effect: 'fade' },
+                { speaker: 'narrator', text: 'The night air carries the sweet scent of cherry blossoms as you walk home from cram school. The streets are unusually quiet, and an inexplicable chill runs down your spine.', background: 'street_night' },
+                { speaker: 'hikari', text: '(Why does it feel like someone is watching me? The shadows seem... different tonight.)', emotion: 'worried' },
+                { speaker: 'narrator', text: 'A sudden gust of wind sends a flurry of sakura petals swirling around you. Among them, something glows with an ethereal light.', effect: 'petals' },
+                { speaker: 'hikari', text: 'What is that...? A... pendant?', emotion: 'surprised' },
+                { speaker: 'narrator', text: 'You reach out and grasp the pendant. The moment your fingers touch it, a surge of warmth floods through your body, and the world around you seems to shimmer.', effect: 'flash' },
+                { speaker: 'mysterious', text: 'At last... the Chosen One awakens. The threads of fate have been woven for this moment across a thousand years.', effect: 'echo' },
+                { speaker: 'hikari', text: 'Who— who said that?! Show yourself!', emotion: 'scared' },
+                { 
+                    type: 'choice',
+                    question: 'How do you react to this mysterious voice?',
+                    choices: [
+                        { text: 'Demand answers firmly and hold your ground', next: 'prologue_brave', flag: 'brave_choice' },
+                        { text: 'Try to run away from the strange phenomenon', next: 'prologue_flee', flag: 'cautious_choice' },
+                        { text: 'Call out gently, asking who needs help', next: 'prologue_kind', flag: 'kind_choice' }
+                    ]
+                }
+            ],
+            prologue_brave: [
+                { speaker: 'hikari', text: 'I don\'t know what\'s happening, but I won\'t run from it! If you have something to say, face me directly!', emotion: 'determined' },
+                { speaker: 'narrator', text: 'The shadows before you coalesce, swirling like living ink. A figure begins to form — elegant, otherworldly, beautiful beyond mortal measure.' },
+                { speaker: 'luna', text: 'Such fire in your spirit... Yes, you are indeed the one we have waited for. I am Luna, Guardian of the Celestial Gate.', emotion: 'impressed' },
+                { speaker: 'narrator', text: 'Before you floats a being of pure grace — silver hair cascading like moonlight, eyes that hold the depth of galaxies, and a gentle smile that puts your racing heart at ease.', addRelationship: { character: 'luna', amount: 15 } },
+                { next: 'luna_introduction' }
+            ],
+            prologue_flee: [
+                { speaker: 'narrator', text: 'You turn and run, your heart pounding in your chest. But no matter how fast you go, the voice follows, echoing all around you.' },
+                { speaker: 'mysterious', text: 'You cannot run from destiny, child. It has already found you. The pendant has chosen its bearer.', effect: 'echo' },
+                { speaker: 'narrator', text: 'Suddenly, a dark shape lunges from the shadows — a creature of nightmare, all fangs and claws and hollow, hungry eyes.' },
+                { speaker: 'hikari', text: 'AAAH!!', emotion: 'terrified' },
+                { speaker: 'narrator', text: 'Just as the creature is about to strike, a brilliant silver light erupts between you and the monster, forcing it back with a shriek of pain.' },
+                { speaker: 'luna', text: 'Foolish shadow-spawn! You shall not touch the Chosen One!', emotion: 'fierce' },
+                { speaker: 'narrator', text: 'A magnificent being descends from above — silver hair flowing like liquid moonlight, eyes blazing with protective fury. She stands between you and the monster, radiating power.', addRelationship: { character: 'luna', amount: 10 } },
+                { next: 'luna_introduction' }
+            ],
+            prologue_kind: [
+                { speaker: 'hikari', text: 'I can hear pain in that voice... Are you alright? Do you need help?', emotion: 'gentle' },
+                { speaker: 'narrator', text: 'A stunned silence falls. Then, slowly, warmly, the shadows before you begin to glow with a soft, silvery radiance.' },
+                { speaker: 'luna', text: 'In... all the centuries I have waited... no one has ever asked if I was alright. Your heart is truly pure, child.', emotion: 'moved' },
+                { speaker: 'narrator', text: 'The light takes form — a beautiful being materializing before you, tears like liquid starlight streaming down her cheeks. Her smile is radiant with wonder and gratitude.', addRelationship: { character: 'luna', amount: 25 } },
+                { speaker: 'luna', text: 'I am Luna, Guardian of the Celestial Gate. And you... you are even more remarkable than the prophecies foretold.', emotion: 'joyful' },
+                { next: 'luna_introduction' }
+            ],
+            luna_introduction: [
+                { speaker: 'luna', text: 'You carry within you a power that has been dormant for seventeen years — the power of the Astral Flame, last seen in this world a millennium ago.' },
+                { speaker: 'hikari', text: 'Astral... Flame? I don\'t understand. I\'m just a normal high school student! I have homework due tomorrow!', emotion: 'confused' },
+                { speaker: 'luna', text: 'Normal? Child, you are anything but. That pendant you hold is the Stellar Heart — it only appears to those destined to shape the fate of both the mortal realm and the spirit world.' },
+                { speaker: 'narrator', text: 'Luna gestures to the pendant in your hand. It pulses gently with inner light, warm against your palm, as if alive.' },
+                { speaker: 'luna', text: 'Dark forces are stirring, Hikari. The Shadow Consortium has begun to move after centuries of slumber. They seek to tear down the barriers between worlds and plunge all realms into eternal darkness.' },
+                { speaker: 'hikari', text: 'The Shadow... Consortium? This is insane. This has to be a dream.', emotion: 'disbelief' },
+                { speaker: 'luna', text: 'I assure you, this is very real. And I know this is overwhelming. But you will not face this alone. Others will stand with you — allies bound by fate, friends waiting to be found.', emotion: 'gentle' },
+                { speaker: 'narrator', text: 'In the distance, the first light of dawn begins to color the horizon. The world seems to hold its breath.' },
+                { speaker: 'luna', text: 'For now, rest. Tomorrow, everything begins. Keep the Stellar Heart close, and know that I am always watching over you.', effect: 'fade' },
+                { speaker: 'narrator', text: 'Luna\'s form begins to dissolve into motes of silver light, drifting upward like inverse snow.' },
+                { speaker: 'luna', text: 'We will meet again soon, dear Hikari. Until then... trust in your heart.', emotion: 'warm' },
+                { speaker: 'narrator', text: 'As the last of her light fades, you find yourself standing alone on the quiet street, the pendant warm in your hand, the first rays of sunrise painting the sky in shades of pink and gold.' },
+                { speaker: 'hikari', text: '...What have I gotten myself into?', emotion: 'overwhelmed' },
+                { speaker: 'narrator', text: 'Chapter 1 Complete', effect: 'chapter_end', unlockGallery: 2 },
+                { next: 'chapter1' }
+            ],
+            chapter1: [
+                { speaker: 'narrator', text: '=== CHAPTER 2: THE GATHERING STORM ===', effect: 'chapter_start', setChapter: { num: 2, name: 'The Gathering Storm' } },
+                { speaker: 'narrator', text: 'One week has passed since that fateful night. Despite trying to convince yourself it was all a dream, the Stellar Heart pendant remains around your neck, occasionally pulsing with warmth at unexpected moments.' },
+                { speaker: 'narrator', text: 'Cherry Blossom Academy — your school — stands proud beneath an endless canopy of sakura trees. Today, however, feels different. There\'s an electricity in the air, a sense of impending change.', background: 'school_day' },
+                { speaker: 'akira', text: 'Hikari-chan! Hey, HIKARI! Earth to Hikari, come in!', emotion: 'cheerful' },
+                { speaker: 'narrator', text: 'A warm hand waves in front of your face. Akira Mizuki, your childhood friend since elementary school, is grinning at you with his characteristic sunny smile.' },
+                { speaker: 'hikari', text: 'Oh! Sorry, Akira. I was just... thinking.', emotion: 'sheepish' },
+                { speaker: 'akira', text: 'You\'ve been spacing out a lot lately. Are you okay? If something\'s bothering you, you can always talk to me, you know.', emotion: 'concerned', addRelationship: { character: 'akira', amount: 5 } },
+                {
+                    type: 'choice',
+                    question: 'Do you tell Akira about what happened?',
+                    choices: [
+                        { text: 'Tell him everything about Luna and the pendant', next: 'chapter1_trust', flag: 'told_akira' },
+                        { text: 'Deflect and say it\'s just exam stress', next: 'chapter1_secret', flag: 'kept_secret' },
+                        { text: 'Hint that something strange has been happening', next: 'chapter1_hint', flag: 'hinted_akira' }
+                    ]
+                }
+            ],
+            chapter1_trust: [
+                { speaker: 'hikari', text: 'Akira... this is going to sound crazy, but... something incredible happened to me last week. Something I still can\'t fully explain.', emotion: 'nervous' },
+                { speaker: 'narrator', text: 'You take a deep breath and tell Akira everything — the pendant, Luna, the talk of prophecies and dark forces. He listens without interrupting, his expression growing more serious.' },
+                { speaker: 'akira', text: '...You\'re right. That does sound crazy.', emotion: 'serious' },
+                { speaker: 'hikari', text: 'I know! I know how it sounds—', emotion: 'desperate' },
+                { speaker: 'akira', text: 'But I believe you.', emotion: 'warm' },
+                { speaker: 'hikari', text: 'You... you do?', emotion: 'shocked' },
+                { speaker: 'akira', text: 'Hikari, we\'ve been friends since we were kids. I know when you\'re lying, and I know when you\'re telling the truth. Besides... can I show you something?', emotion: 'determined', addRelationship: { character: 'akira', amount: 20 } },
+                { speaker: 'narrator', text: 'Akira pulls up his sleeve, revealing a mark on his inner forearm — a stylized sun with rays extending outward, faintly glowing with golden light.' },
+                { speaker: 'akira', text: 'This appeared on my thirteenth birthday. My grandmother... she told me things before she passed. About guardians, about a coming darkness, about a girl I was meant to protect.', emotion: 'serious' },
+                { speaker: 'hikari', text: 'Akira... all this time...?', emotion: 'astonished' },
+                { speaker: 'akira', text: 'I never said anything because I thought it was just old legends. But now...', emotion: 'thoughtful' },
+                { speaker: 'narrator', text: 'He looks at you with new eyes — still your childhood friend, but now something more. A protector awakening to his purpose.', addQuest: { id: 'guardian_bond', title: 'Bonds of Light', desc: 'Learn more about Akira\'s guardian heritage', objective: 'Speak with Akira after school' } },
+                { next: 'transfer_student' }
+            ],
+            chapter1_secret: [
+                { speaker: 'hikari', text: 'It\'s just... exam stress, you know? Entrance exams are coming up and I\'ve been studying so much I keep having weird dreams.', emotion: 'dismissive' },
+                { speaker: 'akira', text: 'Hmm... if you say so.', emotion: 'doubtful' },
+                { speaker: 'narrator', text: 'Akira doesn\'t look convinced, but he doesn\'t push further. A flicker of hurt passes across his face before he masks it with his usual cheerful expression.' },
+                { speaker: 'akira', text: 'Well, don\'t overwork yourself! You need to take breaks too. How about we grab taiyaki after school?', emotion: 'forced_cheerful', addRelationship: { character: 'akira', amount: -5 } },
+                { speaker: 'hikari', text: '(He doesn\'t believe me... but I can\'t tell him the truth. It\'s too dangerous to involve him.)', emotion: 'guilty' },
+                { next: 'transfer_student' }
+            ],
+            chapter1_hint: [
+                { speaker: 'hikari', text: 'Something... strange has been happening, Akira. I\'m not sure how to explain it yet, but... when I figure it out, you\'ll be the first person I tell.', emotion: 'uncertain' },
+                { speaker: 'akira', text: 'Strange how? Are you in trouble? Hikari, you know I\'d do anything to help you—', emotion: 'worried' },
+                { speaker: 'hikari', text: 'I know you would. And that\'s why... when I understand what\'s happening, I\'ll come to you. I promise.', emotion: 'sincere' },
+                { speaker: 'akira', text: '...Okay. I trust you, Hikari. But don\'t take too long, alright? Whatever it is, you don\'t have to face it alone.', emotion: 'accepting', addRelationship: { character: 'akira', amount: 10 } },
+                { speaker: 'narrator', text: 'Akira squeezes your hand briefly, a gesture of support that warms your heart. His touch lingers for just a moment longer than usual.' },
+                { next: 'transfer_student' }
+            ],
+            transfer_student: [
+                { speaker: 'narrator', text: 'Before you can respond, the classroom door slides open and your homeroom teacher, Tanaka-sensei, enters with an unusual guest in tow.' },
+                { speaker: 'narrator', text: 'Following the teacher is a girl you\'ve never seen before — striking raven-black hair, pale porcelain skin, and eyes the color of a winter sky. She moves with an ethereal grace that draws every eye in the room.', background: 'classroom' },
+                { speaker: 'narrator', text: 'The moment you see her, the Stellar Heart pendant flares with warmth against your chest. Something about this girl resonates with the magic within you.' },
+                { speaker: 'narrator', text: '"Class, we have a new transfer student joining us today. Please introduce yourself, dear."' },
+                { speaker: 'yuki', text: 'My name is Yuki Tanaka. I have transferred from Hokkaido due to... family circumstances. I look forward to learning alongside all of you.', emotion: 'polite' },
+                { speaker: 'narrator', text: 'Her voice is cool and measured, betraying nothing of her inner thoughts. But as her gaze sweeps across the classroom, it pauses on you — just for a moment — and you could swear her eyes narrow with recognition.' },
+                { speaker: 'narrator', text: '"Please take the empty seat next to Kagami-san." The teacher gestures toward the desk beside yours.' },
+                { speaker: 'narrator', text: 'Yuki walks toward you, her steps silent despite the hard floor. As she passes, she leans in ever so slightly.', addRelationship: { character: 'yuki', amount: 5 } },
+                { speaker: 'yuki', text: '*whisper* We need to talk. Roof. Lunch. Come alone.', emotion: 'intense' },
+                { speaker: 'narrator', text: 'Before you can respond, she has already taken her seat, her expression once again a mask of perfect indifference. The pendant continues to pulse warmly.' },
+                { speaker: 'hikari', text: '(Who is she? How does she know me? And what does she want...?)', emotion: 'curious' },
+                { next: 'lunch_choice' }
+            ],
+            lunch_choice: [
+                { speaker: 'narrator', text: 'The morning classes pass in a blur. You find yourself unable to focus, constantly aware of the mysterious transfer student sitting silently beside you. She doesn\'t speak to anyone, doesn\'t take notes, simply stares out the window as if lost in thought.' },
+                { speaker: 'narrator', text: 'When the lunch bell finally rings, your heart rate quickens. The moment of decision is here.' },
+                { speaker: 'akira', text: 'Hikari, want to grab lunch together? The cafeteria has that curry bread you like today!', emotion: 'hopeful' },
+                { speaker: 'narrator', text: 'At the same moment, Yuki rises from her seat, giving you the briefest of glances before heading toward the door.' },
+                {
+                    type: 'choice',
+                    question: 'What do you do?',
+                    choices: [
+                        { text: 'Go to the roof to meet Yuki', next: 'roof_meeting', flag: 'met_yuki_alone' },
+                        { text: 'Go with Akira and skip the mysterious meeting', next: 'skip_yuki', flag: 'skipped_yuki' },
+                        { text: 'Ask Akira to come with you to meet Yuki', next: 'bring_akira', flag: 'brought_akira' }
+                    ]
+                }
+            ],
+            roof_meeting: [
+                { speaker: 'hikari', text: 'Sorry, Akira! I have something I need to take care of. Rain check?', emotion: 'apologetic' },
+                { speaker: 'akira', text: 'Oh... sure. See you later then.', emotion: 'disappointed' },
+                { speaker: 'narrator', text: 'You hurry after Yuki, leaving Akira behind. A twinge of guilt follows you, but curiosity drives you forward. You climb the stairs to the rooftop, your heart pounding with each step.' },
+                { speaker: 'narrator', text: 'The rooftop is deserted save for one figure. Yuki stands at the railing, gazing out over the school grounds, the wind playing with her dark hair like a lover\'s fingers.', background: 'rooftop_day' },
+                { speaker: 'yuki', text: 'You came. Good. I wasn\'t sure if you\'d be brave enough.', emotion: 'neutral' },
+                { speaker: 'hikari', text: 'Who are you? How do you know me? And why does my pendant react when you\'re near?', emotion: 'demanding' },
+                { speaker: 'narrator', text: 'Yuki turns to face you fully. Up close, you notice details you missed before — the faint silver markings that shimmer on her skin when the light catches them just right, the otherworldly depth in her eyes.' },
+                { speaker: 'yuki', text: 'So many questions. But first...', emotion: 'serious' },
+                { speaker: 'narrator', text: 'She raises her hand, and the air around her shimmers. In an instant, the rooftop is sealed in a dome of translucent ice, cutting off the outside world.' },
+                { speaker: 'hikari', text: 'What—?!', emotion: 'alarmed' },
+                { speaker: 'yuki', text: 'Privacy ward. I can\'t risk being overheard. The Shadow Consortium has spies everywhere.', emotion: 'grim' },
+                { speaker: 'hikari', text: 'The Shadow Consortium... Luna mentioned them!', emotion: 'recognition' },
+                { speaker: 'yuki', text: 'So Luna has already contacted you. That saves time. I am Yuki, Bearer of the Winter Star, and I have been searching for you for three years, Hikari Kagami — wielder of the Astral Flame.', emotion: 'intense', addRelationship: { character: 'yuki', amount: 15 } },
+                { next: 'yuki_revelation' }
+            ],
+            yuki_revelation: [
+                { speaker: 'yuki', text: 'There are five of us — the Star Bearers. We are the last line of defense against the Shadow Consortium\'s plan to merge the realms and unmake reality itself.' },
+                { speaker: 'hikari', text: 'Five...? Who are the others?', emotion: 'curious' },
+                { speaker: 'yuki', text: 'Myself, the Winter Star. You, the Astral Flame. The other three... I have yet to locate them. But the Consortium is also searching. Whoever finds them first will have a decisive advantage in the coming war.' },
+                { speaker: 'hikari', text: 'War? This is all happening so fast...', emotion: 'overwhelmed' },
+                { speaker: 'yuki', text: 'I understand this is overwhelming. I had years to prepare and accept my role. You have had mere days.', emotion: 'sympathetic' },
+                { speaker: 'narrator', text: 'For the first time, Yuki\'s icy demeanor cracks, showing a glimpse of genuine empathy beneath.' },
+                { speaker: 'yuki', text: 'But time is a luxury we do not have. The Consortium has already begun making moves. Just last week, they attacked a shrine in Kyoto that held one of the ancient sealing stones.', emotion: 'worried' },
+                { speaker: 'hikari', text: 'What happens if all the sealing stones are destroyed?', emotion: 'afraid' },
+                { speaker: 'yuki', text: 'Then the Great Barrier falls. The Shadow Realm merges with the mortal world. Everything you know, everyone you love... consumed by eternal darkness. No survivors. No hope.', emotion: 'grave' },
+                { speaker: 'narrator', text: 'The weight of her words settles over you like a heavy cloak. This isn\'t a game or a dream. The fate of the world rests on your shoulders.' },
+                { speaker: 'hikari', text: '...What do we do?', emotion: 'determined' },
+                { speaker: 'yuki', text: '*small smile* You accept it faster than I did. Perhaps the prophecies were right about you.', emotion: 'respect', addRelationship: { character: 'yuki', amount: 10 } },
+                { speaker: 'yuki', text: 'First, we must awaken your power. The Astral Flame sleeps within you, but it requires a catalyst to fully manifest. Fortunately, I know where to find one.' },
+                { speaker: 'narrator', text: 'She gestures, and the ice barrier dissolves into glittering snowflakes that fade before touching the ground. The normal sounds of the school rush back in.' },
+                { speaker: 'yuki', text: 'Tonight. Meet me at the old Sakura Shrine on Mount Hoshizora. Midnight. And Hikari...', emotion: 'serious' },
+                { speaker: 'yuki', text: 'Tell no one. Trust no one. The Consortium has eyes and ears in places you\'d never suspect.', emotion: 'warning' },
+                { speaker: 'narrator', text: 'Before you can respond, the school bell rings, signaling the end of lunch. When you turn back, Yuki is already gone, leaving only a faint chill in the air where she stood.', unlockGallery: 3 },
+                { next: 'after_school' }
+            ],
+            skip_yuki: [
+                { speaker: 'hikari', text: 'Sure, Akira! Curry bread sounds great!', emotion: 'cheerful' },
+                { speaker: 'narrator', text: 'You push down your curiosity about the mysterious transfer student. Whatever she wanted can wait. Right now, you need the comfort of normalcy and your best friend\'s company.' },
+                { speaker: 'narrator', text: 'As you walk to the cafeteria with Akira, you notice Yuki watching you from the classroom window, her expression unreadable.', background: 'cafeteria' },
+                { speaker: 'akira', text: 'So, what do you think of the new girl? She seems kind of... intense.', emotion: 'casual' },
+                { speaker: 'hikari', text: 'I\'m not sure yet. She\'s definitely mysterious.', emotion: 'thoughtful' },
+                { speaker: 'akira', text: 'I saw her whispering to you earlier. What did she say?', emotion: 'curious' },
+                { speaker: 'hikari', text: 'She wanted to meet on the roof during lunch. But I chose to come with you instead.', emotion: 'honest' },
+                { speaker: 'akira', text: '*grins* You chose me over a mysterious pretty girl? I\'m touched!', emotion: 'teasing', addRelationship: { character: 'akira', amount: 15 } },
+                { speaker: 'narrator', text: 'You spend a pleasant lunch with Akira, laughing and joking like always. For a moment, you almost forget about pendants and prophecies and shadowy conspiracies.' },
+                { speaker: 'narrator', text: 'But when you return to class, Yuki\'s seat is empty. She doesn\'t return for the rest of the day. And when school ends, you find a folded note tucked into your shoe locker.' },
+                { speaker: 'narrator', text: '"You avoided me. That was unwise. But I understand — you are afraid. Tonight. Sakura Shrine. Mount Hoshizora. Midnight. This is not optional. — Y"', addRelationship: { character: 'yuki', amount: -10 } },
+                { next: 'after_school' }
+            ],
+            bring_akira: [
+                { speaker: 'hikari', text: 'Akira, I need you to come with me to the roof. There\'s something I have to show you.', emotion: 'serious' },
+                { speaker: 'akira', text: 'The roof? Now? What\'s going on, Hikari?', emotion: 'confused' },
+                { speaker: 'hikari', text: 'That new transfer student wants to talk to me. And... I think it\'s related to what I told you this morning.', emotion: 'determined' },
+                { speaker: 'narrator', text: 'Understanding dawns in Akira\'s eyes. He nods once, his expression shifting to something more serious.' },
+                { speaker: 'akira', text: 'I\'ve got your back. Let\'s go.', emotion: 'resolute' },
+                { speaker: 'narrator', text: 'Together, you climb to the rooftop. Yuki is there, waiting, and her eyes narrow when she sees Akira behind you.', background: 'rooftop_day' },
+                { speaker: 'yuki', text: 'I said come alone.', emotion: 'cold' },
+                { speaker: 'hikari', text: 'Akira is my closest friend. I trust him completely. Whatever you have to say, you can say in front of him.', emotion: 'firm' },
+                { speaker: 'narrator', text: 'Yuki\'s gaze shifts to Akira, studying him intently. After a long moment, her eyes widen slightly.' },
+                { speaker: 'yuki', text: 'You... show me your right arm.', emotion: 'surprised' },
+                { speaker: 'akira', text: 'How did you—?!', emotion: 'shocked' },
+                { speaker: 'narrator', text: 'Akira reluctantly pulls up his sleeve, revealing the sun-shaped mark. Yuki inhales sharply.' },
+                { speaker: 'yuki', text: 'The Solar Guardian... You\'re the third Bearer. I can\'t believe I didn\'t sense it before. Your power must still be dormant.', emotion: 'astonished', addRelationship: { character: 'yuki', amount: 5 }, addRelationship: { character: 'akira', amount: 10 } },
+                { speaker: 'hikari', text: 'Wait, Akira is one of the five too?!', emotion: 'shocked' },
+                { speaker: 'yuki', text: 'It would seem fate has brought two Star Bearers together since childhood. This changes things. This changes everything.', emotion: 'calculating' },
+                { next: 'yuki_revelation' }
+            ],
+            after_school: [
+                { speaker: 'narrator', text: 'The rest of the school day passes in a haze. Your mind keeps drifting to the coming midnight meeting, wondering what awaits you at the old shrine.', background: 'school_sunset' },
+                                { speaker: 'narrator', text: 'As you gather your things to leave, a commotion in the hallway draws your attention. Students are whispering excitedly, crowding around the windows overlooking the courtyard.' },
+                { speaker: 'narrator', text: 'Curious, you push through the crowd to see what the fuss is about. Your breath catches in your throat at the sight below.' },
+                { speaker: 'narrator', text: 'In the center of the courtyard stands a figure that seems to have stepped out of a gothic painting — a young man with hair as black as midnight and eyes like crimson flames. He wears the school uniform, but something about him screams danger.', background: 'courtyard_sunset' },
+                { speaker: 'narrator', text: 'Students give him a wide berth, instinctively sensing the predatory aura that surrounds him. But he pays them no attention. His burning gaze is fixed on one point. On you.' },
+                { speaker: 'hikari', text: '(Why is he staring at me like that? I\'ve never seen him before...)', emotion: 'nervous' },
+                { speaker: 'narrator', text: 'The mysterious student smirks, a slow, dangerous curl of his lips. Then he turns and walks away, disappearing around the corner of the building as if swallowed by shadows.' },
+                { speaker: 'akira', text: 'Hikari? You okay? You look like you\'ve seen a ghost.', emotion: 'concerned' },
+                { speaker: 'hikari', text: 'That guy in the courtyard... did you see him? The one with red eyes?', emotion: 'shaken' },
+                { speaker: 'akira', text: 'Red eyes? I saw someone standing there, but I couldn\'t make out details from here. Do you know him?', emotion: 'puzzled' },
+                { speaker: 'hikari', text: 'No... but I have a feeling he knows me.', emotion: 'ominous' },
+                { speaker: 'narrator', text: 'The Stellar Heart pendant grows ice-cold against your chest — the exact opposite of its usual warmth. A warning. But of what?', addQuest: { id: 'crimson_stranger', title: 'The Crimson-Eyed Stranger', desc: 'Discover the identity of the mysterious student', objective: 'Find information about the red-eyed student' } },
+                { next: 'walk_home' }
+            ],
+            walk_home: [
+                { speaker: 'narrator', text: 'You part ways with Akira at the school gate, promising to text him later. The walk home feels longer than usual, every shadow seeming to hide potential threats.', background: 'street_sunset' },
+                { speaker: 'narrator', text: 'As you pass through the shopping district, a familiar silver light catches your eye in a narrow alleyway.' },
+                { speaker: 'luna', text: '*appearing in translucent form* Hikari. I sensed your distress. Are you alright?', emotion: 'worried' },
+                { speaker: 'hikari', text: 'Luna! You can appear in the daytime?', emotion: 'surprised' },
+                { speaker: 'luna', text: 'In this limited form, yes. I cannot maintain it for long, but your safety is paramount. You encountered something dark today.', emotion: 'serious' },
+                { speaker: 'hikari', text: 'There was a student... he had red eyes and he was staring at me. The pendant went cold when I saw him.', emotion: 'describing' },
+                { speaker: 'narrator', text: 'Luna\'s ethereal form flickers, her expression shifting to one of deep concern.' },
+                { speaker: 'luna', text: 'Red eyes... Hikari, listen carefully. If that student approaches you, do not engage. Do not speak to him. Run.', emotion: 'urgent' },
+                { speaker: 'hikari', text: 'What? Why? Who is he?', emotion: 'alarmed' },
+                { speaker: 'luna', text: 'I cannot be certain from description alone. But red eyes are the mark of those who have consumed shadow essence. He may be a Shadow Walker — an agent of the Consortium turned into something not quite human.', emotion: 'grave' },
+                { speaker: 'narrator', text: 'A chill runs down your spine that has nothing to do with the evening breeze.' },
+                { speaker: 'luna', text: 'I must go — my energy wanes. Be careful tonight at the shrine. Yuki can be trusted, but the path will be dangerous. Remember: trust your heart, and the Flame will answer.', emotion: 'fading' },
+                { speaker: 'narrator', text: 'Luna dissolves into motes of silver light, leaving you alone with your swirling thoughts and the weight of destiny on your shoulders.' },
+                { next: 'home_scene' }
+            ],
+            home_scene: [
+                { speaker: 'narrator', text: 'You arrive home to find the house empty. A note on the refrigerator explains that your mother is working late again. Ever since your father disappeared five years ago, she\'s thrown herself into work to provide for you.', background: 'home_evening' },
+                { speaker: 'hikari', text: '(Dad... I wish you were here. Maybe you could explain what\'s happening to me.)', emotion: 'melancholy' },
+                { speaker: 'narrator', text: 'You eat a quiet dinner alone, watching the clock tick slowly toward midnight. Each minute feels like an hour. Your thoughts chase each other in endless circles.' },
+                { speaker: 'narrator', text: 'Finally, at 11 PM, you change into dark clothes suitable for hiking and slip out your window. The night air is crisp and clean, carrying the eternal scent of cherry blossoms.' },
+                { speaker: 'narrator', text: 'Mount Hoshizora looms in the distance, its peak crowned with stars. The old Sakura Shrine awaits you somewhere in its forested slopes — a place you\'ve heard stories about since childhood but never dared to visit.' },
+                { speaker: 'hikari', text: '(They say the shrine is cursed... that those who enter never return the same. But I have no choice. This is my destiny.)', emotion: 'determined' },
+                { speaker: 'narrator', text: 'You begin the long climb up the mountain path, the Stellar Heart pendant lighting your way with a soft, pulsing glow. With each step, you feel the air grow thick with ancient power.', effect: 'transition' },
+                { next: 'shrine_arrival' }
+            ],
+            shrine_arrival: [
+                { speaker: 'narrator', text: '=== THE ANCIENT SHRINE ===', effect: 'location_title' },
+                { speaker: 'narrator', text: 'The path opens into a clearing, and you stop in awe at the sight before you. The old Sakura Shrine is magnificent despite its age — towering torii gates of weathered crimson, stone lanterns covered in moss, and at the center, a temple that seems to phase in and out of visibility with each passing cloud.', background: 'shrine_night' },
+                { speaker: 'narrator', text: 'Most striking of all is the massive cherry tree that dominates the shrine grounds. Its trunk is wider than a house, its branches reaching toward the heavens like desperate arms. And despite it being well past the blooming season, it is covered in brilliant pink blossoms that glow with inner light.' },
+                { speaker: 'hikari', text: 'Incredible... this place is real. It\'s all real.', emotion: 'awestruck' },
+                { speaker: 'yuki', text: 'You came. I was beginning to wonder if you\'d lost your nerve.', emotion: 'neutral' },
+                { speaker: 'narrator', text: 'Yuki emerges from behind one of the stone lanterns, her pale form almost ghostly in the moonlight. Her winter-blue eyes reflect the ethereal glow of the cherry blossoms.' },
+                { speaker: 'hikari', text: 'I said I would come. I don\'t break my promises.', emotion: 'resolute' },
+                { speaker: 'yuki', text: '*slight smile* Good. You\'ll need that resolve for what comes next. Follow me.', emotion: 'approving', addRelationship: { character: 'yuki', amount: 5 } },
+                { speaker: 'narrator', text: 'Yuki leads you toward the massive cherry tree. As you draw closer, you notice patterns carved into its bark — ancient symbols that seem to shift and change when you try to focus on them.' },
+                { speaker: 'yuki', text: 'This is the Eternal Sakura. It has stood for over three thousand years, a living link between the mortal realm and the spirit world. Its roots touch the very foundations of reality.', emotion: 'reverent' },
+                { speaker: 'hikari', text: 'It\'s beautiful...', emotion: 'mesmerized' },
+                { speaker: 'yuki', text: 'And incredibly dangerous. The power contained within could level this entire mountain if unleashed carelessly. Which is why only Star Bearers can safely interact with it.', emotion: 'warning' },
+                { next: 'awakening_ritual' }
+            ],
+            awakening_ritual: [
+                { speaker: 'yuki', text: 'Stand before the tree and hold out the Stellar Heart. Let it touch the bark directly.', emotion: 'instructing' },
+                { speaker: 'narrator', text: 'You step forward nervously, removing the pendant from around your neck. It pulses rapidly now, as if excited, eager to fulfill its purpose.' },
+                { speaker: 'narrator', text: 'The moment the Stellar Heart touches the Eternal Sakura\'s bark, the world explodes into light.' },
+                { speaker: 'narrator', text: 'You scream as power floods through you — a roaring inferno of energy that races through your veins, setting every nerve ablaze. It\'s pain and ecstasy intertwined, destruction and creation in perfect balance.', effect: 'flash' },
+                { speaker: 'narrator', text: 'Visions cascade through your mind: great battles of the ancient past, heroes wielding flames against encroaching darkness, the birth and death of stars, the endless dance of light and shadow across eternity.' },
+                { speaker: 'narrator', text: 'And then, a voice. Your own voice, but deeper, older, resonating with power beyond mortal comprehension.' },
+                { speaker: 'narrator', text: '"I have waited for you, child of my lineage. The Astral Flame passes to you now, as it has passed through a hundred generations. Rise. RISE AND BURN!"', effect: 'echo' },
+                { speaker: 'narrator', text: 'You throw back your head and scream as silver-white flames erupt from your body, shooting toward the heavens in a pillar of incandescent light. The flames don\'t burn — they purify, stripping away weakness and doubt, leaving only power and purpose.', unlockGallery: 4 },
+                { speaker: 'narrator', text: 'When the light finally fades, you collapse to your knees, gasping for breath. But you feel different. Stronger. More alive than you\'ve ever been.' },
+                { speaker: 'hikari', text: '*panting* What... what was that...?', emotion: 'overwhelmed' },
+                { speaker: 'yuki', text: '*kneeling beside you* That was your awakening. The Astral Flame has fully manifested. You are now, officially, a Star Bearer.', emotion: 'impressed', addRelationship: { character: 'yuki', amount: 10 } },
+                { speaker: 'narrator', text: 'You look down at your hands and gasp. Faint silver flames dance across your fingertips, beautiful and ethereal, responding to your thoughts with perfect precision.' },
+                { speaker: 'hikari', text: 'I can feel it... the power. It\'s like an ocean inside me.', emotion: 'wonder' },
+                { speaker: 'yuki', text: 'You\'ll learn to control it. I\'ll teach you. But for now—', emotion: 'gentle' },
+                { speaker: 'narrator', text: 'Yuki stops mid-sentence, her expression suddenly sharp. She rises swiftly, ice crystallizing in her palms.' },
+                { speaker: 'yuki', text: 'We\'re not alone.', emotion: 'alert' },
+                { next: 'shrine_ambush' }
+            ],
+            shrine_ambush: [
+                { speaker: 'narrator', text: 'Shadows begin to pool at the edges of the clearing, coalescing into humanoid shapes with glowing purple eyes. A dozen, then two dozen, then too many to count. They move without sound, surrounding you on all sides.' },
+                { speaker: 'yuki', text: 'Shadow Thralls. The Consortium must have been watching this place. They knew we\'d come here.', emotion: 'grim' },
+                { speaker: 'narrator', text: 'And then, stepping through the ranks of shadow creatures like a king among servants, comes a figure you recognize with a jolt of fear. The crimson-eyed student from school.' },
+                { speaker: 'kuro', text: '*slow applause* Bravo. Truly impressive. The awakening of the Astral Flame — I haven\'t felt power like that in centuries.', emotion: 'mocking' },
+                { speaker: 'hikari', text: 'You! Who are you?!', emotion: 'demanding' },
+                { speaker: 'kuro', text: 'How rude of me. I am Kuro Yamamoto, though I\'ve held many names across the ages. The Shadow Consortium has tasked me with... recruiting you.', emotion: 'theatrical' },
+                { speaker: 'yuki', text: 'She\'ll never join you, shadow spawn.', emotion: 'fierce' },
+                { speaker: 'kuro', text: 'Ah, the Winter Star. Still so cold, so hostile. I remember when you were much more... accommodating.', emotion: 'suggestive' },
+                { speaker: 'narrator', text: 'Yuki flinches almost imperceptibly, pain flashing across her features before she masters herself.' },
+                { speaker: 'yuki', text: 'That was before I knew what you truly were.', emotion: 'bitter' },
+                { speaker: 'kuro', text: 'Ancient history. Now then, Hikari — may I call you Hikari? — we can do this the easy way or the entertaining way. Join us willingly, and your friends and family will be spared.', emotion: 'threatening' },
+                {
+                    type: 'choice',
+                    question: 'How do you respond to Kuro\'s offer?',
+                    choices: [
+                        { text: 'Refuse defiantly and prepare to fight', next: 'shrine_battle', flag: 'defied_kuro' },
+                        { text: 'Pretend to consider to buy time', next: 'shrine_stall', flag: 'stalled_kuro' },
+                        { text: 'Ask what the Shadow Consortium really wants', next: 'shrine_question', flag: 'questioned_kuro' }
+                    ]
+                }
+            ],
+            shrine_battle: [
+                { speaker: 'hikari', text: 'I\'d rather die than help monsters like you!', emotion: 'furious' },
+                { speaker: 'narrator', text: 'The silver flames roar to life around you, responding to your conviction. For a moment, even the Shadow Thralls recoil from the brilliant light.' },
+                { speaker: 'kuro', text: '*sighs* The entertaining way it is. Pity. You would have made such a magnificent ally.', emotion: 'disappointed' },
+                { speaker: 'narrator', text: 'He raises his hand, and the Shadow Thralls surge forward in a tide of darkness. Time seems to slow as you face the impossible odds.', startCombat: { enemy: 'shadow_horde', health: 500 } },
+                { next: 'first_combat' }
+            ],
+            shrine_stall: [
+                { speaker: 'hikari', text: 'And if I refuse? What exactly happens to my family?', emotion: 'calculating' },
+                { speaker: 'kuro', text: 'Oho? The lamb shows cunning. Perhaps there\'s hope for you yet.', emotion: 'intrigued' },
+                { speaker: 'narrator', text: 'Yuki shoots you a questioning look, but you give her a subtle signal. Trust me.' },
+                { speaker: 'kuro', text: 'Your mother, working late at Sakura Heights General Hospital. Your aunt in Osaka. Your grandmother in the countryside. We know everyone you love, dear Hikari. We know where they sleep.', emotion: 'threatening' },
+                { speaker: 'hikari', text: 'And if I join you... they\'d truly be safe?', emotion: 'feigned uncertainty' },
+                { speaker: 'kuro', text: '*stepping closer* Absolutely. The Consortium takes care of its own. You\'d have power beyond imagining, eternal youth, and the safety of all you hold dear.', emotion: 'persuasive' },
+                { speaker: 'narrator', text: 'He\'s close now. Too close. And too focused on you to notice Yuki\'s hands moving in complex patterns behind her back.' },
+                { speaker: 'hikari', text: 'That sounds... tempting. There\'s just one problem.', emotion: 'false sweet' },
+                { speaker: 'kuro', text: 'Oh? And what\'s that?', emotion: 'curious' },
+                { speaker: 'hikari', text: 'I\'m a terrible liar, but you\'re even worse at reading people!', emotion: 'triumphant' },
+                { speaker: 'narrator', text: 'You thrust your hands forward, and silver flames explode outward at the same moment Yuki unleashes a blizzard of ice shards. The combined attack catches Kuro completely off guard!', effect: 'flash', addRelationship: { character: 'yuki', amount: 15 } },
+                { next: 'first_combat' }
+            ],
+            shrine_question: [
+                { speaker: 'hikari', text: 'Before I answer... tell me what the Shadow Consortium actually wants. "Plunging the world into darkness" sounds like a villain\'s cliché. What\'s the real goal?', emotion: 'probing' },
+                { speaker: 'narrator', text: 'Kuro pauses, genuine surprise flickering across his features. For a moment, something almost human shows through the monster.' },
+                { speaker: 'kuro', text: 'A philosopher as well as a warrior. How delightful.', emotion: 'amused' },
+                { speaker: 'kuro', text: 'Very well. A history lesson for the condemned. The barriers between realms were erected ten thousand years ago by beings who feared change. They imprisoned the shadow realm and called it "evil."', emotion: 'lecturing' },
+                { speaker: 'kuro', text: 'But shadow is not evil. It is simply different. We wish to tear down the artificial barriers, to allow all realms to exist as one, as they were meant to.', emotion: 'passionate' },
+                { speaker: 'hikari', text: 'And the destruction that would cause? The innocents who would die?', emotion: 'challenging' },
+                { speaker: 'kuro', text: '*shrugs* Change always has casualties. But those who survive will be elevated to godhood. A small price for paradise, no?', emotion: 'dismissive' },
+                { speaker: 'yuki', text: 'And there it is. The truth behind the pretty words. They don\'t care how many die, as long as they get what they want.', emotion: 'vindicated' },
+                { speaker: 'hikari', text: 'Thank you for your honesty, Kuro. It makes my answer so much easier: Never. Not now. Not ever.', emotion: 'resolute', addRelationship: { character: 'kuro', amount: -20 } },
+                { speaker: 'kuro', text: 'A shame. Truly a shame. Kill them both.', emotion: 'cold' },
+                { next: 'first_combat' }
+            ],
+            first_combat: [
+                { speaker: 'narrator', text: '=== COMBAT INITIATED ===', effect: 'combat_start' },
+                { speaker: 'narrator', text: 'The Shadow Thralls surge forward, their forms flickering between solid and ethereal. Your newly awakened flames burn bright, instinct guiding your movements as Yuki fights beside you in perfect synchronization.' },
+                { speaker: 'yuki', text: 'Focus your flames into a concentrated beam! Cut through their ranks!', emotion: 'commanding' },
+                { speaker: 'narrator', text: 'You thrust your hand forward, and a lance of silver fire pierces through three thralls, dissipating them into wisps of shadow. The power comes naturally now, as if you\'ve always known how to wield it.' },
+                { speaker: 'narrator', text: 'Yuki moves like a winter storm incarnate, ice and snow swirling around her as she freezes thralls solid and shatters them with precise strikes. Together, you carve a path through the endless tide.', effect: 'combat_action' },
+                { speaker: 'kuro', text: '*observing from afar* Impressive. The Flame and the Frost dance well together. But you cannot defeat an army of shadows with two mere stars.', emotion: 'calculating' },
+                { speaker: 'narrator', text: 'He raises his hand, and the shadows around him coalesce into massive tendrils of darkness that surge toward you both.' },
+                { speaker: 'narrator', text: 'You\'re tiring. For every thrall you destroy, two more seem to take its place. And Kuro himself hasn\'t even engaged yet. This battle cannot be won by force alone.' },
+                {
+                    type: 'choice',
+                    question: 'What do you do?',
+                    choices: [
+                        { text: 'Draw on every ounce of power for one massive attack', next: 'nova_attack', flag: 'used_nova' },
+                        { text: 'Try to reach the Eternal Sakura for power', next: 'sakura_power', flag: 'used_tree' },
+                        { text: 'Create a distraction and escape with Yuki', next: 'tactical_retreat', flag: 'retreated' }
+                    ]
+                }
+            ],
+            nova_attack: [
+                { speaker: 'hikari', text: 'Yuki! Get behind me!', emotion: 'commanding' },
+                { speaker: 'narrator', text: 'You plant your feet and reach deep within yourself, past the fear, past the exhaustion, to the blazing core of power that now resides in your soul.' },
+                { speaker: 'hikari', text: 'If I\'m going to be a hero... then I\'ll burn like one!', emotion: 'determined' },
+                { speaker: 'narrator', text: 'You throw your arms wide, and the world turns white.' },
+                { speaker: 'narrator', text: 'The ASTRAL NOVA erupts from your body in an expanding dome of silver-white fire. Every shadow it touches is instantly purified, evaporating into nothingness. The ground cracks. The air screams. The very fabric of reality trembles.', effect: 'ultimate', unlockGallery: 5 },
+                { speaker: 'narrator', text: 'When your vision clears, the clearing is empty of shadow thralls. Only scorched earth remains where they once stood. You fall to your knees, completely drained.' },
+                { speaker: 'kuro', text: '*singed but standing, eyes wide* Impossible. That level of power so soon after awakening... You truly are the one from the prophecy.', emotion: 'shocked' },
+                { speaker: 'yuki', text: '*rushing to your side* Hikari! Are you alright?!', emotion: 'panicked' },
+                { speaker: 'hikari', text: '*weakly* Did... did I get them all...?', emotion: 'exhausted' },
+                { speaker: 'kuro', text: 'You\'ve won this round, Astral Flame. But this is far from over. We will meet again, and next time, I will be... better prepared.', emotion: 'retreating' },
+                { speaker: 'narrator', text: 'Kuro melts into the shadows, his crimson eyes the last thing to fade. The threat has passed, but at what cost? You can barely keep your eyes open.', addRelationship: { character: 'yuki', amount: 20 } },
+                { next: 'aftermath' }
+            ],
+            sakura_power: [
+                { speaker: 'hikari', text: 'The tree! We have to reach the Eternal Sakura!', emotion: 'realization' },
+                { speaker: 'yuki', text: 'What? Drawing more power now could kill you!', emotion: 'alarmed' },
+                { speaker: 'hikari', text: 'Not to draw power — to channel its protection! Cover me!', emotion: 'urgent' },
+                { speaker: 'narrator', text: 'You sprint toward the massive cherry tree, Yuki forming ice barriers behind you to slow the thralls. Your hand slams against the bark, and you cry out with all your heart.' },
+                { speaker: 'hikari', text: 'Please! If you can hear me — help us! We\'re trying to protect this world!', emotion: 'desperate' },
+                { speaker: 'narrator', text: 'For a heartbeat, nothing happens. Then the tree begins to glow. Ancient runes blaze to life along every branch and root, and the air fills with the deafening sound of thousands of blossoms opening at once.' },
+                { speaker: 'narrator', text: 'A barrier of pure light explodes outward from the Eternal Sakura, sweeping across the entire shrine grounds. Every shadow it touches is banished, sent screaming back to the realm from whence it came.', effect: 'barrier', unlockGallery: 5 },
+                { speaker: 'kuro', text: '*forced back to the edge of the clearing* The Sakura itself awakens?! This was not predicted!', emotion: 'furious' },
+                { speaker: 'narrator', text: 'A gentle voice echoes through your mind — ancient, feminine, kind.' },
+                { speaker: 'narrator', text: '"Child of the Flame... you asked for help with a pure heart. The shadows cannot touch this sacred ground while my light endures. But my power is limited. What comes next must be faced with your own strength."', effect: 'divine' },
+                { speaker: 'kuro', text: 'A temporary victory. Enjoy your borrowed sanctuary while it lasts, little stars. The Consortium\'s patience is vast, but not infinite.', emotion: 'threatening' },
+                { speaker: 'narrator', text: 'He vanishes into the shadows beyond the barrier, leaving you and Yuki standing in the protective embrace of the Eternal Sakura.', addRelationship: { character: 'yuki', amount: 15 } },
+                { next: 'aftermath' }
+            ],
+            tactical_retreat: [
+                { speaker: 'hikari', text: 'Yuki, we can\'t win this! There\'s too many!', emotion: 'realistic' },
+                { speaker: 'yuki', text: 'I know. I\'m going to create an opening. When I do, run toward the eastern torii gate. There\'s an emergency escape route.', emotion: 'tactical' },
+                { speaker: 'hikari', text: 'I won\'t leave you behind!', emotion: 'defiant' },
+                { speaker: 'yuki', text: '*small smile* I\'m not staying behind, fool. Just trust me.', emotion: 'affectionate' },
+                { speaker: 'narrator', text: 'Yuki raises both hands above her head, ice crystals forming a massive sphere of frozen energy. Her hair whips in a supernatural wind as she draws on every ounce of her power.' },
+                { speaker: 'yuki', text: 'ABSOLUTE ZERO!!!', emotion: 'powerful' },
+                { speaker: 'narrator', text: 'She slams her hands down, and a wave of impossible cold sweeps across the battlefield. Every thrall in the vicinity freezes solid, becoming ice sculptures of malice. Even the air itself seems to crystallize.', effect: 'freeze' },
+                { speaker: 'yuki', text: 'NOW! RUN!', emotion: 'urgent' },
+                { speaker: 'narrator', text: 'You grab Yuki\'s hand — she\'s shaking from the exertion — and sprint toward the eastern gate. Behind you, you hear the frozen thralls beginning to crack and shatter as Kuro roars with fury.' },
+                { speaker: 'kuro', text: 'COWARDS! YOU CANNOT ESCAPE YOUR DESTINY!', emotion: 'enraged' },
+                { speaker: 'narrator', text: 'You plunge through the torii gate and tumble down a hidden passage, sliding into darkness. The sounds of pursuit fade behind you as ancient barriers sealed long ago activate in your wake.', addRelationship: { character: 'yuki', amount: 25 } },
+                { next: 'aftermath' }
+            ],
+            aftermath: [
+                { speaker: 'narrator', text: 'Dawn breaks over Sakura Heights, painting the sky in shades of pink and gold. You find yourself in a small cave on the mountainside, exhausted but alive.', background: 'cave_dawn' },
+                { speaker: 'narrator', text: 'Yuki sits beside you, her usual cold demeanor softened by fatigue and something that might be genuine warmth.' },
+                { speaker: 'yuki', text: 'That was... unexpected. All of it. Your power, your courage, your recklessness.', emotion: 'evaluating' },
+                { speaker: 'hikari', text: 'Is that a compliment or a criticism?', emotion: 'wry' },
+                { speaker: 'yuki', text: 'Both. Neither. I\'m not sure yet.', emotion: 'conflicted' },
+                { speaker: 'narrator', text: 'She looks at you with those winter-blue eyes, and for the first time, you see past the ice to the person beneath — someone who has been fighting this battle alone for far too long.' },
+                { speaker: 'yuki', text: 'You did well tonight, Hikari. Better than I expected. Better than I could have hoped.', emotion: 'sincere', addRelationship: { character: 'yuki', amount: 10 } },
+                { speaker: 'hikari', text: 'We make a good team.', emotion: 'warm' },
+                { speaker: 'yuki', text: '*tiny smile* Perhaps we do. Now get some rest. Tomorrow, your training truly begins. And trust me...', emotion: 'slight smile' },
+                { speaker: 'yuki', text: 'Tonight was nothing compared to what\'s coming.', emotion: 'ominous' },
+                { speaker: 'narrator', text: 'As you drift off to sleep, the Stellar Heart pendant glows softly against your chest. You\'ve taken the first steps on a path from which there is no return. The war for the fate of all worlds has begun.' },
+                { speaker: 'narrator', text: '=== END OF CHAPTER 2 ===', effect: 'chapter_end', unlockGallery: 6, addQuest: { id: 'training_begin', title: 'Path of the Flame', desc: 'Begin your training under Yuki\'s guidance', objective: 'Rest and recover, then meet Yuki for training' } },
+                { next: 'chapter2_preview' }
+            ],
+            chapter2_preview: [
+                { speaker: 'narrator', text: '=== PREVIEW: CHAPTER 3 - BONDS OF FIRE AND ICE ===', effect: 'preview' },
+                { speaker: 'narrator', text: 'With the Shadow Consortium now aware of Hikari\'s awakening, the race to find the remaining Star Bearers intensifies. But between training sessions, school life, and the growing bond with her allies, Hikari must also confront her own past.' },
+                { speaker: 'narrator', text: 'What happened to her father five years ago? Why does the Student Council President, Rei Sakamoto, watch her with such knowing eyes? And what is the truth behind Kuro Yamamoto\'s connection to Yuki?' },
+                { speaker: 'narrator', text: 'The answers may shatter everything Hikari thought she knew about herself... and about the nature of light and darkness.' },
+                { speaker: 'narrator', text: 'Thank you for playing the demo of Sakura Chronicles: Echoes of Destiny! More chapters coming soon...', effect: 'end_demo' },
+                { next: 'title_return' }
+            ],
+            title_return: [
+                { speaker: 'narrator', text: 'Returning to title screen...', effect: 'fade_title' }
+            ]
+        };
+
+        // Three.js Scene Setup
+        let scene, camera, renderer;
+        let particles = [];
+        let animationFrameId;
+        let mouseX = 0, mouseY = 0;
+
+        // Background objects
+        let backgroundObjects = {
+            ground: null,
+            sky: null,
+            trees: [],
+            buildings: [],
+            shrine: null,
+            characters: []
+        };
+
+        // Initialize Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('renderCanvas'),
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+
+            camera.position.z = 5;
+
+            // Lighting
+            setupLighting();
+            
+            // Create initial background
+            createBackground('title');
+            
+            // Create particle system
+            createParticles();
+            
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            
+            // Start animation
+            animate();
+        }
+
+        function setupLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404080, 0.6);
+            scene.add(ambientLight);
+
+            // Main directional light (moonlight)
+            const moonLight = new THREE.DirectionalLight(0x8888ff, 0.8);
+            moonLight.position.set(5, 10, 5);
+            moonLight.castShadow = true;
+            moonLight.shadow.mapSize.width = 2048;
+            moonLight.shadow.mapSize.height = 2048;
+            scene.add(moonLight);
+
+            // Accent lights
+            const pinkLight = new THREE.PointLight(0xff6b9d, 1, 20);
+            pinkLight.position.set(-5, 3, 2);
+            scene.add(pinkLight);
+
+            const blueLight = new THREE.PointLight(0x64c8ff, 0.8, 15);
+            blueLight.position.set(5, 2, 3);
+            scene.add(blueLight);
+
+            // Fog for atmosphere
+            scene.fog = new THREE.FogExp2(0x0a0a1e, 0.03);
+        }
+
+        function createBackground(type) {
+            // Clear existing objects
+            clearBackground();
+            
+            switch(type) {
+                case 'title':
+                    createTitleBackground();
+                    break;
+                case 'shrine_night':
+                    createShrineBackground();
+                    break;
+                case 'street_night':
+                    createStreetBackground();
+                    break;
+                case 'school_day':
+                    createSchoolBackground(true);
+                    break;
+                case 'school_sunset':
+                    createSchoolBackground(false);
+                    break;
+                case 'classroom':
+                    createClassroomBackground();
+                    break;
+                case 'rooftop_day':
+                    createRooftopBackground();
+                    break;
+                case 'courtyard_sunset':
+                    createCourtyardBackground();
+                    break;
+                case 'street_sunset':
+                    createStreetBackground(true);
+                    break;
+                case 'home_evening':
+                    createHomeBackground();
+                    break;
+                case 'cave_dawn':
+                    createCaveBackground();
+                    break;
+                case 'cafeteria':
+                    createCafeteriaBackground();
+                    break;
+                default:
+                    createTitleBackground();
+            }
+        }
+
+        function clearBackground() {
+            Object.values(backgroundObjects).forEach(obj => {
+                if (Array.isArray(obj)) {
+                    obj.forEach(o => scene.remove(o));
+                } else if (obj) {
+                    scene.remove(obj);
+                }
+            });
+            backgroundObjects = {
+                ground: null,
+                sky: null,
+                trees: [],
+                buildings: [],
+                shrine: null,
+                characters: []
+            };
+        }
+
+        function createTitleBackground() {
+            // Sky gradient
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    topColor: { value: new THREE.Color(0x0a0a2e) },
+                    bottomColor: { value: new THREE.Color(0x16213e) },
+                    offset: { value: 10 },
+                    exponent: { value: 0.6 }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 topColor;
+                    uniform vec3 bottomColor;
+                    varying vec2 vUv;
+                    void main() {
+                        gl_FragColor = vec4(mix(bottomColor, topColor, vUv.y), 1.0);
+                    }
+                `,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -20;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(50, 30);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a1a2e,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -3;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            backgroundObjects.ground = ground;
+
+            // Cherry blossom trees
+            for (let i = 0; i < 5; i++) {
+                const tree = createCherryTree();
+                tree.position.set(-10 + i * 5, -1, -5 - Math.random() * 5);
+                tree.scale.setScalar(0.8 + Math.random() * 0.4);
+                scene.add(tree);
+                backgroundObjects.trees.push(tree);
+            }
+
+            // Floating sakura petals
+            createSakuraPetals();
+
+            // Moon
+            const moonGeometry = new THREE.SphereGeometry(2, 32, 32);
+            const moonMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffee,
+                emissive: 0xffffcc,
+                emissiveIntensity: 0.5
+            });
+            const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+            moon.position.set(8, 8, -15);
+            scene.add(moon);
+            backgroundObjects.buildings.push(moon);
+
+            // Stars
+            createStars();
+        }
+
+        function createShrineBackground() {
+            // Dark sky
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: 0x050510,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -30;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Stone ground
+            const groundGeometry = new THREE.PlaneGeometry(50, 50);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2a2a3a,
+                roughness: 0.9
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            backgroundObjects.ground = ground;
+
+            // Torii gate
+            const torii = createToriiGate();
+            torii.position.set(0, 0, -8);
+            torii.scale.setScalar(1.5);
+            scene.add(torii);
+            backgroundObjects.shrine = torii;
+
+            // Giant glowing sakura tree
+            const giantTree = createEternalSakura();
+            giantTree.position.set(0, -1, -15);
+            giantTree.scale.setScalar(3);
+            scene.add(giantTree);
+            backgroundObjects.trees.push(giantTree);
+
+            // Stone lanterns
+            for (let i = 0; i < 4; i++) {
+                const lantern = createStoneLantern();
+                const angle = (i / 4) * Math.PI * 2;
+                lantern.position.set(Math.cos(angle) * 6, -1.5, Math.sin(angle) * 6 - 5);
+                scene.add(lantern);
+                backgroundObjects.buildings.push(lantern);
+            }
+
+            createStars();
+            createSakuraPetals();
+        }
+
+        function createStreetBackground(sunset = false) {
+            // Sky
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: sunset ? 0x4a2040 : 0x0a0a2e,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -30;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Street
+            const groundGeometry = new THREE.PlaneGeometry(50, 50);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333340,
+                roughness: 0.7
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -2;
+            scene.add(ground);
+            backgroundObjects.ground = ground;
+
+            // Buildings
+            for (let i = 0; i < 6; i++) {
+                const building = createBuilding();
+                building.position.set(-15 + i * 6, 0, -10);
+                scene.add(building);
+                backgroundObjects.buildings.push(building);
+            }
+
+            // Street lights
+            for (let i = 0; i < 4; i++) {
+                const light = createStreetLight();
+                light.position.set(-10 + i * 7, -1, -3);
+                scene.add(light);
+                backgroundObjects.buildings.push(light);
+            }
+
+            // Cherry trees
+            for (let i = 0; i < 3; i++) {
+                const tree = createCherryTree();
+                tree.position.set(-8 + i * 8, -1, -6);
+                scene.add(tree);
+                backgroundObjects.trees.push(tree);
+            }
+
+            createSakuraPetals();
+            if (!sunset) createStars();
+        }
+
+        function createSchoolBackground(day = true) {
+            // Sky
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: day ? 0x87ceeb : 0xff7f50,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -30;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(50, 50);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a5d4a,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -2;
+            scene.add(ground);
+            backgroundObjects.ground = ground;
+
+            // School building
+            const school = createSchoolBuilding();
+            school.position.set(0, 2, -15);
+            scene.add(school);
+            backgroundObjects.buildings.push(school);
+
+            // Cherry trees
+            for (let i = 0; i < 4; i++) {
+                const tree = createCherryTree();
+                tree.position.set(-12 + i * 8, -1, -8);
+                scene.add(tree);
+                backgroundObjects.trees.push(tree);
+            }
+
+            createSakuraPetals();
+        }
+
+        function createClassroomBackground() {
+            // Wall
+            const wallGeometry = new THREE.PlaneGeometry(30, 15);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0xfff8e7,
+                roughness: 0.5
+            });
+            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+            wall.position.z = -10;
+            scene.add(wall);
+            backgroundObjects.sky = wall;
+
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(30, 20);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b6914,
+                roughness: 0.6
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            backgroundObjects.ground = floor;
+
+            // Windows
+            for (let i = 0; i < 3; i++) {
+                const windowFrame = createWindow();
+                windowFrame.position.set(-6 + i * 6, 1, -9);
+                scene.add(windowFrame);
+                backgroundObjects.buildings.push(windowFrame);
+            }
+
+            // Desks
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const desk = createDesk();
+                    desk.position.set(-8 + col * 4, -1.5, -2 + row * 2);
+                    desk.scale.setScalar(0.5);
+                    scene.add(desk);
+                    backgroundObjects.buildings.push(desk);
+                }
+            }
+        }
+
+        function createRooftopBackground() {
+            // Sky
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87ceeb,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -30;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Rooftop floor
+            const floorGeometry = new THREE.PlaneGeometry(30, 30);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x666666,
+                roughness: 0.8
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            backgroundObjects.ground = floor;
+
+            // Fence
+            const fence = createFence();
+            fence.position.set(0, -1, -5);
+            scene.add(fence);
+            backgroundObjects.buildings.push(fence);
+
+            // City in background
+            for (let i = 0; i < 10; i++) {
+                const building = createBuilding();
+                building.position.set(-20 + i * 5, -5 + Math.random() * 10, -25);
+                building.scale.setScalar(0.5);
+                scene.add(building);
+                backgroundObjects.buildings.push(building);
+            }
+        }
+
+        function createCourtyardBackground() {
+            // Sunset sky
+            const skyGeometry = new THREE.PlaneGeometry(100, 100);
+            const skyMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff6b35,
+                side: THREE.DoubleSide
+            });
+            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.position.z = -30;
+            scene.add(sky);
+            backgroundObjects.sky = sky;
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(50, 50);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x654321,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -2;
+            scene.add(ground);
+            backgroundObjects.ground = ground;
+
+            // School building
+            const school = createSchoolBuilding();
+            school.position.set(-10, 2, -15);
+            scene.add(school);
+            backgroundObjects.buildings.push(school);
+
+            // Central tree
+            const tree = createCherryTree();
+            tree.position.set(0, -1, -5);
+            tree.scale.setScalar(1.5);
+            scene.add(tree);
+            backgroundObjects.trees.push(tree);
+
+            createSakuraPetals();
+        }
+
+        function createHomeBackground() {
+            // Wall
+            const wallGeometry = new THREE.PlaneGeometry(25, 12);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffe4c4,
+                roughness: 0.5
+            });
+            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+            wall.position.z = -8;
+            scene.add(wall);
+            backgroundObjects.sky = wall;
+
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(25, 15);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0xdeb887,
+                roughness: 0.6
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            backgroundObjects.ground = floor;
+
+            // Window with night view
+            const windowFrame = createWindow();
+            windowFrame.position.set(0, 1, -7);
+            windowFrame.scale.setScalar(1.5);
+            scene.add(windowFrame);
+            backgroundObjects.buildings.push(windowFrame);
+
+            // Bed
+            const bed = createBed();
+            bed.position.set(-5, -1.5, -3);
+            scene.add(bed);
+            backgroundObjects.buildings.push(bed);
+
+            // Desk
+            const desk = createDesk();
+            desk.position.set(5, -1.5, -5);
+            scene.add(desk);
+            backgroundObjects.buildings.push(desk);
+        }
+
+        function createCaveBackground() {
+            // Cave wall
+            const wallGeometry = new THREE.PlaneGeometry(40, 20);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3a3a4a,
+                roughness: 0.9
+            });
+            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+            wall.position.z = -15;
+            scene.add(wall);
+            backgroundObjects.sky = wall;
+
+            // Cave floor
+            const floorGeometry = new THREE.PlaneGeometry(40, 30);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2a2a3a,
+                roughness: 0.95
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            backgroundObjects.ground = floor;
+
+            // Cave opening with dawn light
+            const openingGeometry = new THREE.CircleGeometry(5, 32);
+            const openingMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffb6c1
+            });
+            const opening = new THREE.Mesh(openingGeometry, openingMaterial);
+            opening.position.set(8, 2, -14);
+            scene.add(opening);
+            backgroundObjects.buildings.push(opening);
+
+            // Rocks
+            for (let i = 0; i < 6; i++) {
+                const rock = createRock();
+                rock.position.set(-10 + Math.random() * 20, -1.8, -5 + Math.random() * 5);
+                rock.scale.setScalar(0.5 + Math.random() * 0.5);
+                scene.add(rock);
+                backgroundObjects.buildings.push(rock);
+            }
+        }
+
+        function createCafeteriaBackground() {
+            // Wall
+            const wallGeometry = new THREE.PlaneGeometry(40, 15);
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0xfff8dc,
+                roughness: 0.5
+            });
+            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+            wall.position.z = -15;
+            scene.add(wall);
+            backgroundObjects.sky = wall;
+
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(40, 25);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0xd2691e,
+                roughness: 0.6
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            scene.add(floor);
+            backgroundObjects.ground = floor;
+
+            // Tables
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const table = createCafeteriaTable();
+                    table.position.set(-10 + col * 7, -1.5, -8 + row * 4);
+                    scene.add(table);
+                    backgroundObjects.buildings.push(table);
+                }
+            }
+
+            // Windows
+            for (let i = 0; i < 4; i++) {
+                const windowFrame = createWindow();
+                windowFrame.position.set(-12 + i * 8, 2, -14);
+                scene.add(windowFrame);
+                backgroundObjects.buildings.push(windowFrame);
+            }
+        }
+
+        // Object creation functions
+        function createCherryTree() {
+            const group = new THREE.Group();
+
+            // Trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 3, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a3728,
+                roughness: 0.9
+            });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1.5;
+            group.add(trunk);
+
+            // Branches
+            for (let i = 0; i < 5; i++) {
+                const branchGeometry = new THREE.CylinderGeometry(0.05, 0.1, 1.5, 6);
+                const branch = new THREE.Mesh(branchGeometry, trunkMaterial);
+                const angle = (i / 5) * Math.PI * 2;
+                branch.position.set(Math.cos(angle) * 0.5, 2.5 + i * 0.2, Math.sin(angle) * 0.5);
+                branch.rotation.z = Math.PI / 4;
+                branch.rotation.y = angle;
+                group.add(branch);
+            }
+
+            // Blossoms
+            const blossomGeometry = new THREE.SphereGeometry(1.5, 16, 16);
+            const blossomMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffb7c5,
+                roughness: 0.8,
+                emissive: 0xff6b9d,
+                emissiveIntensity: 0.1
+            });
+            const blossoms = new THREE.Mesh(blossomGeometry, blossomMaterial);
+            blossoms.position.y = 3.5;
+            blossoms.scale.set(1, 0.7, 1);
+            group.add(blossoms);
+
+            return group;
+        }
+
+        function createEternalSakura() {
+            const group = new THREE.Group();
+
+            // Massive trunk
+            const trunkGeometry = new THREE.CylinderGeometry(1, 1.5, 8, 12);
+            const trunkMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3a2820,
+                roughness: 0.9
+            });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 4;
+            group.add(trunk);
+
+            // Glowing blossoms
+            const blossomGeometry = new THREE.SphereGeometry(4, 32, 32);
+            const blossomMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffc0cb,
+                roughness: 0.5,
+                emissive: 0xff6b9d,
+                emissiveIntensity: 0.4
+            });
+            const blossoms = new THREE.Mesh(blossomGeometry, blossomMaterial);
+            blossoms.position.y = 9;
+            blossoms.scale.set(1.2, 0.8, 1.2);
+            group.add(blossoms);
+
+            // Add point light for glow
+            const glowLight = new THREE.PointLight(0xff6b9d, 2, 15);
+            glowLight.position.y = 9;
+            group.add(glowLight);
+
+            return group;
+        }
+
+        function createToriiGate() {
+            const group = new THREE.Group();
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xcc2222,
+                roughness: 0.7
+            });
+
+            // Pillars
+            const pillarGeometry = new THREE.CylinderGeometry(0.15, 0.18, 4, 8);
+            const leftPillar = new THREE.Mesh(pillarGeometry, material);
+            leftPillar.position.set(-1.5, 2, 0);
+            group.add(leftPillar);
+
+            const rightPillar = new THREE.Mesh(pillarGeometry, material);
+            rightPillar.position.set(1.5, 2, 0);
+            group.add(rightPillar);
+
+            // Top beam
+            const topBeamGeometry = new THREE.BoxGeometry(4.5, 0.3, 0.3);
+            const topBeam = new THREE.Mesh(topBeamGeometry, material);
+            topBeam.position.y = 4;
+            group.add(topBeam);
+
+            // Second beam
+            const secondBeamGeometry = new THREE.BoxGeometry(3.5, 0.2, 0.2);
+            const secondBeam = new THREE.Mesh(secondBeamGeometry, material);
+            secondBeam.position.y = 3.5;
+            group.add(secondBeam);
+
+            return group;
+        }
+
+        function createStoneLantern() {
+            const group = new THREE.Group();
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x666666,
+                roughness: 0.9
+            });
+
+            // Base
+            const baseGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.3, 6);
+            const base = new THREE.Mesh(baseGeometry, material);
+            base.position.y = 0.15;
+            group.add(base);
+
+            // Pole
+            const poleGeometry = new THREE.CylinderGeometry(0.1, 0.15, 1, 6);
+            const pole = new THREE.Mesh(poleGeometry, material);
+            pole.position.y = 0.8;
+            group.add(pole);
+
+            // Light housing
+            const housingGeometry = new THREE.BoxGeometry(0.4, 0.5, 0.4);
+            const housing = new THREE.Mesh(housingGeometry, material);
+            housing.position.y = 1.5;
+            group.add(housing);
+
+            // Roof
+            const roofGeometry = new THREE.ConeGeometry(0.4, 0.3, 4);
+            const roof = new THREE.Mesh(roofGeometry, material);
+            roof.position.y = 1.9;
+            roof.rotation.y = Math.PI / 4;
+            group.add(roof);
+
+            // Light
+            const light = new THREE.PointLight(0xffaa00, 0.8, 5);
+            light.position.y = 1.5;
+            group.add(light);
+
+            return group;
+        }
+
+        function createBuilding() {
+            const group = new THREE.Group();
+            
+            const height = 5 + Math.random() * 10;
+            const width = 2 + Math.random() * 3;
+            
+            const buildingGeometry = new THREE.BoxGeometry(width, height, width);
+            const buildingMaterial = new THREE.MeshStandardMaterial({
+                color: new THREE.Color().setHSL(0.6, 0.1, 0.2 + Math.random() * 0.2),
+                roughness: 0.8
+            });
+            const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+            building.position.y = height / 2;
+            group.add(building);
+
+            // Windows
+            const windowMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffaa,
+                transparent: true,
+                opacity: 0.8
+            });
+            const windowGeometry = new THREE.PlaneGeometry(0.3, 0.4);
+            
+            for (let floor = 0; floor < Math.floor(height / 1.5); floor++) {
+                for (let w = 0; w < 3; w++) {
+                    if (Math.random() > 0.3) {
+                        const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+                        windowMesh.position.set(-0.5 + w * 0.5, 1 + floor * 1.5, width / 2 + 0.01);
+                        group.add(windowMesh);
+                    }
+                }
+            }
+
+            return group;
+        }
+
+        function createStreetLight() {
+            const group = new THREE.Group();
+            
+            const poleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.6
+            });
+
+            // Pole
+            const poleGeometry = new THREE.CylinderGeometry(0.05, 0.08, 4, 8);
+            const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+            pole.position.y = 2;
+            group.add(pole);
+
+            // Arm
+            const armGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1, 6);
+            const arm = new THREE.Mesh(armGeometry, poleMaterial);
+            arm.position.set(0.5, 3.8, 0);
+            arm.rotation.z = Math.PI / 2;
+            group.add(arm);
+
+            // Light fixture
+            const fixtureGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const fixtureMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffcc
+            });
+            const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
+            fixture.position.set(1, 3.7, 0);
+            group.add(fixture);
+
+            // Point light
+            const light = new THREE.PointLight(0xffffaa, 1, 8);
+            light.position.set(1, 3.7, 0);
+            group.add(light);
+
+            return group;
+        }
+
+        function createSchoolBuilding() {
+            const group = new THREE.Group();
+            
+            const buildingMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf5f5dc,
+                roughness: 0.6
+            });
+
+            // Main building
+            const mainGeometry = new THREE.BoxGeometry(20, 10, 8);
+            const main = new THREE.Mesh(mainGeometry, buildingMaterial);
+            main.position.y = 5;
+            group.add(main);
+
+            // Roof
+            const roofGeometry = new THREE.BoxGeometry(22, 1, 10);
+            const roofMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a4a6a,
+                roughness: 0.7
+            });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.y = 10.5;
+            group.add(roof);
+
+            // Windows
+            const windowMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87ceeb,
+                transparent: true,
+                opacity: 0.6
+            });
+            const windowGeometry = new THREE.PlaneGeometry(1.5, 2);
+            
+            for (let floor = 0; floor < 3; floor++) {
+                for (let w = 0; w < 8; w++) {
+                    const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+                    windowMesh.position.set(-7 + w * 2, 2 + floor * 3, 4.01);
+                    group.add(windowMesh);
+                }
+            }
+
+            return group;
+        }
+
+        function createWindow() {
+            const group = new THREE.Group();
+
+            // Frame
+            const frameMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b4513,
+                roughness: 0.7
+            });
+            const frameGeometry = new THREE.BoxGeometry(3, 4, 0.1);
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            group.add(frame);
+
+            // Glass
+            const glassMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87ceeb,
+                transparent: true,
+                opacity: 0.4
+            });
+            const glassGeometry = new THREE.PlaneGeometry(2.6, 3.6);
+            const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+            glass.position.z = 0.06;
+            group.add(glass);
+
+            return group;
+        }
+
+        function createDesk() {
+            const group = new THREE.Group();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xdeb887,
+                roughness: 0.6
+            });
+
+            // Desktop
+            const topGeometry = new THREE.BoxGeometry(2, 0.1, 1.5);
+            const top = new THREE.Mesh(topGeometry, material);
+            top.position.y = 1;
+            group.add(top);
+
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 6);
+            const legMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.5
+            });
+
+            const positions = [[-0.8, -0.6], [0.8, -0.6], [-0.8, 0.6], [0.8, 0.6]];
+            positions.forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeometry, legMaterial);
+                leg.position.set(x, 0.5, z);
+                group.add(leg);
+            });
+
+            return group;
+        }
+
+        function createFence() {
+            const group = new THREE.Group();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x666666,
+                roughness: 0.7
+            });
+
+            // Posts
+            const postGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 6);
+            for (let i = 0; i < 15; i++) {
+                const post = new THREE.Mesh(postGeometry, material);
+                post.position.set(-7 + i * 1, 0.75, 0);
+                group.add(post);
+            }
+
+            // Rails
+            const railGeometry = new THREE.CylinderGeometry(0.02, 0.02, 14, 6);
+            const topRail = new THREE.Mesh(railGeometry, material);
+            topRail.position.set(0, 1.4, 0);
+            topRail.rotation.z = Math.PI / 2;
+            group.add(topRail);
+
+            const bottomRail = new THREE.Mesh(railGeometry, material);
+            bottomRail.position.set(0, 0.5, 0);
+            bottomRail.rotation.z = Math.PI / 2;
+            group.add(bottomRail);
+
+            return group;
+        }
+
+        function createBed() {
+            const group = new THREE.Group();
+
+            const frameMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b4513,
+                roughness: 0.7
+            });
+            const mattressMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffe4e1,
+                roughness: 0.8
+            });
+
+            // Frame
+            const frameGeometry = new THREE.BoxGeometry(3, 0.3, 2);
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.position.y = 0.15;
+            group.add(frame);
+
+            // Mattress
+            const mattressGeometry = new THREE.BoxGeometry(2.8, 0.3, 1.8);
+            const mattress = new THREE.Mesh(mattressGeometry, mattressMaterial);
+            mattress.position.y = 0.45;
+            group.add(mattress);
+
+            // Headboard
+            const headboardGeometry = new THREE.BoxGeometry(3, 1.5, 0.1);
+            const headboard = new THREE.Mesh(headboardGeometry, frameMaterial);
+            headboard.position.set(0, 0.9, -1);
+            group.add(headboard);
+
+            // Pillow
+            const pillowGeometry = new THREE.BoxGeometry(0.8, 0.2, 0.5);
+            const pillowMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.9
+            });
+            const pillow = new THREE.Mesh(pillowGeometry, pillowMaterial);
+            pillow.position.set(0, 0.7, -0.6);
+            group.add(pillow);
+
+            return group;
+        }
+
+        function createRock() {
+            const geometry = new THREE.DodecahedronGeometry(0.5, 0);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x555555,
+                roughness: 0.95
+            });
+            const rock = new THREE.Mesh(geometry, material);
+            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            return rock;
+        }
+
+        function createCafeteriaTable() {
+            const group = new THREE.Group();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.5
+            });
+
+            // Table top
+            const topGeometry = new THREE.CylinderGeometry(1, 1, 0.1, 16);
+            const top = new THREE.Mesh(topGeometry, material);
+            top.position.y = 1;
+            group.add(top);
+
+            // Leg
+            const legGeometry = new THREE.CylinderGeometry(0.1, 0.15, 1, 8);
+            const legMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.6
+            });
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.y = 0.5;
+            group.add(leg);
+
+            // Chairs
+            for (let i = 0; i < 4; i++) {
+                const chair = createChair();
+                const angle = (i / 4) * Math.PI * 2;
+                chair.position.set(Math.cos(angle) * 1.5, 0, Math.sin(angle) * 1.5);
+                chair.rotation.y = -angle;
+                group.add(chair);
+            }
+
+            return group;
+        }
+
+        function createChair() {
+            const group = new THREE.Group();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x4169e1,
+                roughness: 0.6
+            });
+
+            // Seat
+            const seatGeometry = new THREE.BoxGeometry(0.4, 0.05, 0.4);
+            const seat = new THREE.Mesh(seatGeometry, material);
+            seat.position.y = 0.5;
+            group.add(seat);
+
+            // Back
+            const backGeometry = new THREE.BoxGeometry(0.4, 0.5, 0.05);
+            const back = new THREE.Mesh(backGeometry, material);
+            back.position.set(0, 0.75, -0.175);
+            group.add(back);
+
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.5, 6);
+            const legMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333
+            });
+            const positions = [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]];
+            positions.forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeometry, legMaterial);
+                leg.position.set(x, 0.25, z);
+                group.add(leg);
+            });
+
+            return group;
+        }
+
+        function createParticles() {
+            if (!CONFIG.particlesEnabled) return;
+
+            const particleCount = 100;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 30;
+                positions[i * 3 + 1] = Math.random() * 15 - 3;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 5;
+
+                // Pink colors for sakura petals
+                colors[i * 3] = 1;
+                colors[i * 3 + 1] = 0.7 + Math.random() * 0.3;
+                colors[i * 3 + 2] = 0.8 + Math.random() * 0.2;
+
+                sizes[i] = 0.05 + Math.random() * 0.1;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+            particles.push({ mesh: particleSystem, velocities: [] });
+
+            // Initialize velocities
+            for (let i = 0; i < particleCount; i++) {
+                particles[0].velocities.push({
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: -0.01 - Math.random() * 0.02,
+                    z: (Math.random() - 0.5) * 0.01,
+                    rotSpeed: Math.random() * 0.02
+                });
+            }
+        }
+
+        function createSakuraPetals() {
+            // Create floating 3D sakura petals
+            const petalCount = 50;
+            
+            for (let i = 0; i < petalCount; i++) {
+                const petalGeometry = new THREE.PlaneGeometry(0.15, 0.1);
+                const petalMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(0.95, 0.6, 0.75 + Math.random() * 0.2),
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                const petal = new THREE.Mesh(petalGeometry, petalMaterial);
+                petal.position.set(
+                    (Math.random() - 0.5) * 30,
+                    Math.random() * 15,
+                    (Math.random() - 0.5) * 20 - 5
+                );
+                petal.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+                
+                petal.userData = {
+                    velocity: {
+                        x: (Math.random() - 0.5) * 0.02,
+                        y: -0.01 - Math.random() * 0.02,
+                        z: (Math.random() - 0.5) * 0.01
+                    },
+                    rotSpeed: {
+                        x: (Math.random() - 0.5) * 0.05,
+                        y: (Math.random() - 0.5) * 0.05,
+                        z: (Math.random() - 0.5) * 0.05
+                    }
+                };
+                
+                scene.add(petal);
+                if (!backgroundObjects.trees) backgroundObjects.trees = [];
+                backgroundObjects.trees.push(petal);
+            }
+        }
+
+        function createStars() {
+            const starCount = 200;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 1] = Math.random() * 50 + 5;
+                positions[i * 3 + 2] = -20 - Math.random() * 30;
+
+                const brightness = 0.5 + Math.random() * 0.5;
+                colors[i * 3] = brightness;
+                colors[i * 3 + 1] = brightness;
+                colors[i * 3 + 2] = brightness + Math.random() * 0.2;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+            backgroundObjects.buildings.push(stars);
+        }
+
+        function updateParticles() {
+            if (!CONFIG.particlesEnabled) return;
+
+            // Update sakura petals
+            backgroundObjects.trees.forEach(obj => {
+                if (obj.userData && obj.userData.velocity) {
+                    obj.position.x += obj.userData.velocity.x;
+                    obj.position.y += obj.userData.velocity.y;
+                    obj.position.z += obj.userData.velocity.z;
+                    
+                    obj.rotation.x += obj.userData.rotSpeed.x;
+                    obj.rotation.y += obj.userData.rotSpeed.y;
+                    obj.rotation.z += obj.userData.rotSpeed.z;
+                    
+                    // Reset position if fallen too low
+                    if (obj.position.y < -5) {
+                        obj.position.y = 15;
+                        obj.position.x = (Math.random() - 0.5) * 30;
+                    }
+                }
+            });
+
+            // Update particle systems
+            particles.forEach(particleSystem => {
+                const positions = particleSystem.mesh.geometry.attributes.position.array;
+                
+                for (let i = 0; i < particleSystem.velocities.length; i++) {
+                    positions[i * 3] += particleSystem.velocities[i].x;
+                    positions[i * 3 + 1] += particleSystem.velocities[i].y;
+                    positions[i * 3 + 2] += particleSystem.velocities[i].z;
+                    
+                    // Reset if fallen too low
+                    if (positions[i * 3 + 1] < -5) {
+                        positions[i * 3 + 1] = 15;
+                        positions[i * 3] = (Math.random() - 0.5) * 30;
+                    }
+                }
+                
+                particleSystem.mesh.geometry.attributes.position.needsUpdate = true;
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseMove(event) {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function animate() {
+            animationFrameId = requestAnimationFrame(animate);
+            
+            // Subtle camera movement based on mouse
+            camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.02;
+            camera.position.y += (mouseY * 0.3 - camera.position.y) * 0.02;
+            camera.lookAt(0, 0, -5);
+            
+            // Update particles
+            updateParticles();
+            
+            // Animate background objects
+            backgroundObjects.trees.forEach((tree, index) => {
+                if (tree.userData && !tree.userData.velocity) {
+                    tree.rotation.y = Math.sin(Date.now() * 0.001 + index) * 0.05;
+                }
+            });
+            
+            renderer.render(scene, camera);
+        }
+
+        // ============================================
+        // GAME ENGINE
+        // ============================================
+
+        class GameEngine {
+            constructor() {
+                this.currentScript = null;
+                this.scriptIndex = 0;
+                this.typingTimeout = null;
+                this.autoModeTimeout = null;
+                this.isTransitioning = false;
+                
+                this.initEventListeners();
+            }
+
+            initEventListeners() {
+                // Title screen buttons
+                document.getElementById('newGameBtn').addEventListener('click', () => this.startNewGame());
+                document.getElementById('continueBtn').addEventListener('click', () => this.showSaveLoadPanel('load'));
+                document.getElementById('galleryBtn').addEventListener('click', () => this.showGallery());
+                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
+
+                // HUD buttons
+                document.getElementById('hudMenuBtn').addEventListener('click', () => this.showStatusPanel());
+                document.getElementById('hudLogBtn').addEventListener('click', () => this.showQuestLog());
+                document.getElementById('hudSaveBtn').addEventListener('click', () => this.showSaveLoadPanel('save'));
+
+                // Panel close buttons
+                document.getElementById('closeStatus').addEventListener('click', () => this.hidePanel('statusPanel'));
+                document.getElementById('closeQuest').addEventListener('click', () => this.hidePanel('questLog'));
+                document.getElementById('closeSettings').addEventListener('click', () => this.hidePanel('settingsPanel'));
+                document.getElementById('closeGallery').addEventListener('click', () => this.hidePanel('galleryPanel'));
+                document.getElementById('closeSaveLoad').addEventListener('click', () => this.hidePanel('saveLoadPanel'));
+
+                // Dialogue progression
+                document.getElementById('dialogueBox').addEventListener('click', () => this.progressDialogue());
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' || e.code === 'Enter') {
+                        this.progressDialogue();
+                    }
+                });
+
+                // Settings toggles
+                document.getElementById('autoMode').addEventListener('click', (e) => {
+                    e.target.classList.toggle('active');
+                    GameState.autoMode = e.target.classList.contains('active');
+                });
+                
+                document.getElementById('skipRead').addEventListener('click', (e) => {
+                    e.target.classList.toggle('active');
+                });
+                
+                document.getElementById('particleToggle').addEventListener('click', (e) => {
+                    e.target.classList.toggle('active');
+                    CONFIG.particlesEnabled = e.target.classList.contains('active');
+                });
+
+                // Settings sliders
+                document.getElementById('textSpeed').addEventListener('input', (e) => {
+                    CONFIG.textSpeed = 60 - (e.target.value * 5);
+                });
+                
+                document.getElementById('masterVolume').addEventListener('input', (e) => {
+                    CONFIG.masterVolume = e.target.value / 100;
+                });
+
+                // Combat buttons
+                document.getElementById('combatAttack').addEventListener('click', () => this.performCombatAction('attack'));
+                document.getElementById('combatMagic').addEventListener('click', () => this.performCombatAction('magic'));
+                document.getElementById('combatItem').addEventListener('click', () => this.performCombatAction('item'));
+                document.getElementById('combatDefend').addEventListener('click', () => this.performCombatAction('defend'));
+            }
+
+            async startNewGame() {
+                this.playSound('click');
+                await this.fadeOut();
+                
+                // Reset game state
+                GameState.currentChapter = 1;
+                GameState.currentDialogue = 0;
+                GameState.health = 100;
+                GameState.mana = 50;
+                GameState.level = 1;
+                GameState.experience = 0;
+                GameState.inventory = [];
+                GameState.flags = {};
+                GameState.quests = [];
+                GameState.dialogueHistory = [];
+                
+                // Reset relationships
+                Object.keys(GameState.relationships).forEach(key => {
+                    GameState.relationships[key].level = 0;
+                });
+
+                // Hide title screen, show game HUD
+                document.getElementById('titleScreen').classList.remove('active');
+                document.getElementById('gameHUD').classList.add('active');
+                document.getElementById('miniMap').classList.add('active');
+
+                // Start the story
+                this.currentScript = StoryScript.prologue;
+                this.scriptIndex = 0;
+
+                await this.fadeIn();
+                this.executeCurrentDialogue();
+            }
+
+            async fadeOut() {
+                return new Promise(resolve => {
+                    document.getElementById('fadeOverlay').classList.add('active');
+                    setTimeout(resolve, 500);
+                });
+            }
+
+            async fadeIn() {
+                return new Promise(resolve => {
+                    document.getElementById('fadeOverlay').classList.remove('active');
+                    setTimeout(resolve, 500);
+                });
+            }
+
+            executeCurrentDialogue() {
+                if (this.scriptIndex >= this.currentScript.length) {
+                    return;
+                }
+
+                const dialogue = this.currentScript[this.scriptIndex];
+
+                // Handle special dialogue types
+                if (dialogue.type === 'choice') {
+                    this.showChoices(dialogue);
+                    return;
+                }
+
+                if (dialogue.next) {
+                    this.goToScript(dialogue.next);
+                    return;
+                }
+
+                // Handle effects
+                if (dialogue.effect) {
+                    this.executeEffect(dialogue.effect);
+                }
+
+                // Handle background change
+                if (dialogue.background) {
+                    createBackground(dialogue.background);
+                }
+
+                // Handle relationship changes
+                if (dialogue.addRelationship) {
+                    this.modifyRelationship(dialogue.addRelationship.character, dialogue.addRelationship.amount);
+                }
+
+                // Handle quest additions
+                if (dialogue.addQuest) {
+                    this.addQuest(dialogue.addQuest);
+                }
+
+                // Handle chapter changes
+                if (dialogue.setChapter) {
+                    GameState.currentChapter = dialogue.setChapter.num;
+                    document.getElementById('chapterNum').textContent = dialogue.setChapter.num;
+                    document.getElementById('chapterName').textContent = dialogue.setChapter.name;
+                }
+
+                // Handle gallery unlocks
+                if (dialogue.unlockGallery !== undefined) {
+                    if (!GameState.unlockedGallery.includes(dialogue.unlockGallery)) {
+                        GameState.unlockedGallery.push(dialogue.unlockGallery);
+                        this.showNotification('New CG Unlocked!');
+                    }
+                }
+
+                // Handle combat start
+                if (dialogue.startCombat) {
+                    this.startCombat(dialogue.startCombat);
+                }
+
+                // Display the dialogue
+                this.displayDialogue(dialogue);
+            }
+
+            displayDialogue(dialogue) {
+                const dialogueBox = document.getElementById('dialogueBox');
+                const speakerName = document.getElementById('speakerName');
+                const dialogueText = document.getElementById('dialogueText');
+
+                // Get character info
+                const character = Characters[dialogue.speaker] || { name: dialogue.speaker, color: '#ffffff' };
+
+                // Set speaker name
+                if (character.name) {
+                    speakerName.textContent = character.name;
+                    speakerName.style.background = `linear-gradient(135deg, ${character.color}, ${this.darkenColor(character.color, 30)})`;
+                    speakerName.style.display = 'block';
+                } else {
+                    speakerName.style.display = 'none';
+                }
+
+                // Show dialogue box
+                dialogueBox.classList.add('active');
+
+                // Type out text
+                this.typeText(dialogueText, dialogue.text);
+
+                // Add to history
+                GameState.dialogueHistory.push({
+                    speaker: character.name,
+                    text: dialogue.text,
+                    timestamp: new Date().toLocaleTimeString()
+                });
+            }
+
+            typeText(element, text) {
+                GameState.isTyping = true;
+                element.textContent = '';
+                let index = 0;
+
+                const type = () => {
+                    if (index < text.length) {
+                        element.textContent += text.charAt(index);
+                        index++;
+                        this.typingTimeout = setTimeout(type, CONFIG.textSpeed);
+                    } else {
+                        GameState.isTyping = false;
+                        if (GameState.autoMode) {
+                            this.autoModeTimeout = setTimeout(() => {
+                                this.progressDialogue();
+                            }, CONFIG.autoModeDelay);
+                        }
+                    }
+                };
+
+                type();
+            }
+
+            progressDialogue() {
+                if (this.isTransitioning) return;
+
+                // If still typing, complete immediately
+                if (GameState.isTyping) {
+                    clearTimeout(this.typingTimeout);
+                    const dialogue = this.currentScript[this.scriptIndex];
+                    document.getElementById('dialogueText').textContent = dialogue.text;
+                    GameState.isTyping = false;
+                    return;
+                }
+
+                // Clear auto mode timeout
+                clearTimeout(this.autoModeTimeout);
+
+                // Progress to next dialogue
+                this.scriptIndex++;
+                
+                if (this.scriptIndex >= this.currentScript.length) {
+                    // Script ended
+                    document.getElementById('dialogueBox').classList.remove('active');
+                    return;
+                }
+
+                this.executeCurrentDialogue();
+            }
+
+            showChoices(dialogue) {
+                const dialogueBox = document.getElementById('dialogueBox');
+                const choiceContainer = document.getElementById('choiceContainer');
+                
+                dialogueBox.classList.remove('active');
+                choiceContainer.innerHTML = '';
+
+                // Add question text if present
+                if (dialogue.question) {
+                    const questionEl = document.createElement('div');
+                    questionEl.style.cssText = 'color: #fff; font-size: 1.3rem; margin-bottom: 1.5rem; text-align: center; text-shadow: 0 0 10px rgba(0,0,0,0.8);';
+                    questionEl.textContent = dialogue.question;
+                    choiceContainer.appendChild(questionEl);
+                }
+
+                dialogue.choices.forEach((choice, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'choiceButton';
+                    button.textContent = choice.text;
+                    button.style.animationDelay = `${index * 0.1}s`;
+                    
+                    button.addEventListener('click', () => {
+                        this.playSound('select');
+                        
+                        // Set flag if present
+                        if (choice.flag) {
+                            GameState.flags[choice.flag] = true;
+                        }
+
+                        // Hide choices
+                        choiceContainer.classList.remove('active');
+
+                        // Go to next script
+                        if (choice.next) {
+                            this.goToScript(choice.next);
+                        } else {
+                            this.scriptIndex++;
+                            this.executeCurrentDialogue();
+                        }
+                    });
+
+                    choiceContainer.appendChild(button);
+                });
+
+                choiceContainer.classList.add('active');
+            }
+
+            goToScript(scriptName) {
+                if (scriptName === 'title_return') {
+                    this.returnToTitle();
+                    return;
+                }
+
+                if (StoryScript[scriptName]) {
+                    this.currentScript = StoryScript[scriptName];
+                    this.scriptIndex = 0;
+                    this.executeCurrentDialogue();
+                } else {
+                    console.error(`Script not found: ${scriptName}`);
+                }
+            }
+
+            async returnToTitle() {
+                await this.fadeOut();
+                
+                document.getElementById('dialogueBox').classList.remove('active');
+                document.getElementById('gameHUD').classList.remove('active');
+                document.getElementById('miniMap').classList.remove('active');
+                document.getElementById('combatUI').classList.remove('active');
+                document.getElementById('titleScreen').classList.add('active');
+                
+                createBackground('title');
+                
+                await this.fadeIn();
+            }
+
+            executeEffect(effect) {
+                switch (effect) {
+                    case 'fade':
+                        this.flashEffect('black', 500);
+                        break;
+                    case 'flash':
+                        this.flashEffect('white', 300);
+                        break;
+                    case 'petals':
+                        this.createPetalBurst();
+                        break;
+                    case 'echo':
+                        // Add echo effect to dialogue box
+                        document.getElementById('dialogueBox').style.animation = 'none';
+                        setTimeout(() => {
+                            document.getElementById('dialogueBox').style.animation = 'echoEffect 0.5s ease';
+                        }, 10);
+                        break;
+                    case 'chapter_end':
+                        this.showNotification('Chapter Complete!');
+                        break;
+                    case 'chapter_start':
+                        this.showChapterTitle();
+                        break;
+                    case 'combat_start':
+                        document.getElementById('combatUI').classList.add('active');
+                        break;
+                    case 'freeze':
+                        this.flashEffect('#64c8ff', 400);
+                        break;
+                    case 'ultimate':
+                        this.ultimateEffect();
+                        break;
+                    case 'barrier':
+                        this.barrierEffect();
+                        break;
+                    case 'divine':
+                        this.divineEffect();
+                        break;
+                    case 'transition':
+                        this.fadeOut().then(() => this.fadeIn());
+                        break;
+                    case 'end_demo':
+                        this.showNotification('Thank you for playing!');
+                        break;
+                }
+            }
+
+            flashEffect(color, duration) {
+                const overlay = document.getElementById('fadeOverlay');
+                overlay.style.background = color;
+                overlay.classList.add('active');
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                    overlay.style.background = '#000';
+                }, duration);
+            }
+
+            createPetalBurst() {
+                for (let i = 0; i < 30; i++) {
+                    const petal = document.createElement('div');
+                    petal.className = 'particle sakuraPetal';
+                    petal.style.left = `${50 + (Math.random() - 0.5) * 20}%`;
+                    petal.style.top = `${50 + (Math.random() - 0.5) * 20}%`;
+                    petal.style.animationDuration = `${2 + Math.random() * 3}s`;
+                    document.getElementById('gameContainer').appendChild(petal);
+                    
+                    setTimeout(() => petal.remove(), 5000);
+                }
+            }
+
+            ultimateEffect() {
+                // Create multiple flash effects
+                const overlay = document.getElementById('fadeOverlay');
+                overlay.style.background = 'linear-gradient(45deg, #fff, #ffd700, #fff)';
+                overlay.style.opacity = '0';
+                overlay.style.display = 'block';
+                
+                let flashes = 0;
+                const flashInterval = setInterval(() => {
+                    overlay.style.opacity = overlay.style.opacity === '0' ? '1' : '0';
+                    flashes++;
+                    if (flashes > 6) {
+                        clearInterval(flashInterval);
+                        overlay.style.opacity = '0';
+                        overlay.style.background = '#000';
+                    }
+                }, 100);
+
+                // Screen shake
+                const container = document.getElementById('gameContainer');
+                let shakeIntensity = 10;
+                const shakeInterval = setInterval(() => {
+                    container.style.transform = `translate(${(Math.random() - 0.5) * shakeIntensity}px, ${(Math.random() - 0.5) * shakeIntensity}px)`;
+                    shakeIntensity *= 0.95;
+                    if (shakeIntensity < 0.5) {
+                        clearInterval(shakeInterval);
+                        container.style.transform = 'none';
+                    }
+                }, 50);
+            }
+
+            barrierEffect() {
+                // Create expanding circle effect
+                const barrier = document.createElement('div');
+                barrier.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 10px;
+                    height: 10px;
+                    border: 3px solid #ffd700;
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: barrierExpand 1s ease-out forwards;
+                    pointer-events: none;
+                    z-index: 100;
+                `;
+                
+                // Add keyframes
+                if (!document.getElementById('barrierKeyframes')) {
+                    const style = document.createElement('style');
+                    style.id = 'barrierKeyframes';
+                    style.textContent = `
+                        @keyframes barrierExpand {
+                            0% { width: 10px; height: 10px; opacity: 1; }
+                            100% { width: 200vw; height: 200vw; opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.getElementById('gameContainer').appendChild(barrier);
+                setTimeout(() => barrier.remove(), 1000);
+            }
+
+            divineEffect() {
+                // Golden light rays from above
+                for (let i = 0; i < 10; i++) {
+                    const ray = document.createElement('div');
+                    ray.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: ${10 + i * 8}%;
+                        width: 4px;
+                        height: 100%;
+                        background: linear-gradient(180deg, rgba(255, 215, 0, 0.8), transparent);
+                        animation: rayDrop 1s ease-out ${i * 0.1}s forwards;
+                        pointer-events: none;
+                        z-index: 100;
+                        opacity: 0;
+                    `;
+                    
+                    document.getElementById('gameContainer').appendChild(ray);
+                    setTimeout(() => ray.remove(), 2000);
+                }
+
+                // Add keyframes
+                if (!document.getElementById('rayKeyframes')) {
+                    const style = document.createElement('style');
+                    style.id = 'rayKeyframes';
+                    style.textContent = `
+                        @keyframes rayDrop {
+                            0% { opacity: 0; transform: translateY(-100%); }
+                            50% { opacity: 1; }
+                            100% { opacity: 0; transform: translateY(0); }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            showChapterTitle() {
+                const chapterOverlay = document.createElement('div');
+                chapterOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    background: rgba(0, 0, 0, 0.8);
+                    z-index: 200;
+                    animation: fadeInOut 3s ease forwards;
+                `;
+                
+                chapterOverlay.innerHTML = `
+                    <div style="font-family: 'Cinzel', serif; font-size: 1.5rem; color: #ff6b9d; letter-spacing: 5px; margin-bottom: 1rem;">CHAPTER ${GameState.currentChapter}</div>
+                    <div style="font-family: 'Cinzel', serif; font-size: 3rem; color: #fff; text-shadow: 0 0 30px #ff6b9d;">${document.getElementById('chapterName').textContent}</div>
+                `;
+
+                // Add keyframes
+                if (!document.getElementById('chapterKeyframes')) {
+                    const style = document.createElement('style');
+                    style.id = 'chapterKeyframes';
+                    style.textContent = `
+                        @keyframes fadeInOut {
+                            0% { opacity: 0; }
+                            20% { opacity: 1; }
+                            80% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                document.getElementById('gameContainer').appendChild(chapterOverlay);
+                setTimeout(() => chapterOverlay.remove(), 3000);
+            }
+
+            modifyRelationship(character, amount) {
+                if (GameState.relationships[character]) {
+                    GameState.relationships[character].level = Math.max(0, 
+                        Math.min(GameState.relationships[character].maxLevel, 
+                            GameState.relationships[character].level + amount));
+                    
+                    if (amount > 0) {
+                        this.showNotification(`${GameState.relationships[character].name} ♥ +${amount}`);
+                    }
+                }
+            }
+
+            addQuest(quest) {
+                GameState.quests.push({
+                    ...quest,
+                    completed: false,
+                    dateAdded: new Date().toLocaleString()
+                });
+                this.showNotification(`New Quest: ${quest.title}`);
+            }
+
+            showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.remove('active');
+                
+                // Force reflow
+                void notification.offsetWidth;
+                
+                notification.classList.add('active');
+                setTimeout(() => {
+                    notification.classList.remove('active');
+                }, 2500);
+            }
+
+            // Combat System
+            startCombat(combatData) {
+                GameState.inCombat = true;
+                GameState.currentEnemy = {
+                    name: combatData.enemy,
+                    health: combatData.health,
+                    maxHealth: combatData.health
+                };
+
+                document.getElementById('combatUI').classList.add('active');
+                document.getElementById('enemyName').textContent = this.formatEnemyName(combatData.enemy);
+                this.updateEnemyHealth();
+            }
+
+            formatEnemyName(name) {
+                return name.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+
+            updateEnemyHealth() {
+                const healthPercent = (GameState.currentEnemy.health / GameState.currentEnemy.maxHealth) * 100;
+                document.getElementById('enemyHealthFill').style.width = `${healthPercent}%`;
+            }
+
+            performCombatAction(action) {
+                if (!GameState.inCombat || !GameState.currentEnemy) return;
+
+                let damage = 0;
+                let manaCost = 0;
+
+                switch (action) {
+                    case 'attack':
+                        damage = 30 + Math.floor(Math.random() * 20);
+                        this.flashEffect('#ff4444', 200);
+                        break;
+                    case 'magic':
+                        if (GameState.mana >= 20) {
+                            damage = 60 + Math.floor(Math.random() * 40);
+                            manaCost = 20;
+                            GameState.mana -= manaCost;
+                            this.flashEffect('#6464ff', 300);
+                        } else {
+                            this.showNotification('Not enough mana!');
+                            return;
+                        }
+                        break;
+                    case 'item':
+                        this.showNotification('No items available');
+                        return;
+                    case 'defend':
+                        this.showNotification('Defending...');
+                        this.flashEffect('#ffff00', 200);
+                        return;
+                }
+
+                GameState.currentEnemy.health -= damage;
+                this.showNotification(`Dealt ${damage} damage!`);
+                this.updateEnemyHealth();
+
+                if (GameState.currentEnemy.health <= 0) {
+                    this.endCombat(true);
+                } else {
+                    // Enemy counterattack
+                    setTimeout(() => {
+                        const enemyDamage = 10 + Math.floor(Math.random() * 15);
+                        GameState.health -= enemyDamage;
+                        this.showNotification(`Received ${enemyDamage} damage!`);
+                        this.flashEffect('#880000', 200);
+                        
+                        if (GameState.health <= 0) {
+                            this.endCombat(false);
+                        }
+                    }, 1000);
+                }
+            }
+
+            endCombat(victory) {
+                GameState.inCombat = false;
+                GameState.currentEnemy = null;
+                document.getElementById('combatUI').classList.remove('active');
+
+                if (victory) {
+                    this.showNotification('Victory!');
+                    GameState.experience += 50;
+                    
+                    // Level up check
+                    if (GameState.experience >= 100) {
+                        GameState.level++;
+                        GameState.experience -= 100;
+                        GameState.maxHealth += 20;
+                        GameState.health = GameState.maxHealth;
+                        GameState.maxMana += 10;
+                        GameState.mana = GameState.maxMana;
+                        this.showNotification(`Level Up! Now level ${GameState.level}!`);
+                    }
+                } else {
+                    this.showNotification('Defeated...');
+                    GameState.health = GameState.maxHealth;
+                }
+
+                // Continue story
+                this.scriptIndex++;
+                this.executeCurrentDialogue();
+            }
+
+            // UI Panels
+            showStatusPanel() {
+                this.playSound('menu');
+                this.updateStatusPanel();
+                document.getElementById('statusPanel').classList.add('active');
+            }
+
+            updateStatusPanel() {
+                document.getElementById('statHealth').textContent = `${GameState.health}/${GameState.maxHealth}`;
+                document.getElementById('statMana').textContent = `${GameState.mana}/${GameState.maxMana}`;
+                document.getElementById('statLevel').textContent = GameState.level;
+                document.getElementById('statExp').textContent = `${GameState.experience}/100`;
+
+                document.getElementById('healthBar').style.width = `${(GameState.health / GameState.maxHealth) * 100}%`;
+                document.getElementById('manaBar').style.width = `${(GameState.mana / GameState.maxMana) * 100}%`;
+
+                // Update relationships
+                const relationGrid = document.getElementById('relationshipGrid');
+                relationGrid.innerHTML = '';
+                
+                Object.entries(GameState.relationships).forEach(([key, rel]) => {
+                    const card = document.createElement('div');
+                    card.className = 'relationshipCard';
+                    card.innerHTML = `
+                        <div class="relationAvatar">${rel.name.charAt(0)}</div>
+                        <div class="relationInfo">
+                            <div class="relationName">${rel.name}</div>
+                            <div class="relationLevel">${rel.title} - ♥ ${rel.level}/${rel.maxLevel}</div>
+                            <div class="statBar" style="margin-top: 5px;">
+                                <div class="statBarFill affection" style="width: ${(rel.level / rel.maxLevel) * 100}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                    relationGrid.appendChild(card);
+                });
+            }
+
+            showQuestLog() {
+                this.playSound('menu');
+                const questList = document.getElementById('questList');
+                questList.innerHTML = '';
+
+                if (GameState.quests.length === 0) {
+                    questList.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center;">No active quests</p>';
+                } else {
+                    GameState.quests.forEach(quest => {
+                        const questItem = document.createElement('div');
+                        questItem.className = `questItem ${quest.completed ? 'completed' : ''}`;
+                        questItem.innerHTML = `
+                            <div class="questTitle">${quest.completed ? '✓ ' : ''}${quest.title}</div>
+                            <div class="questDescription">${quest.desc}</div>
+                            <div class="questObjective">Objective: ${quest.objective}</div>
+                        `;
+                        questList.appendChild(questItem);
+                    });
+                }
+
+                document.getElementById('questLog').classList.add('active');
+            }
+
+            showSettings() {
+                this.playSound('menu');
+                document.getElementById('settingsPanel').classList.add('active');
+            }
+
+            showGallery() {
+                this.playSound('menu');
+                const galleryGrid = document.getElementById('galleryGrid');
+                galleryGrid.innerHTML = '';
+
+                const galleryItems = [
+                    { id: 0, title: 'Title Screen', desc: 'The beginning of your journey' },
+                    { id: 1, title: 'Cherry Blossom Night', desc: 'Where destiny first called' },
+                    { id: 2, title: 'Luna\'s Appearance', desc: 'The guardian reveals herself' },
+                    { id: 3, title: 'The Transfer Student', desc: 'Yuki joins the class' },
+                    { id: 4, title: 'Astral Awakening', desc: 'The Flame ignites' },
+                    { id: 5, title: 'First Battle', desc: 'Standing against the shadows' },
+                    { id: 6, title: 'Dawn of Alliance', desc: 'A new partnership forms' },
+                    { id: 7, title: 'Coming Soon', desc: '???' },
+                    { id: 8, title: 'Coming Soon', desc: '???' },
+                    { id: 9, title: 'Coming Soon', desc: '???' },
+                    { id: 10, title: 'Coming Soon', desc: '???' },
+                    { id: 11, title: 'Coming Soon', desc: '???' }
+                ];
+
+                galleryItems.forEach(item => {
+                    const isUnlocked = GameState.unlockedGallery.includes(item.id);
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = `galleryItem ${isUnlocked ? '' : 'locked'}`;
+                    galleryItem.style.background = isUnlocked ? 
+                        `linear-gradient(135deg, hsl(${item.id * 30}, 50%, 30%), hsl(${item.id * 30 + 30}, 50%, 20%))` : 
+                        'rgba(50,50,50,0.5)';
+                    
+                    if (isUnlocked) {
+                        galleryItem.innerHTML = `
+                            <div style="padding: 10px; color: #fff; font-size: 0.9rem;">${item.title}</div>
+                        `;
+                        galleryItem.addEventListener('click', () => {
+                            this.showNotification(item.desc);
+                        });
+                    }
+                    
+                    galleryGrid.appendChild(galleryItem);
+                });
+
+                document.getElementById('galleryPanel').classList.add('active');
+            }
+
+            showSaveLoadPanel(mode) {
+                this.playSound('menu');
+                const panel = document.getElementById('saveLoadPanel');
+                const title = document.getElementById('saveLoadTitle');
+                const grid = document.getElementById('saveSlotGrid');
+
+                title.textContent = mode === 'save' ? 'SAVE GAME' : 'LOAD GAME';
+                grid.innerHTML = '';
+
+                for (let i = 1; i <= 9; i++) {
+                    const saveData = localStorage.getItem(`sakuraChronicles_save_${i}`);
+                    const slot = document.createElement('div');
+                    slot.className = 'saveSlot';
+                    
+                    if (saveData) {
+                        const data = JSON.parse(saveData);
+                        slot.innerHTML = `
+                            <div class="saveSlotTitle">Slot ${i} - Chapter ${data.chapter}</div>
+                            <div class="saveSlotInfo">Level ${data.level} | ${data.date}</div>
+                        `;
+                    } else {
+                        slot.innerHTML = `
+                            <div class="saveSlotTitle">Slot ${i}</div>
+                            <div class="saveSlotInfo">Empty</div>
+                        `;
+                    }
+
+                    slot.addEventListener('click', () => {
+                        if (mode === 'save') {
+                            this.saveGame(i);
+                        } else {
+                            if (saveData) {
+                                this.loadGame(i);
+                            } else {
+                                this.showNotification('Empty save slot');
+                            }
+                        }
+                    });
+
+                    grid.appendChild(slot);
+                }
+
+                panel.style.display = 'block';
+            }
+
+            saveGame(slot) {
+                const saveData = {
+                    chapter: GameState.currentChapter,
+                    level: GameState.level,
+                    health: GameState.health,
+                    mana: GameState.mana,
+                    experience: GameState.experience,
+                    relationships: GameState.relationships,
+                    flags: GameState.flags,
+                    quests: GameState.quests,
+                    inventory: GameState.inventory,
+                    unlockedGallery: GameState.unlockedGallery,
+                    date: new Date().toLocaleString()
+                };
+
+                localStorage.setItem(`sakuraChronicles_save_${slot}`, JSON.stringify(saveData));
+                this.showNotification(`Game saved to Slot ${slot}`);
+                this.hidePanel('saveLoadPanel');
+            }
+
+            async loadGame(slot) {
+                const saveData = JSON.parse(localStorage.getItem(`sakuraChronicles_save_${slot}`));
+                
+                if (!saveData) {
+                    this.showNotification('No save data found');
+                    return;
+                }
+
+                await this.fadeOut();
+
+                // Restore game state
+                GameState.currentChapter = saveData.chapter;
+                GameState.level = saveData.level;
+                GameState.health = saveData.health;
+                GameState.mana = saveData.mana;
+                GameState.experience = saveData.experience;
+                GameState.relationships = saveData.relationships;
+                GameState.flags = saveData.flags;
+                GameState.quests = saveData.quests;
+                GameState.inventory = saveData.inventory;
+                GameState.unlockedGallery = saveData.unlockedGallery;
+
+                // Update UI
+                document.getElementById('chapterNum').textContent = saveData.chapter;
+                document.getElementById('titleScreen').classList.remove('active');
+                document.getElementById('gameHUD').classList.add('active');
+                document.getElementById('miniMap').classList.add('active');
+                
+                this.hidePanel('saveLoadPanel');
+                
+                // Start from appropriate chapter
+                const chapterScript = `chapter${saveData.chapter - 1}` || 'prologue';
+                this.currentScript = StoryScript[chapterScript] || StoryScript.prologue;
+                this.scriptIndex = 0;
+
+                await this.fadeIn();
+                this.showNotification(`Loaded Slot ${slot}`);
+                this.executeCurrentDialogue();
+            }
+
+            hidePanel(panelId) {
+                document.getElementById(panelId).classList.remove('active');
+                if (panelId === 'saveLoadPanel') {
+                    document.getElementById(panelId).style.display = 'none';
+                }
+            }
+
+            playSound(type) {
+                // Sound placeholder - would integrate with Web Audio API
+                console.log(`Playing sound: ${type}`);
+            }
+
+            darkenColor(hex, percent) {
+                const num = parseInt(hex.replace('#', ''), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = Math.max((num >> 16) - amt, 0);
+                const G = Math.max((num >> 8 & 0x00FF) - amt, 0);
+                const B = Math.max((num & 0x0000FF) - amt, 0);
+                return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        let gameEngine;
+
+        async function initGame() {
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingText = document.getElementById('loadingText');
+
+            // Simulate loading stages
+            const loadingStages = [
+                { progress: 10, text: 'Initializing Three.js...' },
+                { progress: 25, text: 'Loading 3D assets...' },
+                { progress: 40, text: 'Creating world geometry...' },
+                { progress: 55, text: 'Setting up lighting...' },
+                { progress: 70, text: 'Generating particle systems...' },
+                { progress: 85, text: 'Loading story data...' },
+                { progress: 95, text: 'Preparing user interface...' },
+                { progress: 100, text: 'Welcome to Sakura Chronicles!' }
+            ];
+
+            for (const stage of loadingStages) {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                loadingProgress.style.width = `${stage.progress}%`;
+                loadingText.textContent = stage.text;
+            }
+
+            // Initialize Three.js
+            initThreeJS();
+
+            // Initialize game engine
+            gameEngine = new GameEngine();
+
+            // Hide loading screen
+            await new Promise(resolve => setTimeout(resolve, 500));
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('titleScreen').classList.add('active');
+        }
+
+        // Start the game when the page loads
+        window.addEventListener('load', initGame);
+
+        // Handle visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                cancelAnimationFrame(animationFrameId);
+            } else {
+                animate();
+            }
+        });
+    </script>
+</body>
+</html>
