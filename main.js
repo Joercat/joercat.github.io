@@ -1,7 +1,3 @@
-// ============================================
-// EASY-TO-UPDATE LINKS CONFIGURATION
-// Just add or remove items from this array!
-// ============================================
 const SITE_LINKS = [
   {
     title: "Nettleweb",
@@ -15,47 +11,29 @@ const SITE_LINKS = [
     icon: "🎮",
     url: "https://jshshdgxh-unblocked2.hf.space/"
   }
-  // ============================================
-  // ADD MORE LINKS HERE! Just copy this format:
-  // {
-  //   title: "Game Name",
-  //   description: "Short description of the game",
-  //   icon: "🎮",  // Use any emoji
-  //   url: "https://example.com/game"
-  // },
-  // ============================================
 ];
 
-// ============================================
-// IFRAME FUNCTIONS
-// ============================================
 function openIframe(url, title) {
   const overlay = document.getElementById('iframeOverlay');
   const iframe = document.getElementById('contentFrame');
   const titleText = document.getElementById('iframeTitleText');
   const spinner = document.getElementById('loadingSpinner');
 
-  // Set title
   titleText.textContent = title;
 
-  // Show loading spinner
   spinner.classList.add('active');
 
-  // Show overlay with animation
   overlay.classList.add('active');
   setTimeout(() => {
     overlay.classList.add('visible');
   }, 10);
 
-  // Load the URL
-  iframe.src = url;
-
-  // Hide spinner when iframe loads
   iframe.onload = function() {
     spinner.classList.remove('active');
   };
 
-  // Prevent body scroll
+  iframe.src = url;
+
   document.body.style.overflow = 'hidden';
 }
 
@@ -64,7 +42,6 @@ function closeIframe() {
   const iframe = document.getElementById('contentFrame');
   const spinner = document.getElementById('loadingSpinner');
 
-  // Hide with animation
   overlay.classList.remove('visible');
 
   setTimeout(() => {
@@ -73,20 +50,15 @@ function closeIframe() {
     spinner.classList.remove('active');
   }, 300);
 
-  // Restore body scroll
   document.body.style.overflow = '';
 }
 
-// Close iframe with Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeIframe();
   }
 });
 
-// ============================================
-// RENDER GAME CARDS
-// ============================================
 function renderGameCards() {
   const grid = document.getElementById('gamesGrid');
   if (!grid) return;
@@ -107,13 +79,11 @@ function renderGameCards() {
       </div>
     `;
 
-    // Add staggered animation
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
 
     grid.appendChild(card);
 
-    // Animate in
     setTimeout(() => {
       card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
       card.style.opacity = '1';
@@ -122,9 +92,6 @@ function renderGameCards() {
   });
 }
 
-// ============================================
-// ACTIVE LINK HIGHLIGHTING
-// ============================================
 function highlightActiveLink() {
   const currentPath = window.location.href.split('#')[0].split('?')[0];
   const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
@@ -137,11 +104,7 @@ function highlightActiveLink() {
   });
 }
 
-// ============================================
-// ENHANCED ANIMATIONS
-// ============================================
 function initAnimations() {
-  // Welcome text animation
   const welcomeText = document.querySelector('.welcome-text');
   if (welcomeText) {
     welcomeText.style.opacity = '0';
@@ -154,7 +117,6 @@ function initAnimations() {
     }, 300);
   }
 
-  // Caveat text staggered animation
   const caveatTexts = document.querySelectorAll('.caveat-text');
   caveatTexts.forEach((text, index) => {
     text.style.opacity = '0';
@@ -167,7 +129,6 @@ function initAnimations() {
     }, 600 + index * 200);
   });
 
-  // Nav links staggered animation
   const navLinks = document.querySelectorAll('.nav-link');
   navLinks.forEach((link, index) => {
     link.style.opacity = '0';
@@ -181,9 +142,6 @@ function initAnimations() {
   });
 }
 
-// ============================================
-// PARALLAX EFFECT ON MOUSE MOVE
-// ============================================
 function initParallax() {
   const mainLogo = document.querySelector('.main-logo');
 
@@ -197,35 +155,30 @@ function initParallax() {
   }
 }
 
-// ============================================
-// INITIALIZE EVERYTHING
-// ============================================
 document.addEventListener('DOMContentLoaded', function() {
   renderGameCards();
   highlightActiveLink();
   initAnimations();
   initParallax();
-});    }
 
-    const noteText = document.querySelector('.note-text');
-    if (noteText) {
-        let opacity = 1;
-        let direction = -0.01;
-        const minOpacity = 0.5;
-        const maxOpacity = 1;
+  const noteText = document.querySelector('.note-text');
+  if (noteText) {
+    let opacity = 1;
+    let direction = -0.01;
+    const minOpacity = 0.5;
+    const maxOpacity = 1;
 
-        setInterval(() => {
-            opacity += direction;
+    setInterval(() => {
+      opacity += direction;
 
-            if (opacity <= minOpacity) {
-                opacity = minOpacity;
-                direction *= -1;
-            } else if (opacity >= maxOpacity) {
-                opacity = maxOpacity;
-                direction *= -1;
-            }
-            noteText.style.opacity = opacity;
-        }, 50);
-    }
-
+      if (opacity <= minOpacity) {
+        opacity = minOpacity;
+        direction *= -1;
+      } else if (opacity >= maxOpacity) {
+        opacity = maxOpacity;
+        direction *= -1;
+      }
+      noteText.style.opacity = opacity;
+    }, 50);
+  }
 });
