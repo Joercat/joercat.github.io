@@ -13,7 +13,7 @@
       body {
         margin: 0;
         font-family: 'Raleway', sans-serif;
-        background-color: black;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
         color: white;
         overflow-x: hidden;
         display: flex;
@@ -31,11 +31,12 @@
         font-weight: 400;
       }
 
+      /* Left Sidebar */
       .left-sidebar {
-        width: 250px;
-        background-color: blue;
+        width: 280px;
+        background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
         padding: 20px 0;
-        box-shadow: 2px 0 6px rgba(0, 0, 0, 0.3);
+        box-shadow: 4px 0 20px rgba(59, 130, 246, 0.3);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -55,306 +56,603 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         width: 100%;
         margin-bottom: 20px;
+        animation: slideDown 0.6s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .sidebar-logo {
-        margin-right: 10px;
+        margin-right: 12px;
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        transition: transform 0.3s ease, filter 0.3s ease;
+      }
+
+      .sidebar-logo:hover {
+        transform: rotate(10deg) scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
       }
 
       .sidebar-title {
         color: white;
         font-size: 20px;
         font-weight: 300;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       }
 
       .sidebar-nav {
         width: 100%;
-        padding: 0 10px;
+        padding: 0 15px;
       }
 
-      .sidebar-nav a {
-        display: block;
-        padding: 10px 15px;
+      .sidebar-nav h3 {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 20px 0 10px 10px;
+        font-weight: 600;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
         color: white;
-        font-size: 16px;
+        font-size: 15px;
         font-family: 'Raleway', sans-serif;
-        border-radius: 4px;
-        transition: background-color 0.2s ease;
-        margin-bottom: 5px;
+        border-radius: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 6px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid transparent;
+        position: relative;
+        overflow: hidden;
       }
 
-      .sidebar-nav a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: white;
+      .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
       }
 
-      .sidebar-nav a.active-link {
-          background-color: rgba(255, 255, 255, 0.15);
-          font-weight: 600;
+      .nav-link:hover::before {
+        left: 100%;
       }
-      
-      .sidebar-nav a h4, .sidebar-nav a h5 {
-        margin: 0;
-        font-weight: 400;
-        color: inherit;
+
+      .nav-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
-      
+
+      .nav-link.active-link {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        border-color: rgba(255, 255, 255, 0.4);
+        font-weight: 600;
+      }
+
+      .nav-link-icon {
+        margin-right: 12px;
+        font-size: 18px;
+      }
+
+      /* Main Content */
       .main-content {
         flex-grow: 1;
-        margin-left: 250px;
+        margin-left: 280px;
         padding: 40px;
-        width: calc(100% - 250px);
+        width: calc(100% - 280px);
         max-width: none;
-        background-color: black;
+        background: linear-gradient(135deg, #0a0a0a 0%, #16213e 100%);
         min-height: 100vh;
       }
 
       .content-wrapper {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: 0 auto;
-        background-color: black;
-        padding: 40px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        border-radius: 8px;
+        background: linear-gradient(145deg, rgba(30, 41, 82, 0.5), rgba(10, 10, 10, 0.8));
+        padding: 50px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .welcome-section {
         display: flex;
         align-items: center;
         margin-bottom: 40px;
+        animation: slideInLeft 1s ease-out;
+      }
+
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
       }
 
       .main-logo {
         margin-right: 30px;
         flex-shrink: 0;
+        filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
       }
 
       .welcome-text {
         font-size: 48px;
         font-weight: 200;
-        color: blue;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         line-height: 1.2;
+        text-shadow: none;
       }
 
       .caveat-text {
         font-family: 'Caveat', cursive;
         font-size: 24px;
-        color: white;
+        color: rgba(255, 255, 255, 0.8);
         margin-bottom: 20px;
         line-height: 1.5;
+        animation: fadeIn 1.2s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       .download-text {
-        color: blue;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-size: 28px;
         font-family: 'Caveat', cursive;
         margin-top: 40px;
         margin-bottom: 20px;
       }
 
-      .action-section {
-        background-color: red;
-        padding: 30px;
-        border-radius: 8px;
-        color: white;
-        text-align: center;
+      /* Games Grid */
+      .games-section {
         margin-top: 50px;
       }
 
-      .action-section button {
-        background-color: blue;
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        font-size: 18px;
-        font-family: 'Raleway', sans-serif;
-        border-radius: 4px;
+      .section-title {
+        font-size: 28px;
+        font-weight: 300;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #f472b6, #c084fc, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .section-title::after {
+        content: '';
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(244, 114, 182, 0.5), transparent);
+        border-radius: 2px;
+      }
+
+      .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .game-card {
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        padding: 25px;
         cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
-        margin: 10px;
-        font-weight: 600;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
       }
 
-      .action-section button:hover {
-        background-color: #E74C3C;
-        transform: translateY(-2px);
+      .game-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .game-card:hover::before {
+        opacity: 1;
+      }
+
+      .game-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(139, 92, 246, 0.6);
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3),
+                    0 0 30px rgba(139, 92, 246, 0.2);
+      }
+
+      .game-card-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .game-card-icon {
+        font-size: 40px;
+        margin-bottom: 15px;
+        display: block;
+      }
+
+      .game-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
         color: white;
       }
 
-      .action-section button a {
-        color: inherit;
-        text-decoration: none;
+      .game-card-desc {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.4;
+      }
+
+      /* Fullscreen Iframe Overlay */
+      .iframe-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10000;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .iframe-overlay.active {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .iframe-overlay.visible {
+        opacity: 1;
+      }
+
+      .iframe-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 25px;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .iframe-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .close-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .close-btn:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      }
+
+      .iframe-container {
+        flex: 1;
+        width: 100%;
+        background: #000;
+      }
+
+      .iframe-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
       }
 
       .note-text {
-        color: #00ff00;
+        background: linear-gradient(135deg, #10b981, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-decoration: none;
         font-family: 'Caveat', cursive;
         font-size: 30px;
         margin-top: 25px;
         display: block;
         font-weight: 700;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
       }
 
       .note-text strong {
         font-weight: 700;
       }
 
-      /* Tablet styles */
+      /* Loading Spinner */
+      .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+
+      .loading-spinner.active {
+        display: block;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(59, 130, 246, 0.3);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive Styles */
       @media (max-width: 1024px) {
         .content-wrapper {
           padding: 30px;
           margin: 20px;
         }
-        
+
         .main-content {
           padding: 20px;
         }
-        
+
         .welcome-text {
           font-size: 36px;
         }
-        
+
         .caveat-text {
           font-size: 20px;
         }
-        
+
         .download-text {
           font-size: 24px;
         }
+
+        .games-grid {
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
       }
 
-      /* Mobile styles */
       @media (max-width: 768px) {
         body {
           flex-direction: column;
         }
-        
+
         .left-sidebar {
           width: 100%;
           height: auto;
           position: static;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-          padding-bottom: 10px;
+          box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+          padding-bottom: 15px;
         }
-        
+
         .sidebar-header {
           border-bottom: none;
           margin-bottom: 10px;
           justify-content: center;
           padding-bottom: 10px;
         }
-        
+
         .sidebar-nav {
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
+          gap: 8px;
         }
-        
-        .sidebar-nav a {
+
+        .sidebar-nav h3 {
+          display: none;
+        }
+
+        .nav-link {
           width: auto;
-          margin: 5px;
-          padding: 8px 12px;
+          margin: 0;
+          padding: 10px 15px;
           font-size: 14px;
         }
-        
+
+        .nav-link:hover {
+          transform: translateY(-2px);
+        }
+
         .main-content {
           margin-left: 0;
           width: 100%;
           padding: 20px 15px;
           min-height: auto;
         }
-        
+
         .content-wrapper {
           margin: 0;
-          padding: 20px;
+          padding: 25px;
           border-radius: 0;
-          box-shadow: none;
         }
-        
+
         .welcome-section {
           flex-direction: column;
           text-align: center;
           margin-bottom: 20px;
           margin-top: 20px;
         }
-        
+
         .main-logo {
           margin-right: 0;
           margin-bottom: 15px;
           width: 100px;
           height: 100px;
         }
-        
+
         .welcome-text {
           font-size: 32px;
         }
-        
-        .caveat-text {
-          font-size: 18px;
+
+        .games-grid {
+          grid-template-columns: 1fr;
         }
-        
-        .download-text {
-          font-size: 22px;
-          margin-top: 30px;
+
+        .iframe-header {
+          padding: 12px 15px;
         }
-        
-        .action-section {
-          padding: 20px;
-          border-radius: 0;
-          margin-top: 30px;
-        }
-        
-        .action-section button {
+
+        .iframe-title {
           font-size: 14px;
-          padding: 10px 15px;
-          margin: 8px;
         }
-        
-        .note-text {
-          font-size: 20px;
-          margin-top: 20px;
+
+        .close-btn {
+          padding: 8px 15px;
+          font-size: 12px;
         }
       }
 
-      /* Small mobile styles */
       @media (max-width: 480px) {
-        .sidebar-nav a {
+        .nav-link {
           font-size: 13px;
-          padding: 6px 10px;
+          padding: 8px 12px;
         }
-        
+
         .welcome-text {
           font-size: 28px;
         }
-        
+
         .caveat-text {
           font-size: 16px;
         }
-        
-        .download-text {
+
+        .section-title {
+          font-size: 22px;
+        }
+
+        .game-card {
+          padding: 20px;
+        }
+
+        .game-card-title {
           font-size: 18px;
         }
-        
-        .action-section button {
-          font-size: 13px;
-          padding: 8px 12px;
-          display: block;
-          width: calc(100% - 20px);
-          margin: 5px auto;
-        }
-        
+
         .note-text {
-          font-size: 18px;
+          font-size: 22px;
         }
-        
+
         .content-wrapper {
-          padding: 15px;
+          padding: 20px;
         }
       }
     </style>
   </head>
   <body>
+
+    <!-- Fullscreen Iframe Overlay -->
+    <div class="iframe-overlay" id="iframeOverlay">
+      <div class="iframe-header">
+        <span class="iframe-title">
+          <span id="iframeTitleText">Loading...</span>
+        </span>
+        <button class="close-btn" onclick="closeIframe()">
+          ✕ Close
+        </button>
+      </div>
+      <div class="iframe-container">
+        <div class="loading-spinner" id="loadingSpinner">
+          <div class="spinner"></div>
+        </div>
+        <iframe id="contentFrame" src="about:blank"></iframe>
+      </div>
+    </div>
 
     <div class="left-sidebar">
       <div class="sidebar-header">
@@ -362,30 +660,13 @@
         <h5 class="sidebar-title">The Unblocked Cat</h5>
       </div>
       <nav class="sidebar-nav">
-        <a href="https://joercat.github.io/old-uc/"><h4>Old site</h4></a>
-        <a href="https://sigmagames69.github.io"><h4>Better site</h4></a>
-        <a href="https://joercat.github.io/2048 8x8/"><h4>2048 8x8</h4></a>
-        <a href="https://joercat.github.io/2048/"><h4>2048</h4></a>
-        <a href="https://joercat.github.io/11game"><h4>11</h4></a>
-        <a href="https://joercat.github.io/get-file/"><h4>Download files</h4></a>
-        <a href="https://joercat.github.io/jsc/"><h4>Calculator</h4></a>
-        <a href="https://joercat.github.io/fhg/"><h4>Terminal hacking game</h4></a>
-        <a href="https://joercat.github.io/flash/"><h4>Flash games</h4></a>
-        <a href="https://onlymp3.biz/en/"><h4>YouTube to mp3</h4></a>
-        <a href="https://joercat.github.io/tacw/"><h4>mp3 to wav</h4></a>
-        <a href="https://joercat.github.io/unscramble/"><h5>Word unscramble</h5></a>
-        <a href="https://joercat.github.io/Hangman/"><h5>Hangman game</h5></a>
-        <a href="https://joercat.github.io/slope/"><h4>Slope</h4></a>
-        <a href="https://joercat.github.io/slope2/"><h4>Slope 2</h4></a>
-        <a href="https://joercat.github.io/ss/"><h4>Shell shockers</h4></a>
-        <a href="https://joercat.github.io/bf3d/"><h4>Bottle Flip 3D</h4></a>
-        <a href="https://joercat.github.io/bl/"><h4>Bitlife</h4></a>
-        <a href="https://joercat.github.io/cookie/"><h4>Cookie Clicker</h4></a>
-        <a href="https://joercat.github.io/extrahtml/"><h4>Extra html games</h4></a>
-        <a href="https://joercat.github.io/is/"><h4>Iron Snout</h4></a>
-        <a href="https://joercat.github.io/meme/"><h4>Meme soundboard</h4></a>
-        <a href="https://joercat.github.io/swfplayer"><h4>Custom swf file player</h4></a>
-        <a href="https://github.com/Joercat/swfarchive.git"><h4>SWF Game Storage</h4></a>
+        <h3>Quick Links</h3>
+        <a class="nav-link" href="https://joercat.github.io/old-uc/">
+          <span class="nav-link-icon">🏠</span> Old Site
+        </a>
+        <a class="nav-link" href="https://sigmagames69.github.io">
+          <span class="nav-link-icon">⭐</span> Better Site
+        </a>
       </nav>
     </div>
 
@@ -395,24 +676,27 @@
           <img class="main-logo" src="https://joercat.github.io/img/theunblockedcatnoblue.png" alt="the unblocked cat" width="134" height="134">
           <h3 class="welcome-text">Welcome to The Unblocked Cat</h3>
         </div>
-        <div id="a"></div> 
-        <script src="index/greet.js"></script>
+        <div id="a"></div>
 
-        <p class="caveat-text">This website is recommended for HP Chromebooks; some styling may be messy. Sorry for the inconvenience.</p>
-        <p class="caveat-text">Some games may take some time to load, and Flash games can be used fullscreen.</p>
+        <p class="caveat-text">This website is recommended for Chromebooks; some styling may be messy. Sorry for the inconvenience.</p>
+        <p class="caveat-text">Some games may take some time to load, be patient!</p>
 
         <h1 class="download-text">Download The Unblocked Cat app on Chromebook.</h1>
 
-        <div class="action-section">
-          <button><a href="https://sites.google.com/east-haven.k12.ct.us/space-cats/home">SC official website</a></button>
-          <button><a href="https://github.com/Joercat/joercat.github.io/issues/new">Any issues? Click here</a></button>
-          <button><a href="https://joercat.github.io/subscribe">Click here to subscribe to "The Unblocked Cat" and gain access to all games</a></button>
-          <a href="secret-page" class="note-text"><strong>This site is not complete. Expect more games.</strong></a>
+        <!-- Games Section -->
+        <div class="games-section">
+          <h2 class="section-title">Games & Tools</h2>
+          <div class="games-grid" id="gamesGrid">
+            <!-- Games will be dynamically loaded here -->
+          </div>
         </div>
+
+        <a href="secret-page" class="note-text"><strong>This site is not complete. Expect more games.</strong></a>
       </div>
     </div>
 
+    <script src="index/greet.js"></script>
     <script src="main.js"></script>
 
   </body>
-</html>
+  </html>
