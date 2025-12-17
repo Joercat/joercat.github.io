@@ -1385,45 +1385,57 @@
                 this.showCharacterCreation();
             }
 
-            async initPlayCanvas() {
-                const canvas = document.getElementById('application-canvas');
-                
-                this.app = new pc.Application(canvas, {
-                    mouse: new pc.Mouse(canvas),
-                    keyboard: new pc.Keyboard(window),
-                    touch: 'ontouchstart' in window ? new pc.TouchDevice(canvas) : null,
-                    graphicsDeviceOptions: {
-                        antialias: true,
-                        alpha: false,
-                        preserveDrawingBuffer: false,
-                        preferWebGl2: true
-                    }
-                });
+async initPlayCanvas() {
+    const canvas = document.getElementById('application-canvas');
+    
+    this.app = new pc.Application(canvas, {
+        mouse: new pc.Mouse(canvas),
+        keyboard: new pc.Keyboard(window),
+        touch: 'ontouchstart' in window ? new pc.TouchDevice(canvas) : null,
+        graphicsDeviceOptions: {
+            antialias: true,
+            alpha: false,
+            preserveDrawingBuffer: false,
+            preferWebGl2: true
+        }
+    });
 
-                this.app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
-                this.app.setCanvasResolution(pc.RESOLUTION_AUTO);
-                
-                // Enable features
-                this.app.scene.ambientLight = new pc.Color(0.3, 0.3, 0.4);
-                this.app.scene.gammaCorrection = pc.GAMMA_SRGB;
-                this.app.scene.toneMapping = pc.TONEMAP_ACES;
-                this.app.scene.exposure = 1.2;
-                this.app.scene.skyboxMip = 2;
+    this.app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+    this.app.setCanvasResolution(pc.RESOLUTION_AUTO);
+    
+    // Enable features
+    this.app.scene.ambientLight = new pc.Color(0.3, 0.3, 0.4);
+    
+    // Check if gamma correction is available
+    if (this.app.scene.hasOwnProperty('gammaCorrection')) {
+        this.app.scene.gammaCorrection = pc.GAMMA_SRGB;
+    }
+    
+    if (this.app.scene.hasOwnProperty('toneMapping')) {
+        this.app.scene.toneMapping = pc.TONEMAP_ACES;
+    }
+    
+    this.app.scene.exposure = 1.2;
 
-                // Fog for atmosphere
-                this.app.scene.fog = pc.FOG_LINEAR;
-                this.app.scene.fogColor = new pc.Color(0.5, 0.6, 0.7);
-                this.app.scene.fogStart = 50;
-                this.app.scene.fogEnd = 200;
+    // Fog settings - with safety check
+    try {
+        // Try the string-based fog type (works in some versions)
+        this.app.scene.fog = 'linear';
+        this.app.scene.fogColor = new pc.Color(0.5, 0.6, 0.7);
+        this.app.scene.fogStart = 50;
+        this.app.scene.fogEnd = 200;
+    } catch (e) {
+        console.log('Fog not supported or different API version');
+    }
 
-                this.app.start();
+    this.app.start();
 
-                window.addEventListener('resize', () => {
-                    this.app.resizeCanvas();
-                });
+    window.addEventListener('resize', () => {
+        this.app.resizeCanvas();
+    });
 
-                this.updateLoadingProgress(20, 'PlayCanvas initialized...');
-            }
+    this.updateLoadingProgress(20, 'PlayCanvas initialized...');
+}
 
             async loadAssets() {
                 // Since we're creating procedural content, simulate asset loading
@@ -1583,53 +1595,135 @@
                 this.updateCamera(dt);
             }
 
-            updateDayNightCycle(dt) {
-                this.dayTime += dt / CONFIG.DAY_LENGTH;
-                if (this.dayTime >= 1) this.dayTime = 0;
+async initPlayCanvas() {
+    const canvas = document.getElementById('application-canvas');
+    
+    this.app = new pc.Application(canvas, {
+        mouse: new pc.Mouse(canvas),
+        keyboard: new pc.Keyboard(window),
+        touch: 'ontouchstart' in window ? new pc.TouchDevice(canvas) : null,
+        graphicsDeviceOptions: {
+            antialias: true,
+            alpha: false,
+            preserveDrawingBuffer: false,
+            preferWebGl2: true
+        }
+    });
 
-                const t = this.dayTime;
-                let timeText, timeIcon;
-                let sunIntensity = 1.2;
-                let ambientColor = new pc.Color(0.4, 0.4, 0.5);
-                let fogColor = new pc.Color(0.5, 0.6, 0.7);
+    this.app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+    this.app.setCanvasResolution(pc.RESOLUTION_AUTO);
+    
+    // Scene settings with safety checks
+    const scene = this.app.scene;
+    
+    // Ambient light
+    scene.ambientLight = new pc.Color(0.3, 0.3, 0.4);
+    
+    // Exposure
+    if (scene.hasOwnProperty('exposure')) {
+        scene.exposure = 1.2;
+    }
 
-                if (t < 0.25) {
-                    // Morning
-                    timeText = 'Morning';
-                    timeIcon = '🌅';
-                    const blend = t / 0.25;
-                    sunIntensity = 0.6 + blend * 0.6;
-                    fogColor = new pc.Color(0.6 + blend * 0.1, 0.5 + blend * 0.1, 0.5);
-                } else if (t < 0.5) {
-                    // Day
-                    timeText = 'Day';
-                    timeIcon = '☀️';
-                    sunIntensity = 1.2;
-                } else if (t < 0.75) {
-                    // Evening
-                    timeText = 'Evening';
-                    timeIcon = '🌇';
-                    const blend = (t - 0.5) / 0.25;
-                    sunIntensity = 1.2 - blend * 0.8;
-                    fogColor = new pc.Color(0.7 - blend * 0.3, 0.4, 0.3 + blend * 0.2);
-                    ambientColor = new pc.Color(0.4 - blend * 0.2, 0.3 - blend * 0.1, 0.4);
-                } else {
-                    // Night
-                    timeText = 'Night';
-                    timeIcon = '🌙';
-                    sunIntensity = 0.2;
-                    fogColor = new pc.Color(0.1, 0.1, 0.2);
-                    ambientColor = new pc.Color(0.15, 0.15, 0.25);
-                }
+    // Fog - using rendering settings for newer PlayCanvas versions
+    try {
+        if (scene.rendering) {
+            // Newer API
+            scene.rendering.fog = 'linear';
+            scene.rendering.fogColor = new pc.Color(0.5, 0.6, 0.7);
+            scene.rendering.fogStart = 50;
+            scene.rendering.fogEnd = 200;
+        } else if (typeof pc.FOG_LINEAR !== 'undefined') {
+            // Older API with constants
+            scene.fog = pc.FOG_LINEAR;
+            scene.fogColor = new pc.Color(0.5, 0.6, 0.7);
+            scene.fogStart = 50;
+            scene.fogEnd = 200;
+        } else {
+            // Try string-based
+            scene.fog = 'linear';
+            scene.fogColor = new pc.Color(0.5, 0.6, 0.7);
+            scene.fogStart = 50;
+            scene.fogEnd = 200;
+        }
+        this.fogEnabled = true;
+    } catch (e) {
+        console.log('Fog configuration skipped:', e.message);
+        this.fogEnabled = false;
+    }
 
-                const day = Math.floor(this.gameTime / CONFIG.DAY_LENGTH) + 1;
-                document.getElementById('timeText').textContent = `Day ${day} - ${timeText}`;
-                document.getElementById('timeIcon').textContent = timeIcon;
+    this.app.start();
 
-                this.sunLight.light.intensity = sunIntensity;
-                this.app.scene.ambientLight = ambientColor;
+    window.addEventListener('resize', () => {
+        this.app.resizeCanvas();
+    });
+
+    this.updateLoadingProgress(20, 'PlayCanvas initialized...');
+}
+
+updateDayNightCycle(dt) {
+    this.dayTime += dt / CONFIG.DAY_LENGTH;
+    if (this.dayTime >= 1) this.dayTime = 0;
+
+    const t = this.dayTime;
+    let timeText, timeIcon;
+    let sunIntensity = 1.2;
+    let ambientColor = new pc.Color(0.4, 0.4, 0.5);
+    let fogColor = new pc.Color(0.5, 0.6, 0.7);
+
+    if (t < 0.25) {
+        // Morning
+        timeText = 'Morning';
+        timeIcon = '🌅';
+        const blend = t / 0.25;
+        sunIntensity = 0.6 + blend * 0.6;
+        fogColor = new pc.Color(0.6 + blend * 0.1, 0.5 + blend * 0.1, 0.5);
+    } else if (t < 0.5) {
+        // Day
+        timeText = 'Day';
+        timeIcon = '☀️';
+        sunIntensity = 1.2;
+    } else if (t < 0.75) {
+        // Evening
+        timeText = 'Evening';
+        timeIcon = '🌇';
+        const blend = (t - 0.5) / 0.25;
+        sunIntensity = 1.2 - blend * 0.8;
+        fogColor = new pc.Color(0.7 - blend * 0.3, 0.4, 0.3 + blend * 0.2);
+        ambientColor = new pc.Color(0.4 - blend * 0.2, 0.3 - blend * 0.1, 0.4);
+    } else {
+        // Night
+        timeText = 'Night';
+        timeIcon = '🌙';
+        sunIntensity = 0.2;
+        fogColor = new pc.Color(0.1, 0.1, 0.2);
+        ambientColor = new pc.Color(0.15, 0.15, 0.25);
+    }
+
+    const day = Math.floor(this.gameTime / CONFIG.DAY_LENGTH) + 1;
+    document.getElementById('timeText').textContent = `Day ${day} - ${timeText}`;
+    document.getElementById('timeIcon').textContent = timeIcon;
+
+    // Update lighting
+    if (this.sunLight && this.sunLight.light) {
+        this.sunLight.light.intensity = sunIntensity;
+    }
+    
+    // Update ambient
+    this.app.scene.ambientLight = ambientColor;
+    
+    // Update fog color safely
+    if (this.fogEnabled) {
+        try {
+            if (this.app.scene.rendering) {
+                this.app.scene.rendering.fogColor = fogColor;
+            } else {
                 this.app.scene.fogColor = fogColor;
             }
+        } catch (e) {
+            // Silently fail if fog update doesn't work
+        }
+    }
+}
 
             updateCamera(dt) {
                 if (!this.player) return;
