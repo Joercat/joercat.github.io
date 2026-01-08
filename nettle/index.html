@@ -2,33 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Center</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Web Dashboard</title>
+    <style>
+        body { background: #0f0f12; color: #fff; font-family: sans-serif; padding: 20px; }
+        .search-bar { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #333; background: #1a1a1f; color: white; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .card { background: #1a1a1f; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #222; transition: 0.3s; }
+        .card:hover { border-color: #4f46e5; transform: translateY(-3px); }
+        .card span { font-size: 0.8rem; color: #888; }
+    </style>
 </head>
 <body>
-    <div id="main-ui">
-        <header>
-            <h1>Library</h1>
-            <div class="search-container">
-                <input type="text" id="gameSearch" placeholder="Search for a game code...">
-            </div>
-        </header>
 
-        <div id="gameGrid" class="grid">
-            </div>
-    </div>
-
-    <div id="player-layer" class="hidden">
-        <div class="controls">
-            <button onclick="closeGame()">Back to Library</button>
-            <span id="active-title"></span>
-            <button onclick="toggleFS()">Fullscreen</button>
+    <input type="text" id="search" class="search-bar" placeholder="Search thousands of game codes...">
+    
+    <div id="game-grid" class="grid">
         </div>
-        <iframe id="game-frame" src=""></iframe>
-    </div>
 
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
-
