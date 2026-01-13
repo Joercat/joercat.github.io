@@ -25,7 +25,7 @@
             let generator;
             self.onmessage = async (e) => {
                 if (!generator) {
-                    generator = await pipeline('text-generation', 'onnx-community/SmolLM2-135M-Instruct-ONNX', {
+                    generator = await pipeline('text-generation', 'Xenova/tiny-random-LlamaForCausalLM', {
                         dtype: 'q4',
                         device: 'webgpu'
                     });
