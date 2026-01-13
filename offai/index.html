@@ -1,14 +1,633 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AI Test</title>
-    <script src="https://cdn.jsdelivr.net/npm/coi-serviceworker/coi-serviceworker.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwen 2.5 1.5B Browser Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #1e1e2e;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #2a2a3e;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.ready {
+            background: #22c55e;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #12121a;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #1e1e2e;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #3a3a4e;
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #4a4a5e;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.assistant {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .assistant .message-content {
+            background: #2a2a3e;
+            color: #e0e0e0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .message-label {
+            font-size: 11px;
+            color: #888;
+            margin: 5px 0;
+            font-weight: 500;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: #1e1e2e;
+            border-top: 1px solid #2a2a3e;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #3a3a4e;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #12121a;
+            color: #e0e0e0;
+        }
+
+        .input-field::placeholder {
+            color: #666;
+        }
+
+        .input-field:focus {
+            border-color: #6366f1;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
+        }
+
+        .loading-indicator {
+            display: none;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .loading-indicator.active {
+            display: block;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6366f1;
+            animation: loadingDot 1.4s ease-in-out infinite;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingDot {
+            0%, 80%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            40% {
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        .progress-container {
+            padding: 20px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            margin: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #2a2a3e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #3d1f1f;
+            color: #ff6b6b;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 20px;
+            display: none;
+            border: 1px solid #5c2a2a;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .speed-indicator {
+            font-size: 10px;
+            color: #22c55e;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
 </head>
-<body style="background:#111; color:white; font-family:sans-serif;">
-    <h3>Status: <span id="status">Starting...</span></h3>
-    <div id="log" style="font-family:monospace; color:#0f0;"></div>
-    <script type="module" src="main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Qwen 2.5 1.5B Chat</h1>
+            <p>Running locally in your browser - No server required!</p>
+            <div class="status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Initializing...</span>
+                <span class="speed-indicator" id="speedIndicator"></span>
+            </div>
+        </div>
+
+        <div class="progress-container active" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+            </div>
+            <div class="progress-text" id="progressText">Preparing to load model...</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="chat-container" id="chatContainer">
+            <!-- No start message - empty chat -->
+        </div>
+
+        <div class="loading-indicator" id="loadingIndicator">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                class="input-field" 
+                id="inputField" 
+                placeholder="Type your message..." 
+                disabled
+            />
+            <button class="send-button" id="sendButton" disabled>
+                <span>Send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Import Transformers.js from CDN -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        // Configuration for optimized performance
+        env.allowLocalModels = false;
+        env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency || 4; // Use available threads
+        env.backends.onnx.wasm.simd = true; // Enable SIMD for faster computation
+        
+        let generator = null;
+        let isModelLoaded = false;
+        let conversationHistory = [];
+        let kvCache = null; // KV Cache for faster responses
+
+        // DOM elements
+        const chatContainer = document.getElementById('chatContainer');
+        const inputField = document.getElementById('inputField');
+        const sendButton = document.getElementById('sendButton');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const speedIndicator = document.getElementById('speedIndicator');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Initialize the model
+        async function initializeModel() {
+            try {
+                progressText.textContent = 'Loading Qwen 2.5 1.5B model with KV cache...';
+                progressFill.style.width = '10%';
+                progressFill.textContent = '10%';
+
+                // Use a quantized model optimized for browser with KV cache support
+                generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
+                    quantized: true,
+                    progress_callback: (progress) => {
+                        if (progress.status === 'progress') {
+                            const percent = Math.round(progress.progress);
+                            progressFill.style.width = percent + '%';
+                            progressFill.textContent = percent + '%';
+                            progressText.textContent = `Loading model: ${progress.file || 'files'}...`;
+                        }
+                    }
+                });
+
+                progressContainer.classList.remove('active');
+                statusDot.classList.add('ready');
+                statusText.textContent = 'Ready';
+                speedIndicator.textContent = '⚡ KV Cache';
+                inputField.disabled = false;
+                sendButton.disabled = false;
+                inputField.focus();
+                isModelLoaded = true;
+
+            } catch (error) {
+                console.error('Failed to load model:', error);
+                showError('Failed to load model. Please check your internet connection and refresh the page.');
+                statusText.textContent = 'Error';
+                progressContainer.classList.remove('active');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = '⚠️ ' + message;
+            errorMessage.classList.add('active');
+            setTimeout(() => {
+                errorMessage.classList.remove('active');
+            }, 5000);
+        }
+
+        // Add message to chat
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = role === 'user' ? 'You' : 'Assistant';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(labelDiv);
+            messageDiv.appendChild(contentDiv);
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Generate response with KV cache
+        async function generateResponse(userInput) {
+            if (!isModelLoaded || !generator) {
+                showError('Model not loaded yet. Please wait...');
+                return;
+            }
+
+            // Add user message
+            addMessage('user', userInput);
+            conversationHistory.push({ role: 'user', content: userInput });
+
+            // Show loading
+            loadingIndicator.classList.add('active');
+            inputField.disabled = true;
+            sendButton.disabled = true;
+
+            const startTime = performance.now();
+
+            try {
+                // Format prompt for Qwen model
+                const prompt = formatPrompt(conversationHistory);
+                
+                // Generate response with KV cache enabled for faster responses
+                const output = await generator(prompt, {
+                    max_new_tokens: 150,
+                    temperature: 0.7,
+                    do_sample: true,
+                    top_p: 0.9,
+                    top_k: 50,
+                    repetition_penalty: 1.1,
+                    // KV Cache configuration for faster responses
+                    use_cache: true,
+                    past_key_values: kvCache,
+                    return_dict_in_generate: true,
+                    output_attentions: false,
+                    output_hidden_states: false,
+                    // Additional optimizations
+                    num_beams: 1, // Greedy for speed
+                    early_stopping: true,
+                    pad_token_id: 151643,
+                    eos_token_id: 151645,
+                });
+
+                // Store KV cache for next generation
+                if (output.past_key_values) {
+                    kvCache = output.past_key_values;
+                }
+
+                const endTime = performance.now();
+                const responseTime = ((endTime - startTime) / 1000).toFixed(2);
+
+                const generatedText = Array.isArray(output) ? output[0].generated_text : output.generated_text || output[0].generated_text;
+                const response = extractResponse(generatedText, prompt);
+                
+                // Add assistant message
+                addMessage('assistant', response);
+                conversationHistory.push({ role: 'assistant', content: response });
+
+                // Update speed indicator
+                speedIndicator.textContent = `⚡ ${responseTime}s`;
+
+                // Keep conversation history limited to save memory
+                if (conversationHistory.length > 10) {
+                    conversationHistory = conversationHistory.slice(-10);
+                    // Clear KV cache when trimming history to avoid inconsistencies
+                    kvCache = null;
+                }
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                showError('Failed to generate response. Try refreshing the page.');
+                // Reset KV cache on error
+                kvCache = null;
+            } finally {
+                loadingIndicator.classList.remove('active');
+                inputField.disabled = false;
+                sendButton.disabled = false;
+                inputField.focus();
+            }
+        }
+
+        // Format prompt for the model with chat template
+        function formatPrompt(history) {
+            let prompt = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n";
+            
+            // Add conversation history
+            const recentHistory = history.slice(-4); // Use last 4 exchanges for context
+            for (const msg of recentHistory) {
+                if (msg.role === 'user') {
+                    prompt += `<|im_start|>user\n${msg.content}<|im_end|>\n`;
+                } else {
+                    prompt += `<|im_start|>assistant\n${msg.content}<|im_end|>\n`;
+                }
+            }
+            
+            prompt += "<|im_start|>assistant\n";
+            return prompt;
+        }
+
+        // Extract response from generated text
+        function extractResponse(generatedText, prompt) {
+            // Remove the prompt from the generated text
+            let response = generatedText.slice(prompt.length).trim();
+            
+            // Clean up the response - remove end tokens
+            response = response.split('<|im_end|>')[0];
+            response = response.split('<|im_start|>')[0];
+            response = response.replace(/<\|.*?\|>/g, '').trim();
+            
+            // Ensure we have a response
+            if (!response) {
+                response = "I understand. How can I help you?";
+            }
+            
+            return response;
+        }
+
+        // Clear KV cache function
+        function clearCache() {
+            kvCache = null;
+            conversationHistory = [];
+            console.log('KV cache and history cleared');
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', () => {
+            const input = inputField.value.trim();
+            if (input) {
+                inputField.value = '';
+                generateResponse(input);
+            }
+        });
+
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendButton.click();
+            }
+        });
+
+        // Double-click header to clear cache and chat
+        document.querySelector('.header').addEventListener('dblclick', () => {
+            clearCache();
+            chatContainer.innerHTML = '';
+            speedIndicator.textContent = '⚡ KV Cache';
+        });
+
+        // Check WebAssembly support
+        if (!window.WebAssembly) {
+            showError('Your browser does not support WebAssembly. Please use a modern browser.');
+            statusText.textContent = 'Unsupported';
+        } else {
+            // Initialize model when page loads
+            initializeModel();
+        }
+
+        // Memory monitoring
+        if (performance.memory) {
+            setInterval(() => {
+                const memoryUsage = performance.memory.usedJSHeapSize / 1048576;
+                console.log(`Memory usage: ${memoryUsage.toFixed(2)} MB | KV Cache: ${kvCache ? 'Active' : 'Empty'}`);
+                
+                // Clear KV cache if memory usage is too high
+                if (memoryUsage > 1500 && kvCache) {
+                    console.warn('High memory usage - clearing KV cache');
+                    kvCache = null;
+                }
+            }, 30000);
+        }
+    </script>
 </body>
 </html>
