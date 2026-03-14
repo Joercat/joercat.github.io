@@ -501,12 +501,12 @@
             { id: 'kanye4', name: 'Christmas Kanye', url: 'https://joercat.github.io/kanye4.png', cost: 55, type: 'image' },
             { id: 'kanye5', name: 'Fih', url: 'https://joercat.github.io/kanye5.png', cost: 50, type: 'image' },
             { id: 'kanye6', name: 'Obunga', url: 'https://joercat.github.io/knaye6.png', cost: 50, type: 'image' },
-            { id: 'scp_wish', name: 'SCP Wish I New', url: 'scp.png', cost: 60, type: 'video',
+            { id: 'scp_wish', name: 'SCP Wish I New', url: 'scp.png', cost: 1, type: 'video',
               videoUrl: '', // Will be set by user - video with character + audio
               audioUrl: '', // Audio is embedded in video
               description: 'A terrifying SCP entity'
             },
-            { id: 'hamood', name: 'Hamood Habibi', url: '', cost: 55, type: 'image_audio',
+            { id: 'hamood', name: 'Hamood Habibi', url: '', cost: 1, type: 'image_audio',
               imageUrl: '', // Will be set by user  
               audioUrl: '', // Will be set by user
               description: 'Hamood Hamood Habibi!'
@@ -519,8 +519,8 @@
         SKINS.find(s => s.id === 'scp_wish').url = 'scp.png';
         
         // Hamood Habibi - separate image and audio
-        SKINS.find(s => s.id === 'hamood').imageUrl = 'hamood.jpg';
-        SKINS.find(s => s.id === 'hamood').url = 'hamood.jpg';
+        SKINS.find(s => s.id === 'hamood').imageUrl = 'hamood.png';
+        SKINS.find(s => s.id === 'hamood').url = 'hamood.png';
         SKINS.find(s => s.id === 'hamood').audioUrl = 'hamood.mp3';
 
         const UPGRADES = {
