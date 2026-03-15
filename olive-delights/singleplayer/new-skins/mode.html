@@ -1,0 +1,3226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Olive Delights</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #000; font-family: 'Courier New', monospace; color: #fff; touch-action: none; }
+        
+        .menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f23);
+            display: flex; justify-content: flex-start; align-items: center;
+            flex-direction: column; z-index: 300;
+            text-align: center;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .menu-overlay.hidden { display: none; }
+        
+        #start-screen h1 { color: #ffd700; font-size: clamp(24px, 6vw, 48px); text-shadow: 0 0 30px #ff8c00; margin-bottom: 5px; }
+        #start-screen h2 { color: #ccc; font-size: clamp(14px, 3vw, 20px); margin-bottom: 15px; }
+        
+        .menu-section { background: rgba(0,0,0,0.5); padding: 12px 15px; border-radius: 8px; margin: 8px auto; text-align: center; max-width: 95%; width: 400px; }
+        .menu-section h3 { color: #ffd700; margin-bottom: 8px; font-size: clamp(14px, 3vw, 18px); }
+        .menu-section p, .menu-section label { color: #ddd; font-size: clamp(11px, 2.5vw, 13px); line-height: 1.5; }
+        
+        .menu-btn {
+            padding: 12px 25px; font-size: clamp(14px, 3vw, 18px); margin: 5px;
+            background: linear-gradient(135deg, #ff8c00, #ff4500);
+            color: white; border: none; cursor: pointer;
+            font-family: inherit; border-radius: 4px;
+            touch-action: manipulation;
+        }
+        .menu-btn:hover, .menu-btn:active { transform: scale(1.05); }
+        .menu-btn.secondary { background: linear-gradient(135deg, #555, #444); }
+        .menu-btn.small { padding: 8px 15px; font-size: clamp(12px, 2.5vw, 14px); }
+        .menu-btn.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        
+        .coins-display { color: #ffd700; font-size: clamp(14px, 3vw, 18px); margin: 8px 0; }
+        
+        .highscores { color: #4ade80; font-size: clamp(12px, 2.5vw, 14px); }
+        .highscores span { display: block; margin: 2px 0; }
+        
+        .settings-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; color: #ddd; gap: 10px; flex-wrap: wrap; }
+        .settings-row label { font-size: clamp(12px, 2.5vw, 14px); }
+        .settings-row select, .settings-row input[type="range"] { background: #333; color: #fff; border: 1px solid #555; padding: 5px 8px; border-radius: 4px; font-size: 14px; }
+        .settings-row select { min-width: 120px; }
+        .sensitivity-value { color: #ffd700; min-width: 30px; text-align: center; }
+        
+        .settings-subsection { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin: 10px 0; border-left: 3px solid #ff8c00; }
+        .settings-subsection h4 { color: #ff8c00; margin-bottom: 8px; font-size: clamp(12px, 2.5vw, 15px); text-align: left; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .3s; border-radius: 26px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        .toggle-switch input:checked + .toggle-slider { background-color: #ff8c00; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+        
+        .input-mode-toggle { display: flex; gap: 5px; }
+        .input-mode-btn { padding: 6px 12px; background: #333; color: #ccc; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-size: 12px; font-family: inherit; transition: all 0.2s; }
+        .input-mode-btn.active { background: #ff8c00; color: #fff; border-color: #ff8c00; }
+        
+        .crosshair-preview { width: 80px; height: 80px; background: rgba(100,100,100,0.5); border: 1px solid #555; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        
+        .color-options { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 5px; }
+        .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .color-swatch:hover, .color-swatch.active { border-color: #fff; transform: scale(1.2); }
+        
+        .shape-options { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 5px; }
+        .shape-btn { padding: 6px 12px; background: #333; color: #ccc; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-size: 12px; font-family: inherit; }
+        .shape-btn.active { background: #ff8c00; color: #fff; border-color: #ff8c00; }
+        
+        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
+        .shop-item { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; color: #fff; }
+        .shop-item img, .shop-item video { width: 40px; height: 40px; image-rendering: pixelated; object-fit: cover; }
+        .shop-item.owned { border: 2px solid #4ade80; }
+        .shop-item.selected { border: 2px solid #ffd700; box-shadow: 0 0 10px #ffd700; }
+        .shop-item small { color: #ccc; font-size: 11px; }
+        
+        .upgrade-item { background: rgba(255,255,255,0.05); padding: 8px; margin: 4px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; color: #ddd; flex-wrap: wrap; gap: 5px; }
+        .upgrade-item.owned { background: rgba(74,222,128,0.2); }
+        .upgrade-item span { color: #fff; font-size: clamp(11px, 2.5vw, 13px); }
+        
+        .tab-buttons { display: flex; gap: 3px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { padding: 6px 10px; background: #333; color: #ccc; border: none; cursor: pointer; border-radius: 4px; font-size: clamp(11px, 2.5vw, 14px); touch-action: manipulation; }
+        .tab-btn.active { background: #ff8c00; color: #fff; }
+        .tab-content { display: none; max-width: 95%; width: 450px; margin: 0 auto; }
+        .tab-content.active { display: block; }
+        
+        #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 101; }
+        
+        #stamina-container { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: min(200px, 40vw); height: 8px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; }
+        #stamina-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 3px; transition: width 0.1s; }
+        #stamina-bar.infinite { background: linear-gradient(90deg, #fbbf24, #f59e0b); animation: pulse 0.3s infinite alternate; }
+        #stamina-bar.boosted { background: linear-gradient(90deg, #f472b6, #ec4899); }
+        @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
+        
+        #hud-coins { position: absolute; top: 15px; left: 100px; color: #ffd700; font-size: clamp(14px, 3vw, 18px); }
+        #timer { position: absolute; top: 15px; left: 15px; color: #fff; font-size: clamp(16px, 3.5vw, 20px); }
+        #floor-indicator { position: absolute; top: 45px; left: 15px; color: #88ccff; font-size: clamp(12px, 2.5vw, 16px); }
+        #warning { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); color: #ff4444; font-size: clamp(16px, 4vw, 24px); opacity: 0; text-shadow: 0 0 20px #ff0000; }
+        #shield-indicator { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); color: #4ade80; font-size: clamp(14px, 3vw, 18px); opacity: 0; }
+        #pickup-msg { position: absolute; top: 45%; left: 50%; transform: translate(-50%, 0); color: #4ade80; font-size: clamp(16px, 3.5vw, 20px); opacity: 0; text-shadow: 0 0 10px #000; transition: opacity 0.3s; text-align: center; }
+        
+        #escape-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
+        #escape-round { color: #4ade80; font-size: clamp(18px, 4vw, 24px); font-weight: bold; text-shadow: 0 0 10px #000; }
+        #escape-door-indicator { color: #22ff22; font-size: clamp(14px, 3vw, 18px); margin-top: 5px; text-shadow: 0 0 15px #00ff00; animation: doorPulse 1s infinite alternate; }
+        #escape-door-indicator.nearby { color: #ffff00; text-shadow: 0 0 20px #ffff00; }
+        @keyframes doorPulse { from { opacity: 0.7; } to { opacity: 1; } }
+        
+        #endless-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
+        #endless-score { color: #c084fc; font-size: clamp(18px, 4vw, 24px); font-weight: bold; text-shadow: 0 0 10px #8b5cf6; }
+        #endless-door-hint { color: #a78bfa; font-size: clamp(12px, 2.5vw, 16px); margin-top: 5px; }
+        
+        #powerups-display { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .powerup-slot { width: 40px; height: 40px; background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .powerup-slot span { font-size: 20px; }
+        .powerup-slot.active { border-color: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        
+        #minimap { position: absolute; top: 15px; right: 15px; width: min(120px, 25vw); height: min(120px, 25vw); background: rgba(0,0,0,0.9); border: 2px solid rgba(255,255,255,0.4); border-radius: 4px; }
+        #minimap-canvas { width: 100%; height: 100%; }
+        #minimap-floor { position: absolute; top: calc(min(120px, 25vw) + 20px); right: 15px; width: min(120px, 25vw); text-align: center; color: #88ccff; font-size: clamp(10px, 2vw, 12px); background: rgba(0,0,0,0.7); padding: 3px; border-radius: 4px; }
+        
+        .vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%); }
+        #fear-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: rgba(100,0,0,0.4); opacity: 0; z-index: 50; }
+        #freeze-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: rgba(100,200,255,0.2); opacity: 0; z-index: 48; }
+        
+        #death-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(80, 0, 0, 0.95); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 200; padding: 20px; }
+        #death-screen h1 { color: #fff; font-size: clamp(40px, 10vw, 64px); text-shadow: 0 0 30px #ff0000; margin-bottom: 15px; }
+        #death-screen p { color: #fcc; font-size: clamp(16px, 4vw, 20px); margin-bottom: 8px; }
+        #death-screen .coins-earned { color: #ffd700; font-size: clamp(18px, 5vw, 24px); margin: 12px 0; }
+        
+        #pause-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 250; padding: 20px; overflow-y: auto; }
+        #pause-screen h1 { color: #fff; font-size: clamp(32px, 8vw, 48px); margin-bottom: 15px; }
+        
+        /* Mobile Controls */
+        #mobile-controls { position: fixed; bottom: 0; left: 0; width: 100%; height: 140px; z-index: 150; pointer-events: none; display: none; }
+        
+        .mobile-joystick { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: auto; touch-action: none; }
+        .joystick-knob { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: rgba(255,255,255,0.4); border-radius: 50%; pointer-events: none; }
+        
+        .mobile-btn { position: absolute; width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; pointer-events: auto; touch-action: manipulation; user-select: none; }
+        .mobile-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
+        
+        #btn-jump { bottom: 70px; right: 20px; }
+        #btn-sprint { bottom: 10px; right: 80px; background: rgba(255,200,0,0.2); border-color: rgba(255,200,0,0.4); }
+        #btn-sprint.active { background: rgba(255,200,0,0.5); }
+        #btn-pause { top: 15px; right: 15px; width: 45px; height: 45px; font-size: 20px; position: fixed; z-index: 160; }
+        
+        /* Mobile-specific styles */
+        body.is-mobile #mobile-controls { display: block; }
+        body.is-mobile .mobile-btn { display: flex; }
+        body.is-mobile #stamina-container { bottom: 85px; }
+        body.is-mobile #powerups-display { bottom: 100px; }
+        body.is-mobile .menu-section p { font-size: 12px; }
+        body.is-mobile #minimap { width: 100px; height: 100px; }
+        body.is-mobile #minimap-floor { top: 105px; width: 100px; }
+        body.is-mobile .desktop-controls { display: none; }
+        body.is-mobile .mobile-controls-info { display: block; }
+        
+        /* Desktop-specific styles */
+        body:not(.is-mobile) .desktop-controls { display: block; }
+        body:not(.is-mobile) .mobile-controls-info { display: none; }
+        
+        @media (max-width: 480px) {
+            body.is-mobile .mobile-joystick { width: 100px; height: 100px; left: 15px; bottom: 15px; }
+            body.is-mobile .joystick-knob { width: 40px; height: 40px; }
+            body.is-mobile .mobile-btn { width: 55px; height: 55px; font-size: 22px; }
+            body.is-mobile #btn-jump { bottom: 60px; right: 15px; }
+            body.is-mobile #btn-sprint { bottom: 5px; right: 70px; }
+            body.is-mobile #mobile-controls { height: 130px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- START SCREEN -->
+    <div id="start-screen" class="menu-overlay">
+        <h1>🫒 OLIVE DELIGHTS 🫒</h1>
+        <h2>Escape the Nextbot</h2>
+        
+        <div class="coins-display">💰 Coins: <span id="total-coins">0</span></div>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('play', this)">PLAY</button>
+            <button class="tab-btn" onclick="showTab('escape', this)">ESCAPE</button>
+            <button class="tab-btn" onclick="showTab('endless', this)">ENDLESS</button>
+            <button class="tab-btn" onclick="showTab('shop', this)">SHOP</button>
+            <button class="tab-btn" onclick="showTab('upgrades', this)">UPGRADES</button>
+            <button class="tab-btn" onclick="showTab('settings', this)">SETTINGS</button>
+        </div>
+        
+        <!-- PLAY TAB -->
+        <div id="tab-play" class="tab-content active">
+            <div class="menu-section">
+                <h3>🏆 TOP 3 RUNS</h3>
+                <div class="highscores" id="highscores">
+                    <span>1. --:--</span>
+                    <span>2. --:--</span>
+                    <span>3. --:--</span>
+                </div>
+            </div>
+            
+            <div class="menu-section desktop-controls">
+                <p><strong>CONTROLS:</strong><br>
+                WASD - Move | <span id="sprint-key-display">SHIFT</span> - Sprint | SPACE - Jump<br>
+                ESC - Pause Menu</p>
+            </div>
+            
+            <div class="menu-section mobile-controls-info">
+                <p><strong>CONTROLS:</strong><br>
+                Left Joystick - Move | Swipe Screen - Look<br>
+                ⚡ - Sprint | 🦘 - Jump</p>
+            </div>
+            
+            <div class="menu-section">
+                <label><input type="checkbox" id="start-shield-toggle"> Start with Shield (5 coins)</label>
+            </div>
+            
+            <button class="menu-btn" onclick="startGame()">START GAME</button>
+        </div>
+        
+        <!-- ESCAPE MODE TAB -->
+        <div id="tab-escape" class="tab-content">
+            <div class="menu-section">
+                <h3>🚪 ESCAPE MODE</h3>
+                <p>Find one of TWO exit doors to escape each round!<br>
+                How many times can you escape?<br>
+                <strong>Map is 2x larger, no minimap!</strong></p>
+            </div>
+            <div class="menu-section">
+                <h3>🏆 BEST STREAK</h3>
+                <div class="highscores">
+                    <span id="escape-record">Best: 0 escapes</span>
+                </div>
+            </div>
+            <div class="menu-section">
+                <label><input type="checkbox" id="escape-shield-toggle"> Start with Shield (5 coins)</label>
+            </div>
+            <button class="menu-btn" onclick="startEscapeMode()">START ESCAPE MODE</button>
+        </div>
+        
+        <!-- ENDLESS MODE TAB -->
+        <div id="tab-endless" class="tab-content">
+            <div class="menu-section">
+                <h3>♾️ ENDLESS MODE</h3>
+                <p>An infinite, procedurally generated world.<br>
+                Doors have a 1/20 chance of spawning per area.<br>
+                Walk through doors to score. How far can you go?<br>
+                <strong>No minimap. Smart AI pathfinding.</strong></p>
+            </div>
+            <div class="menu-section">
+                <h3>🏆 BEST SCORE</h3>
+                <div class="highscores">
+                    <span id="endless-record">Best: 0 doors</span>
+                </div>
+            </div>
+            <div class="menu-section">
+                <label><input type="checkbox" id="endless-shield-toggle"> Start with Shield (5 coins)</label>
+            </div>
+            <button class="menu-btn purple" onclick="startEndlessMode()">START ENDLESS MODE</button>
+        </div>
+        
+        <!-- SHOP TAB -->
+        <div id="tab-shop" class="tab-content">
+            <div class="menu-section">
+                <h3>🎭 NEXTBOT SKINS</h3>
+                <div class="shop-grid" id="skin-shop"></div>
+            </div>
+        </div>
+        
+        <!-- UPGRADES TAB -->
+        <div id="tab-upgrades" class="tab-content">
+            <div class="menu-section">
+                <h3>❄️ ICE UPGRADES</h3>
+                <div id="ice-upgrades"></div>
+            </div>
+            <div class="menu-section">
+                <h3>⚡ SPEED UPGRADES</h3>
+                <div id="speed-upgrades"></div>
+            </div>
+            <div class="menu-section">
+                <h3>🛡️ SHIELD UPGRADES</h3>
+                <div id="shield-upgrades"></div>
+            </div>
+        </div>
+        
+        <!-- SETTINGS TAB -->
+        <div id="tab-settings" class="tab-content">
+            <div class="menu-section">
+                <h3>⚙️ GENERAL SETTINGS</h3>
+                <div class="settings-row desktop-controls">
+                    <label>Sprint Key:</label>
+                    <select id="sprint-key-select" onchange="updateSprintKey()">
+                        <option value="ShiftLeft">Left Shift</option>
+                        <option value="ShiftRight">Right Shift</option>
+                        <option value="ControlLeft">Left Ctrl</option>
+                        <option value="KeyC">C</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <label>Music Volume:</label>
+                    <input type="range" id="music-volume" min="0" max="100" value="100" oninput="updateMusicVolume()">
+                    <span class="sensitivity-value" id="music-vol-display">100</span>
+                </div>
+                <div class="settings-row">
+                    <label>Show Minimap:</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="minimap-toggle" checked onchange="updateMinimapToggle()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <label>Fullscreen:</label>
+                    <button class="menu-btn small" id="fullscreen-btn" onclick="toggleFullscreen()">Enter Fullscreen</button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h3>🎯 SENSITIVITY</h3>
+                <div class="settings-subsection">
+                    <h4>Input Mode</h4>
+                    <div class="settings-row">
+                        <label>Current Mode:</label>
+                        <div class="input-mode-toggle">
+                            <button class="input-mode-btn" id="mode-desktop" onclick="setInputMode('desktop')">🖥️ Desktop</button>
+                            <button class="input-mode-btn" id="mode-mobile" onclick="setInputMode('mobile')">📱 Mobile</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-subsection">
+                    <h4>🖥️ Desktop Sensitivity</h4>
+                    <div class="settings-row">
+                        <label>Look Speed:</label>
+                        <input type="range" id="desktop-sensitivity" min="1" max="20" value="5" oninput="updateDesktopSensitivity()">
+                        <span class="sensitivity-value" id="desktop-sens-display">5</span>
+                    </div>
+                </div>
+                <div class="settings-subsection">
+                    <h4>📱 Mobile Sensitivity</h4>
+                    <div class="settings-row">
+                        <label>Look Speed:</label>
+                        <input type="range" id="mobile-sensitivity" min="1" max="20" value="8" oninput="updateMobileSensitivity()">
+                        <span class="sensitivity-value" id="mobile-sens-display">8</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <h3>🎯 CROSSHAIR</h3>
+                <div class="settings-subsection">
+                    <h4>Shape</h4>
+                    <div class="shape-options" id="crosshair-shapes"></div>
+                </div>
+                <div class="settings-subsection">
+                    <h4>Color</h4>
+                    <div class="color-options" id="crosshair-colors"></div>
+                </div>
+                <div class="settings-subsection">
+                    <h4>Size &amp; Style</h4>
+                    <div class="settings-row">
+                        <label>Size:</label>
+                        <input type="range" id="ch-size" min="2" max="20" value="6" oninput="updateCrosshairSettings()">
+                        <span class="sensitivity-value" id="ch-size-display">6</span>
+                    </div>
+                    <div class="settings-row">
+                        <label>Opacity:</label>
+                        <input type="range" id="ch-opacity" min="10" max="100" value="80" oninput="updateCrosshairSettings()">
+                        <span class="sensitivity-value" id="ch-opacity-display">80%</span>
+                    </div>
+                    <div class="settings-row">
+                        <label>Thickness:</label>
+                        <input type="range" id="ch-thickness" min="1" max="6" value="2" oninput="updateCrosshairSettings()">
+                        <span class="sensitivity-value" id="ch-thickness-display">2</span>
+                    </div>
+                </div>
+                <div class="settings-subsection">
+                    <h4>Preview</h4>
+                    <div class="crosshair-preview" id="crosshair-preview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME UI -->
+    <div id="ui">
+        <div id="crosshair"></div>
+        <div id="stamina-container"><div id="stamina-bar"></div></div>
+        <div id="powerups-display">
+            <div class="powerup-slot" id="slot-ice"><span style="color:#666;">❄️</span></div>
+            <div class="powerup-slot" id="slot-speed"><span style="color:#666;">⚡</span></div>
+            <div class="powerup-slot" id="slot-shield"><span style="color:#666;">🛡️</span></div>
+        </div>
+        <div id="warning">⚠️ HE'S CLOSE ⚠️</div>
+        <div id="shield-indicator">🛡️ SHIELD ACTIVE</div>
+        <div id="timer">0:00</div>
+        <div id="hud-coins">💰 0</div>
+        <div id="minimap"><canvas id="minimap-canvas"></canvas></div>
+        <div id="minimap-floor">Map: Backrooms</div>
+        <div id="pickup-msg"></div>
+        <div id="escape-hud">
+            <div id="escape-round">Round: 1</div>
+            <div id="escape-door-indicator">🚪 FIND AN EXIT!</div>
+        </div>
+        <div id="endless-hud">
+            <div id="endless-score">Doors: 0</div>
+            <div id="endless-door-hint"></div>
+        </div>
+    </div>
+    
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div class="mobile-joystick" id="joystick-move">
+            <div class="joystick-knob" id="joystick-knob"></div>
+        </div>
+        <div class="mobile-btn" id="btn-jump">🦘</div>
+        <div class="mobile-btn" id="btn-sprint">⚡</div>
+    </div>
+    <div class="mobile-btn" id="btn-pause">⏸️</div>
+    
+    <div class="vignette"></div>
+    <div id="fear-overlay"></div>
+    <div id="freeze-overlay"></div>
+
+    <!-- PAUSE SCREEN -->
+    <div id="pause-screen">
+        <h1>⏸️ PAUSED</h1>
+        <div class="menu-section">
+            <h3>Quick Settings</h3>
+            <div class="settings-row">
+                <label>Music Volume:</label>
+                <input type="range" id="pause-volume" min="0" max="100" value="100" oninput="updateMusicVolume()">
+            </div>
+            <div class="settings-row">
+                <label>Sensitivity:</label>
+                <input type="range" id="pause-sensitivity" min="1" max="20" value="5" oninput="updatePauseSensitivity()">
+                <span class="sensitivity-value" id="pause-sens-display">5</span>
+            </div>
+        </div>
+        <button class="menu-btn" onclick="resumeGame()">RESUME</button>
+        <button class="menu-btn secondary" onclick="quitGame()">QUIT (Lose Coins)</button>
+    </div>
+
+    <!-- DEATH SCREEN -->
+    <div id="death-screen">
+        <h1>YOU DIED</h1>
+        <p id="death-msg">Caught you...</p>
+        <p id="survival-time">Survived: 0:00</p>
+        <p class="coins-earned" id="coins-earned">+0 coins</p>
+        <button class="menu-btn" onclick="restartGame()">TRY AGAIN</button>
+        <button class="menu-btn secondary" onclick="returnToMenu()">MAIN MENU</button>
+    </div>
+
+    <!-- Hidden video for SCP -->
+    <video id="scp-video" loop muted playsinline style="display:none;"></video>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============ SAVE DATA ============
+        let saveData = {
+            coins: 0,
+            highscores: [],
+            escapeRecord: 0,
+            endlessRecord: 0,
+            ownedSkins: ['default'],
+            selectedSkin: 'default',
+            upgrades: { ice: 0, speed: 0, shield: 0 },
+            settings: {
+                sprintKey: 'ShiftLeft',
+                desktopSensitivity: 5,
+                mobileSensitivity: 8,
+                inputMode: 'auto',
+                musicVolume: 100,
+                minimapEnabled: true,
+                crosshair: { shape: 'dot', color: '#ffffff', size: 6, opacity: 80, thickness: 2 }
+            }
+        };
+
+        function loadSaveData() {
+            try {
+                const saved = localStorage.getItem('oliveDelights');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    saveData = { ...saveData, ...parsed };
+                    if (!saveData.settings.crosshair) saveData.settings.crosshair = { shape: 'dot', color: '#ffffff', size: 6, opacity: 80, thickness: 2 };
+                    if (saveData.settings.desktopSensitivity === undefined) saveData.settings.desktopSensitivity = saveData.settings.sensitivity || 5;
+                    if (saveData.settings.mobileSensitivity === undefined) saveData.settings.mobileSensitivity = 8;
+                    if (saveData.settings.inputMode === undefined) saveData.settings.inputMode = 'auto';
+                    if (saveData.endlessRecord === undefined) saveData.endlessRecord = 0;
+                }
+            } catch(e) {}
+            updateUI();
+        }
+
+        function saveSaveData() {
+            try { localStorage.setItem('oliveDelights', JSON.stringify(saveData)); } catch(e) {}
+        }
+
+        // ============ SHOP DATA ============
+        const SKINS = [
+            { id: 'default', name: 'Classic Kanye', url: 'https://joercat.github.io/kanye.png', cost: 0, type: 'image' },
+            { id: 'kanye2', name: 'Weird Kanye', url: 'https://joercat.github.io/kanye2.png', cost: 50, type: 'image' },
+            { id: 'kanye3', name: 'Anime Kanye', url: 'https://joercat.github.io/kanye3.png', cost: 45, type: 'image' },
+            { id: 'kanye4', name: 'Christmas Kanye', url: 'https://joercat.github.io/kanye4.png', cost: 55, type: 'image' },
+            { id: 'kanye5', name: 'Fih', url: 'https://joercat.github.io/kanye5.png', cost: 50, type: 'image' },
+            { id: 'kanye6', name: 'Obunga', url: 'https://joercat.github.io/knaye6.png', cost: 50, type: 'image' },
+            { id: 'scp_wish', name: 'SCP Wish I New', url: 'scp.png', cost: 60, type: 'video', videoUrl: 'scp.mp4', desc: 'A terrifying SCP entity' },
+            { id: 'hamood', name: 'Hamood Habibi', url: 'hamood.png', cost: 55, type: 'image_audio', audioUrl: 'hamood.mp3', desc: 'Hamood Hamood Habibi!' }
+        ];
+
+        const UPGRADES = {
+            ice: [
+                { level: 1, cost: 10, desc: '+1 sec freeze' },
+                { level: 2, cost: 15, desc: '+3 sec freeze' },
+                { level: 3, cost: 25, desc: '+3 sec freeze + 3 sec half speed' }
+            ],
+            speed: [
+                { level: 1, cost: 10, desc: '+3 sec duration' },
+                { level: 2, cost: 15, desc: '+5 sec duration' },
+                { level: 3, cost: 25, desc: '+5 sec + speed boost' }
+            ],
+            shield: [
+                { level: 1, cost: 10, desc: '+1 sec freeze on block' },
+                { level: 2, cost: 15, desc: '+2 sec freeze on block' },
+                { level: 3, cost: 25, desc: '2 hits + 2 sec freeze' }
+            ]
+        };
+
+        // ============ CROSSHAIR CONFIG ============
+        const CH_SHAPES = [
+            { id: 'dot', label: '● Dot' },
+            { id: 'plus', label: '+ Plus' },
+            { id: 'cross', label: '✕ Cross' },
+            { id: 'circle', label: '○ Circle' },
+            { id: 'square', label: '□ Square' },
+            { id: 'diamond', label: '◇ Diamond' }
+        ];
+        const CH_COLORS = ['#ffffff', '#ff0000', '#00ff00', '#00ffff', '#ffff00', '#ff00ff', '#ff8c00', '#4ade80'];
+
+        // ============ GAME STATE ============
+        let gameStarted = false;
+        let isPaused = false;
+        let isDead = false;
+        let startTime = 0;
+        let sessionCoins = 0;
+        let sprintKeyCode = 'ShiftLeft';
+        let baseSensitivityDesktop = 0.0012;
+        let baseSensitivityMobile = 0.002;
+        let mouseSensitivity = baseSensitivityDesktop * 5;
+        let mobileTouchSensitivity = baseSensitivityMobile * 8;
+        let musicVolumeMultiplier = 1;
+        let isMobile = false;
+        let forceInputMode = 'auto';
+
+        // Mode flags
+        let isEscapeMode = false;
+        let isEndlessMode = false;
+        let escapeRound = 0;
+        let escapeDoors = [];
+        let endlessDoorsFound = 0;
+        let baseGridSize = 25;
+
+        // ============ MOBILE CONTROLS STATE ============
+        let mobileJoystick = { active: false, startX: 0, startY: 0, moveX: 0, moveZ: 0 };
+        let mobileLook = { active: false, startX: 0, startY: 0 };
+        let mobileSprintActive = false;
+        let mobileJumpPressed = false;
+
+        // ============ THREE.JS ============
+        let scene, camera, renderer;
+        let wallTexture, floorTexture;
+
+        // ============ CUSTOM AUDIO ============
+        let skinAudioBuffer = null;
+        let skinAudioSource = null;
+        let skinGainNode = null;
+        let skinAudioReady = false;
+        let skinAudioPlaying = false;
+        let scpVideoTexture = null;
+
+        // ============ PLAYER ============
+        const player = {
+            x: 0, y: 1.6, z: 0,
+            yaw: 0, pitch: 0,
+            onGround: true, vy: 0,
+            shieldHits: 0,
+            infiniteStamina: false,
+            infiniteStaminaTimer: 0,
+            speedBoost: false,
+            speedBoostTimer: 0
+        };
+
+        // ============ KANYE (NEXTBOT) ============
+        const kanye = {
+            x: 0, z: 0, y: 1.25, vx: 0, vz: 0,
+            sprite: null, pathTimer: 0,
+            path: [], pathIndex: 0,
+            frozen: false, frozenTimer: 0,
+            halfSpeed: false, halfSpeedTimer: 0,
+            turnSpeed: 3.5, maxSpeed: 7.5,
+            currentSkinUrl: '',
+            usesVideo: false,
+            usesCustomAudio: false
+        };
+
+        // ============ ENTITIES ============
+        const powerups = [];
+        const coins = [];
+        const POWERUP_TYPES = ['ice', 'speed', 'shield'];
+
+        // ============ INPUT ============
+        const keys = {};
+        let isLocked = false;
+        let stamina = 100;
+        let isSprinting = false;
+
+        // ============ AUDIO ============
+        let audioCtx, audioBuffer, audioSource, gainNode;
+        let audioReady = false;
+        let audioPlaying = false;
+
+        // ============ MAP CONFIG ============
+        const CELL = 4;
+        let GRID_SIZE = 25;
+        const WALL_H = 3.5;
+
+        let maze = [];
+        let walkableCells = [];
+        let decorations = [];
+        let currentMap = 'backrooms';
+
+        const textureLoader = new THREE.TextureLoader();
+
+        // ============ ENDLESS MODE STATE ============
+        const CHUNK_SIZE = 25;
+        let endlessChunks = new Map();
+        let endlessChunkMeshes = new Map();
+        let endlessLoadRadius = 2;
+        let endlessUnloadRadius = 4;
+        let endlessLRU = [];
+        const MAX_CACHED_CHUNKS = 30;
+        let endlessDoorsList = [];
+        let endlessDecorations = [];
+
+        // ============ FULLSCREEN ============
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen();
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', () => {
+            document.getElementById('fullscreen-btn').textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'Enter Fullscreen';
+        });
+
+        // ============ CROSSHAIR RENDERING ============
+        function renderCrosshairInto(el, ch) {
+            el.innerHTML = '';
+            el.style.cssText = '';
+            const { shape, color, size, opacity, thickness } = ch;
+            el.style.opacity = opacity / 100;
+
+            if (shape === 'dot') {
+                el.style.width = size + 'px';
+                el.style.height = size + 'px';
+                el.style.background = color;
+                el.style.borderRadius = '50%';
+                el.style.boxShadow = `0 0 ${Math.max(2, size / 2)}px ${color}`;
+            } else if (shape === 'plus' || shape === 'cross') {
+                const totalSize = size * 3;
+                const container = document.createElement('div');
+                container.style.cssText = `position:relative;width:${totalSize}px;height:${totalSize}px;`;
+                const rot = shape === 'cross' ? 45 : 0;
+
+                const hLine = document.createElement('div');
+                hLine.style.cssText = `position:absolute;top:50%;left:0;width:100%;height:${thickness}px;background:${color};transform:translateY(-50%) rotate(${rot}deg);box-shadow:0 0 4px ${color};`;
+                container.appendChild(hLine);
+
+                const vLine = document.createElement('div');
+                vLine.style.cssText = `position:absolute;left:50%;top:0;width:${thickness}px;height:100%;background:${color};transform:translateX(-50%) rotate(${rot}deg);box-shadow:0 0 4px ${color};`;
+                container.appendChild(vLine);
+
+                el.appendChild(container);
+                el.style.width = totalSize + 'px';
+                el.style.height = totalSize + 'px';
+            } else if (shape === 'circle') {
+                const s = size * 2.5;
+                el.style.width = s + 'px';
+                el.style.height = s + 'px';
+                el.style.border = `${thickness}px solid ${color}`;
+                el.style.borderRadius = '50%';
+                el.style.boxShadow = `0 0 4px ${color}, inset 0 0 4px ${color}`;
+            } else if (shape === 'square') {
+                const s = size * 2;
+                el.style.width = s + 'px';
+                el.style.height = s + 'px';
+                el.style.border = `${thickness}px solid ${color}`;
+                el.style.boxShadow = `0 0 4px ${color}`;
+            } else if (shape === 'diamond') {
+                const s = size * 2;
+                el.style.width = s + 'px';
+                el.style.height = s + 'px';
+                el.style.border = `${thickness}px solid ${color}`;
+                el.style.boxShadow = `0 0 4px ${color}`;
+            }
+        }
+
+        function renderCrosshair() {
+            const el = document.getElementById('crosshair');
+            renderCrosshairInto(el, saveData.settings.crosshair);
+            // Fix positioning for diamond
+            if (saveData.settings.crosshair.shape === 'diamond') {
+                el.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+            } else {
+                el.style.transform = 'translate(-50%, -50%)';
+            }
+        }
+
+        function renderCrosshairPreview() {
+            const preview = document.getElementById('crosshair-preview');
+            if (!preview) return;
+            preview.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            renderCrosshairInto(wrapper, saveData.settings.crosshair);
+            if (saveData.settings.crosshair.shape === 'diamond') {
+                wrapper.style.transform = 'rotate(45deg)';
+            }
+            preview.appendChild(wrapper);
+        }
+
+        function buildCrosshairShapeButtons() {
+            const container = document.getElementById('crosshair-shapes');
+            container.innerHTML = '';
+            CH_SHAPES.forEach(shape => {
+                const btn = document.createElement('button');
+                btn.className = 'shape-btn' + (saveData.settings.crosshair.shape === shape.id ? ' active' : '');
+                btn.textContent = shape.label;
+                btn.onclick = () => {
+                    saveData.settings.crosshair.shape = shape.id;
+                    saveSaveData();
+                    renderCrosshair();
+                    renderCrosshairPreview();
+                    buildCrosshairShapeButtons();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function buildCrosshairColorSwatches() {
+            const container = document.getElementById('crosshair-colors');
+            container.innerHTML = '';
+            CH_COLORS.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch' + (saveData.settings.crosshair.color === color ? ' active' : '');
+                swatch.style.background = color;
+                swatch.onclick = () => {
+                    saveData.settings.crosshair.color = color;
+                    saveSaveData();
+                    renderCrosshair();
+                    renderCrosshairPreview();
+                    buildCrosshairColorSwatches();
+                };
+                container.appendChild(swatch);
+            });
+        }
+
+        function updateCrosshairSettings() {
+            saveData.settings.crosshair.size = parseInt(document.getElementById('ch-size').value);
+            saveData.settings.crosshair.opacity = parseInt(document.getElementById('ch-opacity').value);
+            saveData.settings.crosshair.thickness = parseInt(document.getElementById('ch-thickness').value);
+            document.getElementById('ch-size-display').textContent = saveData.settings.crosshair.size;
+            document.getElementById('ch-opacity-display').textContent = saveData.settings.crosshair.opacity + '%';
+            document.getElementById('ch-thickness-display').textContent = saveData.settings.crosshair.thickness;
+            saveSaveData();
+            renderCrosshair();
+            renderCrosshairPreview();
+        }
+
+        // ============ DETECT MOBILE ============
+        function detectMobile() {
+            const naturalMobile = ('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (forceInputMode === 'desktop') {
+                isMobile = false;
+            } else if (forceInputMode === 'mobile') {
+                isMobile = true;
+            } else {
+                isMobile = naturalMobile;
+            }
+
+            if (isMobile) {
+                document.body.classList.add('is-mobile');
+            } else {
+                document.body.classList.remove('is-mobile');
+            }
+            return isMobile;
+        }
+
+        function setInputMode(mode) {
+            saveData.settings.inputMode = mode;
+            forceInputMode = mode;
+            saveSaveData();
+            detectMobile();
+            updateUI();
+            if (isMobile && gameStarted) setupMobileControls();
+        }
+
+        // ============ UI FUNCTIONS ============
+        function showTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+            if (tabId === 'settings') {
+                buildCrosshairShapeButtons();
+                buildCrosshairColorSwatches();
+                renderCrosshairPreview();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('total-coins').textContent = saveData.coins;
+            document.getElementById('sprint-key-display').textContent =
+                saveData.settings.sprintKey.replace('ShiftLeft', 'SHIFT').replace('ShiftRight', 'R-SHIFT')
+                .replace('ControlLeft', 'CTRL').replace('KeyC', 'C');
+
+            // Highscores
+            const hsDiv = document.getElementById('highscores');
+            hsDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const time = saveData.highscores[i];
+                const span = document.createElement('span');
+                if (time) {
+                    const mins = Math.floor(time / 60);
+                    const secs = Math.floor(time % 60);
+                    span.textContent = `${i + 1}. ${mins}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    span.textContent = `${i + 1}. --:--`;
+                }
+                hsDiv.appendChild(span);
+            }
+
+            // Skins shop
+            const skinShop = document.getElementById('skin-shop');
+            skinShop.innerHTML = '';
+            SKINS.forEach(skin => {
+                const div = document.createElement('div');
+                div.className = 'shop-item';
+                if (saveData.ownedSkins.includes(skin.id)) div.classList.add('owned');
+                if (saveData.selectedSkin === skin.id) div.classList.add('selected');
+
+                let mediaHtml = '';
+                if (skin.url) {
+                    mediaHtml = `<img src="${skin.url}" onerror="this.style.display='none'">`;
+                } else {
+                    mediaHtml = `<div style="width:40px;height:40px;background:#333;margin:0 auto;border-radius:4px;display:flex;align-items:center;justify-content:center;">?</div>`;
+                }
+
+                div.innerHTML = `${mediaHtml}<br><small>${skin.name}</small><br>`;
+                if (skin.desc) {
+                    div.innerHTML += `<small style="color:#888;font-size:10px;">${skin.desc}</small><br>`;
+                }
+
+                if (!saveData.ownedSkins.includes(skin.id)) {
+                    div.innerHTML += `<button class="menu-btn small" onclick="buySkin('${skin.id}')">${skin.cost} 💰</button>`;
+                } else if (saveData.selectedSkin !== skin.id) {
+                    div.innerHTML += `<button class="menu-btn small" onclick="selectSkin('${skin.id}')">SELECT</button>`;
+                } else {
+                    div.innerHTML += `<small style="color:#4ade80;">EQUIPPED</small>`;
+                }
+                skinShop.appendChild(div);
+            });
+
+            // Upgrades
+            ['ice', 'speed', 'shield'].forEach(type => {
+                const container = document.getElementById(type + '-upgrades');
+                container.innerHTML = '';
+                UPGRADES[type].forEach((upg) => {
+                    const div = document.createElement('div');
+                    div.className = 'upgrade-item';
+                    if (saveData.upgrades[type] >= upg.level) div.classList.add('owned');
+                    div.innerHTML = `<span>Lv${upg.level}: ${upg.desc}</span>`;
+                    if (saveData.upgrades[type] >= upg.level) {
+                        div.innerHTML += `<span style="color:#4ade80;">✓</span>`;
+                    } else if (saveData.upgrades[type] === upg.level - 1) {
+                        div.innerHTML += `<button class="menu-btn small" onclick="buyUpgrade('${type}', ${upg.level})">${upg.cost} 💰</button>`;
+                    } else {
+                        div.innerHTML += `<span style="color:#666;">🔒</span>`;
+                    }
+                    container.appendChild(div);
+                });
+            });
+
+            // Settings values
+            document.getElementById('sprint-key-select').value = saveData.settings.sprintKey;
+            document.getElementById('desktop-sensitivity').value = saveData.settings.desktopSensitivity;
+            document.getElementById('desktop-sens-display').textContent = saveData.settings.desktopSensitivity;
+            document.getElementById('mobile-sensitivity').value = saveData.settings.mobileSensitivity;
+            document.getElementById('mobile-sens-display').textContent = saveData.settings.mobileSensitivity;
+            document.getElementById('music-volume').value = saveData.settings.musicVolume;
+            document.getElementById('music-vol-display').textContent = saveData.settings.musicVolume;
+            document.getElementById('minimap-toggle').checked = saveData.settings.minimapEnabled !== false;
+
+            // Crosshair settings
+            document.getElementById('ch-size').value = saveData.settings.crosshair.size;
+            document.getElementById('ch-size-display').textContent = saveData.settings.crosshair.size;
+            document.getElementById('ch-opacity').value = saveData.settings.crosshair.opacity;
+            document.getElementById('ch-opacity-display').textContent = saveData.settings.crosshair.opacity + '%';
+            document.getElementById('ch-thickness').value = saveData.settings.crosshair.thickness;
+            document.getElementById('ch-thickness-display').textContent = saveData.settings.crosshair.thickness;
+
+            // Input mode buttons
+            document.getElementById('mode-desktop').classList.toggle('active', saveData.settings.inputMode === 'desktop');
+            document.getElementById('mode-mobile').classList.toggle('active', saveData.settings.inputMode === 'mobile');
+
+            // Apply settings
+            sprintKeyCode = saveData.settings.sprintKey;
+            mouseSensitivity = baseSensitivityDesktop * saveData.settings.desktopSensitivity;
+            mobileTouchSensitivity = baseSensitivityMobile * saveData.settings.mobileSensitivity;
+            musicVolumeMultiplier = saveData.settings.musicVolume / 100;
+
+            // Minimap visibility
+            const minimapVisible = saveData.settings.minimapEnabled !== false;
+            document.getElementById('minimap').style.display = minimapVisible ? 'block' : 'none';
+            document.getElementById('minimap-floor').style.display = minimapVisible ? 'block' : 'none';
+
+            // Records
+            document.getElementById('escape-record').textContent = 'Best: ' + saveData.escapeRecord + ' escapes';
+            document.getElementById('endless-record').textContent = 'Best: ' + (saveData.endlessRecord || 0) + ' doors';
+
+            renderCrosshair();
+        }
+
+        function buySkin(skinId) {
+            const skin = SKINS.find(s => s.id === skinId);
+            if (skin && saveData.coins >= skin.cost && !saveData.ownedSkins.includes(skinId)) {
+                saveData.coins -= skin.cost;
+                saveData.ownedSkins.push(skinId);
+                saveData.selectedSkin = skinId;
+                saveSaveData();
+                updateUI();
+            }
+        }
+
+        function selectSkin(skinId) {
+            if (saveData.ownedSkins.includes(skinId)) {
+                saveData.selectedSkin = skinId;
+                saveSaveData();
+                updateUI();
+            }
+        }
+
+        function buyUpgrade(type, level) {
+            const upg = UPGRADES[type].find(u => u.level === level);
+            if (upg && saveData.coins >= upg.cost && saveData.upgrades[type] === level - 1) {
+                saveData.coins -= upg.cost;
+                saveData.upgrades[type] = level;
+                saveSaveData();
+                updateUI();
+            }
+        }
+
+        function updateSprintKey() {
+            saveData.settings.sprintKey = document.getElementById('sprint-key-select').value;
+            sprintKeyCode = saveData.settings.sprintKey;
+            saveSaveData();
+            updateUI();
+        }
+
+        function updateDesktopSensitivity() {
+            const val = parseInt(document.getElementById('desktop-sensitivity').value);
+            saveData.settings.desktopSensitivity = val;
+            document.getElementById('desktop-sens-display').textContent = val;
+            mouseSensitivity = baseSensitivityDesktop * val;
+            saveSaveData();
+        }
+
+        function updateMobileSensitivity() {
+            const val = parseInt(document.getElementById('mobile-sensitivity').value);
+            saveData.settings.mobileSensitivity = val;
+            document.getElementById('mobile-sens-display').textContent = val;
+            mobileTouchSensitivity = baseSensitivityMobile * val;
+            saveSaveData();
+        }
+
+        function updatePauseSensitivity() {
+            const val = parseInt(document.getElementById('pause-sensitivity').value);
+            document.getElementById('pause-sens-display').textContent = val;
+            if (isMobile) {
+                saveData.settings.mobileSensitivity = val;
+                mobileTouchSensitivity = baseSensitivityMobile * val;
+            } else {
+                saveData.settings.desktopSensitivity = val;
+                mouseSensitivity = baseSensitivityDesktop * val;
+            }
+            saveSaveData();
+        }
+
+        function updateMusicVolume() {
+            let val;
+            if (document.activeElement === document.getElementById('pause-volume')) {
+                val = document.getElementById('pause-volume').value;
+            } else {
+                val = document.getElementById('music-volume').value;
+            }
+            saveData.settings.musicVolume = parseInt(val);
+            musicVolumeMultiplier = saveData.settings.musicVolume / 100;
+            document.getElementById('music-vol-display').textContent = val;
+            saveSaveData();
+        }
+
+        function updateMinimapToggle() {
+            saveData.settings.minimapEnabled = document.getElementById('minimap-toggle').checked;
+            saveSaveData();
+            const vis = saveData.settings.minimapEnabled;
+            document.getElementById('minimap').style.display = vis ? 'block' : 'none';
+            document.getElementById('minimap-floor').style.display = vis ? 'block' : 'none';
+        }
+
+        // ============ TEXTURES ============
+        function loadTextures(callback) {
+            let loaded = 0;
+            const checkDone = () => { loaded++; if (loaded === 2) callback(); };
+
+            wallTexture = textureLoader.load('https://joercat.github.io/wall.png', checkDone, undefined, checkDone);
+            wallTexture.wrapS = THREE.RepeatWrapping;
+            wallTexture.wrapT = THREE.RepeatWrapping;
+
+            floorTexture = textureLoader.load('https://joercat.github.io/floor.jpg', checkDone, undefined, checkDone);
+            floorTexture.wrapS = THREE.RepeatWrapping;
+            floorTexture.wrapT = THREE.RepeatWrapping;
+            floorTexture.repeat.set(GRID_SIZE * 2, GRID_SIZE * 2);
+        }
+
+        // ============ AUDIO ============
+        async function initAudio() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0;
+                gainNode.connect(audioCtx.destination);
+
+                const skinData = SKINS.find(s => s.id === saveData.selectedSkin);
+
+                if (skinData && skinData.type === 'video') {
+                    // SCP - audio from video
+                    kanye.usesCustomAudio = true;
+                    audioReady = false;
+                    const video = document.getElementById('scp-video');
+                    if (video && video.src) {
+                        video.muted = false;
+                        video.volume = 0;
+                        skinAudioReady = true;
+                    }
+                } else if (skinData && skinData.type === 'image_audio' && skinData.audioUrl) {
+                    // Hamood - custom audio file
+                    kanye.usesCustomAudio = true;
+                    try {
+                        if (!skinGainNode) {
+                            skinGainNode = audioCtx.createGain();
+                            skinGainNode.gain.value = 0;
+                            skinGainNode.connect(audioCtx.destination);
+                        }
+                        const resp = await fetch(skinData.audioUrl);
+                        const buf = await resp.arrayBuffer();
+                        skinAudioBuffer = await audioCtx.decodeAudioData(buf);
+                        skinAudioReady = true;
+                    } catch(e) {
+                        console.log('Custom audio failed, using default:', e);
+                        kanye.usesCustomAudio = false;
+                        const resp = await fetch('https://joercat.github.io/olive.wav');
+                        const buf = await resp.arrayBuffer();
+                        audioBuffer = await audioCtx.decodeAudioData(buf);
+                        audioReady = true;
+                    }
+                } else {
+                    // Default audio
+                    kanye.usesCustomAudio = false;
+                    const resp = await fetch('https://joercat.github.io/olive.wav');
+                    const buf = await resp.arrayBuffer();
+                    audioBuffer = await audioCtx.decodeAudioData(buf);
+                    audioReady = true;
+                }
+            } catch(e) { console.log('Audio failed:', e); }
+        }
+
+        function setAudioVolume(vol) {
+            if (isPaused) {
+                if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                if (skinGainNode) skinGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                const v = document.getElementById('scp-video');
+                if (v) v.volume = 0;
+                return;
+            }
+
+            const skinData = SKINS.find(s => s.id === saveData.selectedSkin);
+
+            // SCP video audio
+            if (skinData && skinData.type === 'video' && skinAudioReady) {
+                const v = document.getElementById('scp-video');
+                if (v) v.volume = Math.min(1, vol * musicVolumeMultiplier);
+                if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                return;
+            }
+
+            // Custom skin audio (Hamood)
+            if (kanye.usesCustomAudio && skinAudioReady) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if (!skinAudioPlaying && vol > 0 && skinAudioBuffer) {
+                    skinAudioSource = audioCtx.createBufferSource();
+                    skinAudioSource.buffer = skinAudioBuffer;
+                    skinAudioSource.loop = true;
+                    skinAudioSource.connect(skinGainNode);
+                    skinAudioSource.start();
+                    skinAudioPlaying = true;
+                }
+                const finalVol = Math.min(1, vol * musicVolumeMultiplier);
+                if (skinGainNode) skinGainNode.gain.setTargetAtTime(finalVol, audioCtx.currentTime, 0.1);
+                if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                return;
+            }
+
+            // Default audio
+            if (!audioReady) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (!audioPlaying && vol > 0) {
+                audioSource = audioCtx.createBufferSource();
+                audioSource.buffer = audioBuffer;
+                audioSource.loop = true;
+                audioSource.connect(gainNode);
+                audioSource.start();
+                audioPlaying = true;
+            }
+
+            const finalVol = Math.min(1, vol * musicVolumeMultiplier);
+            if (gainNode) gainNode.gain.setTargetAtTime(finalVol, audioCtx.currentTime, 0.1);
+        }
+
+        function stopAudio() {
+            if (audioSource) { try { audioSource.stop(); } catch(e) {} audioSource = null; audioPlaying = false; }
+            if (gainNode) gainNode.gain.value = 0;
+            if (skinAudioSource) { try { skinAudioSource.stop(); } catch(e) {} skinAudioSource = null; skinAudioPlaying = false; }
+            if (skinGainNode) skinGainNode.gain.value = 0;
+            const v = document.getElementById('scp-video');
+            if (v) { v.pause(); v.volume = 0; }
+        }
+
+        function pauseAudio() {
+            if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+            if (skinGainNode) skinGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+            const v = document.getElementById('scp-video');
+            if (v) v.volume = 0;
+        }
+
+        // ============ MAZE GENERATION ============
+        function generateMazeData(gridSize, seed) {
+            const m = [];
+            for (let x = 0; x < gridSize; x++) {
+                m[x] = [];
+                for (let z = 0; z < gridSize; z++) {
+                    m[x][z] = 1;
+                }
+            }
+
+            // Seeded random
+            let rng = seed || 1;
+            function srand() { rng = (rng * 16807) % 2147483647; return (rng - 1) / 2147483646; }
+
+            if (currentMap === 'warehouse') {
+                for (let x = 1; x < gridSize - 1; x++) {
+                    for (let z = 1; z < gridSize - 1; z++) {
+                        m[x][z] = 0;
+                    }
+                }
+                for (let x = 3; x < gridSize - 3; x += 4) {
+                    for (let z = 3; z < gridSize - 3; z += 4) {
+                        if (srand() < 0.35) {
+                            m[x][z] = 1;
+                            if (srand() < 0.3 && x + 1 < gridSize - 2) m[x + 1][z] = 1;
+                            if (srand() < 0.3 && z + 1 < gridSize - 2) m[x][z + 1] = 1;
+                        }
+                    }
+                }
+            } else {
+                // DFS maze generation
+                const stack = [];
+                m[1][1] = 0;
+                stack.push({ x: 1, z: 1 });
+
+                while (stack.length > 0) {
+                    const cur = stack[stack.length - 1];
+                    const dirs = [{ dx: 0, dz: -2 }, { dx: 0, dz: 2 }, { dx: -2, dz: 0 }, { dx: 2, dz: 0 }];
+
+                    for (let i = dirs.length - 1; i > 0; i--) {
+                        const j = Math.floor(srand() * (i + 1));
+                        [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                    }
+
+                    let found = false;
+                    for (const d of dirs) {
+                        const nx = cur.x + d.dx;
+                        const nz = cur.z + d.dz;
+
+                        if (nx > 0 && nx < gridSize - 1 && nz > 0 && nz < gridSize - 1 && m[nx][nz] === 1) {
+                            m[cur.x + d.dx / 2][cur.z + d.dz / 2] = 0;
+                            m[nx][nz] = 0;
+                            stack.push({ x: nx, z: nz });
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) stack.pop();
+                }
+
+                // Extra openings
+                for (let x = 2; x < gridSize - 2; x++) {
+                    for (let z = 2; z < gridSize - 2; z++) {
+                        if (m[x][z] === 1 && srand() < 0.2) {
+                            let floors = 0;
+                            if (m[x - 1][z] === 0) floors++;
+                            if (m[x + 1][z] === 0) floors++;
+                            if (m[x][z - 1] === 0) floors++;
+                            if (m[x][z + 1] === 0) floors++;
+                            if (floors >= 2) m[x][z] = 0;
+                        }
+                    }
+                }
+            }
+
+            const wc = [];
+            for (let x = 1; x < gridSize - 1; x++) {
+                for (let z = 1; z < gridSize - 1; z++) {
+                    if (m[x][z] === 0) wc.push({ x, z });
+                }
+            }
+            return { maze: m, walkable: wc };
+        }
+
+        function generateMaze() {
+            const data = generateMazeData(GRID_SIZE, Math.floor(Math.random() * 2147483646) + 1);
+            maze = data.maze;
+            walkableCells = data.walkable;
+        }
+
+        // ============ COORDINATE HELPERS ============
+        function gridToWorld(gx, gz) {
+            return { x: (gx - GRID_SIZE / 2 + 0.5) * CELL, z: (gz - GRID_SIZE / 2 + 0.5) * CELL };
+        }
+
+        function worldToGrid(wx, wz) {
+            return { x: Math.floor(wx / CELL + GRID_SIZE / 2), z: Math.floor(wz / CELL + GRID_SIZE / 2) };
+        }
+
+        // Endless coordinate helpers
+        function endlessWorldToChunk(wx, wz) {
+            return { cx: Math.floor(wx / (CHUNK_SIZE * CELL)), cz: Math.floor(wz / (CHUNK_SIZE * CELL)) };
+        }
+
+        function endlessLocalToWorld(lx, lz, cx, cz) {
+            return { x: (cx * CHUNK_SIZE + lx + 0.5) * CELL, z: (cz * CHUNK_SIZE + lz + 0.5) * CELL };
+        }
+
+        function endlessWorldToGridGlobal(wx, wz) {
+            return { x: Math.floor(wx / CELL), z: Math.floor(wz / CELL) };
+        }
+
+        function endlessGridToWorld(gx, gz) {
+            return { x: (gx + 0.5) * CELL, z: (gz + 0.5) * CELL };
+        }
+
+        // ============ WALKABILITY ============
+        function getEndlessCell(wx, wz) {
+            const ch = endlessWorldToChunk(wx, wz);
+            const key = ch.cx + ',' + ch.cz;
+            const chunk = endlessChunks.get(key);
+            if (!chunk) return 1;
+            const lx = Math.floor((wx / CELL) - ch.cx * CHUNK_SIZE);
+            const lz = Math.floor((wz / CELL) - ch.cz * CHUNK_SIZE);
+            if (lx < 0 || lx >= CHUNK_SIZE || lz < 0 || lz >= CHUNK_SIZE) return 1;
+            return chunk.maze[lx][lz];
+        }
+
+        function isWalkableWorldEndless(wx, wz, radius) {
+            const checks = [
+                { x: wx, z: wz },
+                { x: wx - radius, z: wz - radius },
+                { x: wx + radius, z: wz - radius },
+                { x: wx - radius, z: wz + radius },
+                { x: wx + radius, z: wz + radius }
+            ];
+            for (const c of checks) {
+                if (getEndlessCell(c.x, c.z) !== 0) return false;
+            }
+            for (const d of endlessDecorations) {
+                const dist = Math.hypot(wx - d.x, wz - d.z);
+                if (dist < d.radius + radius) return false;
+            }
+            return true;
+        }
+
+        function isWalkableGridEndless(gx, gz) {
+            const wx = (gx + 0.5) * CELL;
+            const wz = (gz + 0.5) * CELL;
+            return getEndlessCell(wx, wz) === 0;
+        }
+
+        function isWalkableWorld(wx, wz, radius = 0.35) {
+            if (isEndlessMode) return isWalkableWorldEndless(wx, wz, radius);
+
+            const checks = [
+                { x: wx, z: wz },
+                { x: wx - radius, z: wz - radius },
+                { x: wx + radius, z: wz - radius },
+                { x: wx - radius, z: wz + radius },
+                { x: wx + radius, z: wz + radius }
+            ];
+
+            for (const c of checks) {
+                const g = worldToGrid(c.x, c.z);
+                if (g.x < 0 || g.x >= GRID_SIZE || g.z < 0 || g.z >= GRID_SIZE) return false;
+                if (!maze[g.x] || maze[g.x][g.z] !== 0) return false;
+            }
+
+            for (const d of decorations) {
+                const dist = Math.hypot(wx - d.x, wz - d.z);
+                const canJumpOver = d.height && d.height < 1.0 && player.y > 2.0;
+                if (dist < d.radius + radius && !canJumpOver) return false;
+            }
+
+            return true;
+        }
+
+        function isWalkableGrid(gx, gz) {
+            if (isEndlessMode) return isWalkableGridEndless(gx, gz);
+
+            if (gx < 0 || gx >= GRID_SIZE || gz < 0 || gz >= GRID_SIZE) return false;
+            if (!maze[gx] || maze[gx][gz] !== 0) return false;
+            const worldPos = gridToWorld(gx, gz);
+            for (const d of decorations) {
+                if (Math.hypot(worldPos.x - d.x, worldPos.z - d.z) < d.radius + 1.0) return false;
+            }
+            return true;
+        }
+
+        // ============ BUILD WORLD ============
+        function getMapMaterials() {
+            let wallMat, floorMat, ceilMat, fogColor;
+            if (currentMap === 'backrooms') {
+                wallMat = new THREE.MeshBasicMaterial({ map: wallTexture });
+                floorMat = new THREE.MeshBasicMaterial({ map: floorTexture });
+                ceilMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+                fogColor = 0x1a1a1a;
+            } else if (currentMap === 'warehouse') {
+                wallMat = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
+                floorMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
+                ceilMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+                fogColor = 0x0a0a0a;
+            } else {
+                wallMat = new THREE.MeshBasicMaterial({ color: 0xd4e6d4 });
+                floorMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee });
+                ceilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                fogColor = 0x1a2a1a;
+            }
+            return { wallMat, floorMat, ceilMat, fogColor };
+        }
+
+        function buildWorld() {
+            const { wallMat, floorMat, ceilMat, fogColor } = getMapMaterials();
+            scene.background = new THREE.Color(fogColor);
+            scene.fog = new THREE.Fog(fogColor, 2, 35);
+            decorations = [];
+
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let z = 0; z < GRID_SIZE; z++) {
+                    if (maze[x][z] === 1) {
+                        const pos = gridToWorld(x, z);
+                        const geo = new THREE.BoxGeometry(CELL, WALL_H, CELL);
+                        const wall = new THREE.Mesh(geo, wallMat);
+                        wall.position.set(pos.x, WALL_H / 2, pos.z);
+                        scene.add(wall);
+                    }
+                }
+            }
+
+            const floorGeo = new THREE.PlaneGeometry(GRID_SIZE * CELL, GRID_SIZE * CELL);
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = 0.01;
+            scene.add(floor);
+
+            const ceiling = new THREE.Mesh(floorGeo.clone(), ceilMat);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = WALL_H;
+            scene.add(ceiling);
+
+            // Only add decorations for warehouse and hospital (NOT backrooms - fixes invisible stuck items)
+            if (currentMap === 'warehouse') addWarehouseDecorations();
+            else if (currentMap === 'hospital') addHospitalDecorations();
+
+            scene.add(new THREE.AmbientLight(0xfff5e0, 0.9));
+        }
+
+        function addWarehouseDecorations() {
+            const crateMat = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+            const barrelMat = new THREE.MeshBasicMaterial({ color: 0x2255aa });
+            const shuffled = [...walkableCells].sort(() => Math.random() - 0.5);
+            const decorCount = Math.min(25, shuffled.length);
+
+            for (let i = 0; i < decorCount; i++) {
+                const cell = shuffled[i];
+                const pos = gridToWorld(cell.x, cell.z);
+                const fx = pos.x + (Math.random() - 0.5) * CELL * 0.3;
+                const fz = pos.z + (Math.random() - 0.5) * CELL * 0.3;
+                let tooClose = false;
+                for (const d of decorations) {
+                    if (Math.hypot(fx - d.x, fz - d.z) < 4.0) { tooClose = true; break; }
+                }
+                if (tooClose) continue;
+
+                if (Math.random() < 0.6) {
+                    const stackHeight = Math.floor(Math.random() * 3) + 1;
+                    for (let j = 0; j < stackHeight; j++) {
+                        const crate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.2), crateMat);
+                        crate.position.set(fx, 0.5 + j * 1.0, fz);
+                        scene.add(crate);
+                    }
+                    decorations.push({ x: fx, z: fz, radius: 0.7, height: stackHeight * 1.0 });
+                } else {
+                    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.4, 12), barrelMat);
+                    barrel.position.set(fx, 0.7, fz);
+                    scene.add(barrel);
+                    decorations.push({ x: fx, z: fz, radius: 0.55, height: 1.4 });
+                }
+            }
+        }
+
+        function addHospitalDecorations() {
+            const gurneyMat = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
+            const sheetMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const bloodMat = new THREE.MeshBasicMaterial({ color: 0x8B0000 });
+            const shuffled = [...walkableCells].sort(() => Math.random() - 0.5);
+            const decorCount = Math.min(20, shuffled.length);
+
+            for (let i = 0; i < decorCount; i++) {
+                const cell = shuffled[i];
+                const pos = gridToWorld(cell.x, cell.z);
+                const fx = pos.x + (Math.random() - 0.5) * CELL * 0.25;
+                const fz = pos.z + (Math.random() - 0.5) * CELL * 0.25;
+                let tooClose = false;
+                for (const d of decorations) {
+                    if (Math.hypot(fx - d.x, fz - d.z) < 4.5) { tooClose = true; break; }
+                }
+                if (tooClose) continue;
+
+                const type = Math.random();
+                if (type < 0.4) {
+                    const gurneyGroup = new THREE.Group();
+                    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 2.2), gurneyMat);
+                    frame.position.y = 0.7;
+                    gurneyGroup.add(frame);
+                    for (let lx = -0.4; lx <= 0.4; lx += 0.8) {
+                        for (let lz = -0.9; lz <= 0.9; lz += 1.8) {
+                            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 0.1), gurneyMat);
+                            leg.position.set(lx, 0.35, lz);
+                            gurneyGroup.add(leg);
+                        }
+                    }
+                    const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 2.0), sheetMat);
+                    sheet.position.y = 0.85;
+                    gurneyGroup.add(sheet);
+                    gurneyGroup.position.set(fx, 0, fz);
+                    gurneyGroup.rotation.y = Math.random() * Math.PI;
+                    scene.add(gurneyGroup);
+                    decorations.push({ x: fx, z: fz, radius: 1.2, height: 0.85 });
+                } else if (type < 0.7) {
+                    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 1.8, 8), gurneyMat);
+                    stand.position.set(fx, 0.9, fz);
+                    scene.add(stand);
+                    const monitor = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.15), new THREE.MeshBasicMaterial({ color: 0x446688 }));
+                    monitor.position.set(fx, 1.7, fz);
+                    scene.add(monitor);
+                    decorations.push({ x: fx, z: fz, radius: 0.3, height: 1.8 });
+                } else {
+                    const stain = new THREE.Mesh(
+                        new THREE.PlaneGeometry(0.6 + Math.random() * 0.6, 0.6 + Math.random() * 0.6),
+                        bloodMat
+                    );
+                    stain.rotation.x = -Math.PI / 2;
+                    stain.position.set(fx, 0.02, fz);
+                    scene.add(stain);
+                }
+            }
+        }
+
+        // ============ PATHFINDING ============
+        function findPath(startGx, startGz, endGx, endGz, maxIterations) {
+            const walkCheck = isEndlessMode ? isWalkableGridEndless : isWalkableGrid;
+            if (!walkCheck(startGx, startGz) || !walkCheck(endGx, endGz)) return [];
+
+            const key = (x, z) => x + ',' + z;
+            const open = [{ x: startGx, z: startGz, g: 0, f: 0 }];
+            const closed = new Set();
+            const cameFrom = new Map();
+            const gScore = new Map();
+            gScore.set(key(startGx, startGz), 0);
+
+            const h = (x, z) => Math.abs(x - endGx) + Math.abs(z - endGz);
+            maxIterations = maxIterations || 3000;
+            let iterations = 0;
+
+            while (open.length > 0 && iterations < maxIterations) {
+                iterations++;
+
+                let bestIdx = 0;
+                for (let i = 1; i < open.length; i++) {
+                    if (open[i].f < open[bestIdx].f) bestIdx = i;
+                }
+                const cur = open.splice(bestIdx, 1)[0];
+                const curKey = key(cur.x, cur.z);
+
+                if (cur.x === endGx && cur.z === endGz) {
+                    const path = [];
+                    let k = curKey;
+                    while (cameFrom.has(k)) {
+                        const parts = k.split(',');
+                        path.unshift({ x: parseInt(parts[0]), z: parseInt(parts[1]) });
+                        k = cameFrom.get(k);
+                    }
+                    return path;
+                }
+
+                closed.add(curKey);
+
+                const neighbors = [
+                    { x: cur.x + 1, z: cur.z },
+                    { x: cur.x - 1, z: cur.z },
+                    { x: cur.x, z: cur.z + 1 },
+                    { x: cur.x, z: cur.z - 1 }
+                ];
+
+                for (const n of neighbors) {
+                    if (!walkCheck(n.x, n.z)) continue;
+                    const nKey = key(n.x, n.z);
+                    if (closed.has(nKey)) continue;
+
+                    const tentG = (gScore.get(curKey) || 0) + 1;
+
+                    if (tentG < (gScore.get(nKey) || Infinity)) {
+                        cameFrom.set(nKey, curKey);
+                        gScore.set(nKey, tentG);
+                        const f = tentG + h(n.x, n.z);
+                        const existing = open.find(o => o.x === n.x && o.z === n.z);
+                        if (!existing) open.push({ x: n.x, z: n.z, g: tentG, f: f });
+                        else existing.f = f;
+                    }
+                }
+            }
+            return [];
+        }
+
+        // Smart pathfinding - adapts to distance
+        function smartFindPath(kanyeX, kanyeZ, playerX, playerZ) {
+            const dist = Math.hypot(kanyeX - playerX, kanyeZ - playerZ);
+
+            if (isEndlessMode) {
+                const kGrid = endlessWorldToGridGlobal(kanyeX, kanyeZ);
+                const pGrid = endlessWorldToGridGlobal(playerX, playerZ);
+
+                if (dist > 60) {
+                    // Very far: pathfind to intermediate point
+                    const angle = Math.atan2(playerX - kanyeX, playerZ - kanyeZ);
+                    const midX = kanyeX + Math.sin(angle) * 15;
+                    const midZ = kanyeZ + Math.cos(angle) * 15;
+                    const midGrid = endlessWorldToGridGlobal(midX, midZ);
+                    return findPath(kGrid.x, kGrid.z, midGrid.x, midGrid.z, 500);
+                } else if (dist > 30) {
+                    return findPath(kGrid.x, kGrid.z, pGrid.x, pGrid.z, 2000);
+                } else {
+                    return findPath(kGrid.x, kGrid.z, pGrid.x, pGrid.z, 5000);
+                }
+            } else {
+                const kGrid = worldToGrid(kanyeX, kanyeZ);
+                const pGrid = worldToGrid(playerX, playerZ);
+
+                // Try predictive target first
+                const predX = playerX + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ?
+                    -Math.sin(player.yaw) * 3 : 0);
+                const predZ = playerZ + (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ?
+                    -Math.cos(player.yaw) * 3 : 0);
+                const predGrid = worldToGrid(predX, predZ);
+
+                const maxIter = GRID_SIZE > 30 ? 8000 : 3000;
+                let path = findPath(kGrid.x, kGrid.z, predGrid.x, predGrid.z, maxIter);
+                if (path.length === 0) path = findPath(kGrid.x, kGrid.z, pGrid.x, pGrid.z, maxIter);
+                return path;
+            }
+        }
+
+        // ============ CREATE KANYE ============
+        function createKanye() {
+            const skinData = SKINS.find(s => s.id === saveData.selectedSkin);
+            if (!skinData) return;
+
+            kanye.usesVideo = false;
+            kanye.usesCustomAudio = false;
+
+            if (skinData.type === 'video') {
+                createVideoKanye(skinData);
+            } else if (skinData.type === 'image_audio') {
+                kanye.usesCustomAudio = true;
+                createImageKanye(skinData.url);
+            } else {
+                createImageKanye(skinData.url);
+            }
+        }
+
+        function createImageKanye(url) {
+            kanye.currentSkinUrl = url;
+            textureLoader.load(url, (tex) => {
+                tex.magFilter = THREE.NearestFilter;
+                tex.minFilter = THREE.NearestFilter;
+                const mat = new THREE.SpriteMaterial({ map: tex });
+                kanye.sprite = new THREE.Sprite(mat);
+                kanye.sprite.scale.set(2.5, 2.5, 1);
+                scene.add(kanye.sprite);
+                kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+            }, undefined, () => {
+                // Fallback
+                textureLoader.load(SKINS[0].url, (tex) => {
+                    tex.magFilter = THREE.NearestFilter;
+                    tex.minFilter = THREE.NearestFilter;
+                    const mat = new THREE.SpriteMaterial({ map: tex });
+                    kanye.sprite = new THREE.Sprite(mat);
+                    kanye.sprite.scale.set(2.5, 2.5, 1);
+                    scene.add(kanye.sprite);
+                    kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+                });
+            });
+        }
+
+        function createVideoKanye(skinData) {
+            kanye.usesVideo = true;
+            const video = document.getElementById('scp-video');
+            video.src = skinData.videoUrl;
+            video.crossOrigin = 'anonymous';
+            video.loop = true;
+            video.muted = false;
+            video.volume = 0;
+            video.playsInline = true;
+
+            video.play().catch(() => {
+                const playOnce = () => {
+                    video.play().catch(() => {});
+                    document.removeEventListener('click', playOnce);
+                    document.removeEventListener('touchstart', playOnce);
+                };
+                document.addEventListener('click', playOnce);
+                document.addEventListener('touchstart', playOnce);
+            });
+
+            scpVideoTexture = new THREE.VideoTexture(video);
+            scpVideoTexture.minFilter = THREE.NearestFilter;
+            scpVideoTexture.magFilter = THREE.NearestFilter;
+
+            const mat = new THREE.SpriteMaterial({ map: scpVideoTexture });
+            kanye.sprite = new THREE.Sprite(mat);
+            kanye.sprite.scale.set(2.5, 2.5, 1);
+            scene.add(kanye.sprite);
+            kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+        }
+
+        // ============ POWERUPS ============
+        function createPowerups() {
+            powerups.forEach(p => { if (p.sprite) scene.remove(p.sprite); });
+            powerups.length = 0;
+
+            const cells = isEndlessMode ? getEndlessWalkableCellsNear(player.x, player.z, 30) : [...walkableCells];
+            const shuffled = cells.sort(() => Math.random() - 0.5);
+            const urls = {
+                ice: 'https://joercat.github.io/ice.png',
+                speed: 'https://joercat.github.io/speed.png',
+                shield: 'https://joercat.github.io/shield.png'
+            };
+
+            for (let i = 0; i < 12 && i < shuffled.length; i++) {
+                const type = POWERUP_TYPES[i % 3];
+                const cell = shuffled[i];
+                let pos;
+                if (isEndlessMode) {
+                    pos = { x: cell.wx, z: cell.wz };
+                } else {
+                    pos = gridToWorld(cell.x, cell.z);
+                }
+
+                textureLoader.load(urls[type], (tex) => {
+                    tex.magFilter = THREE.NearestFilter;
+                    const mat = new THREE.SpriteMaterial({ map: tex });
+                    const sprite = new THREE.Sprite(mat);
+                    sprite.scale.set(1.2, 1.2, 1);
+                    sprite.position.set(pos.x, 0.8, pos.z);
+                    scene.add(sprite);
+                    powerups.push({ type, x: pos.x, z: pos.z, sprite, collected: false });
+                });
+            }
+        }
+
+        // ============ COINS ============
+        function createCoins() {
+            coins.forEach(c => { if (c.sprite) scene.remove(c.sprite); });
+            coins.length = 0;
+            spawnCoins();
+        }
+
+        function spawnCoins() {
+            const cells = isEndlessMode ? getEndlessWalkableCellsNear(player.x, player.z, 25) : walkableCells;
+            const available = cells.filter(cell => {
+                let px, pz;
+                if (isEndlessMode) { px = cell.wx; pz = cell.wz; }
+                else { const p = gridToWorld(cell.x, cell.z); px = p.x; pz = p.z; }
+                return !coins.some(c => !c.collected && Math.hypot(c.x - px, c.z - pz) < 2);
+            });
+            const shuffled = available.sort(() => Math.random() - 0.5);
+            const toSpawn = 5 - coins.filter(c => !c.collected).length;
+
+            for (let i = 0; i < toSpawn && i < shuffled.length; i++) {
+                const cell = shuffled[i];
+                let pos;
+                if (isEndlessMode) { pos = { x: cell.wx, z: cell.wz }; }
+                else { pos = gridToWorld(cell.x, cell.z); }
+
+                textureLoader.load('https://joercat.github.io/coin.png', (tex) => {
+                    tex.magFilter = THREE.NearestFilter;
+                    const mat = new THREE.SpriteMaterial({ map: tex });
+                    const sprite = new THREE.Sprite(mat);
+                    sprite.scale.set(0.8, 0.8, 1);
+                    sprite.position.set(pos.x, 0.6, pos.z);
+                    scene.add(sprite);
+                    coins.push({ x: pos.x, z: pos.z, sprite, collected: false });
+                });
+            }
+        }
+
+        function getEndlessWalkableCellsNear(wx, wz, radius) {
+            const cells = [];
+            const ch = endlessWorldToChunk(wx, wz);
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    const key = (ch.cx + dx) + ',' + (ch.cz + dz);
+                    const chunk = endlessChunks.get(key);
+                    if (!chunk) continue;
+                    for (const c of chunk.walkable) {
+                        const wp = endlessLocalToWorld(c.x, c.z, ch.cx + dx, ch.cz + dz);
+                        if (Math.hypot(wp.x - wx, wp.z - wz) < radius * CELL) {
+                            cells.push({ wx: wp.x, wz: wp.z });
+                        }
+                    }
+                }
+            }
+            return cells;
+        }
+
+        // ============ SPAWN ENTITIES ============
+        function spawnEntities() {
+            if (walkableCells.length < 10) return;
+
+            const pIdx = Math.floor(Math.random() * walkableCells.length);
+            const pCell = walkableCells[pIdx];
+            const pPos = gridToWorld(pCell.x, pCell.z);
+            player.x = pPos.x;
+            player.z = pPos.z;
+            player.y = 1.6;
+            player.yaw = 0;
+            player.pitch = 0;
+            player.vy = 0;
+            player.onGround = true;
+            player.shieldHits = 0;
+            player.infiniteStamina = false;
+            player.speedBoost = false;
+
+            const shieldToggleId = isEscapeMode ? 'escape-shield-toggle' : 'start-shield-toggle';
+            if (document.getElementById(shieldToggleId).checked && saveData.coins >= 5) {
+                saveData.coins -= 5;
+                player.shieldHits = saveData.upgrades.shield >= 3 ? 2 : 1;
+                document.getElementById('shield-indicator').style.opacity = '1';
+                document.getElementById('slot-shield').classList.add('active');
+                saveSaveData();
+                updateUI();
+            }
+
+            const minSpawnDist = 20;
+            const validKanyeSpawns = walkableCells.filter(c => {
+                const pos = gridToWorld(c.x, c.z);
+                return Math.hypot(pos.x - player.x, pos.z - player.z) > minSpawnDist;
+            }).sort(() => Math.random() - 0.5);
+
+            const kCell = validKanyeSpawns[0] || walkableCells[Math.floor(Math.random() * walkableCells.length)];
+            const kPos = gridToWorld(kCell.x, kCell.z);
+            kanye.x = kPos.x;
+            kanye.z = kPos.z;
+            kanye.vx = 0;
+            kanye.vz = 0;
+            kanye.pathTimer = 0;
+            kanye.path = [];
+            kanye.frozen = false;
+            kanye.halfSpeed = false;
+
+            if (kanye.sprite) kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+            camera.position.set(player.x, player.y, player.z);
+
+            createPowerups();
+            createCoins();
+        }
+
+        // ============ UPDATE PLAYER ============
+        function updatePlayer(dt) {
+            if (isPaused) return;
+            if (!isLocked && !isMobile) return;
+
+            const walkSpeed = 6.0;
+            let sprintSpeed = 8.5;
+
+            if (player.speedBoost) {
+                player.speedBoostTimer -= dt;
+                sprintSpeed = 9.5;
+                if (player.speedBoostTimer <= 0) player.speedBoost = false;
+            }
+
+            const jumpPower = 6.0;
+            const gravity = 18;
+
+            if (player.infiniteStamina) {
+                player.infiniteStaminaTimer -= dt;
+                if (player.infiniteStaminaTimer <= 0) {
+                    player.infiniteStamina = false;
+                    document.getElementById('stamina-bar').classList.remove('infinite');
+                    document.getElementById('stamina-bar').classList.remove('boosted');
+                }
+            }
+
+            const hasMovementInput = keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ||
+                (isMobile && (Math.abs(mobileJoystick.moveX) > 0.1 || Math.abs(mobileJoystick.moveZ) > 0.1));
+
+            const wantSprint = (isSprinting || mobileSprintActive) && hasMovementInput;
+            if (wantSprint && !player.infiniteStamina) {
+                if (stamina > 0) stamina = Math.max(0, stamina - dt * 20);
+            } else if (!wantSprint) {
+                stamina = Math.min(100, stamina + dt * 15);
+            }
+
+            const canSprint = wantSprint && (stamina > 0 || player.infiniteStamina);
+            const moveSpeed = canSprint ? sprintSpeed : walkSpeed;
+
+            document.getElementById('stamina-bar').style.width = (player.infiniteStamina ? 100 : stamina) + '%';
+
+            const forwardX = -Math.sin(player.yaw);
+            const forwardZ = -Math.cos(player.yaw);
+            const rightX = Math.cos(player.yaw);
+            const rightZ = -Math.sin(player.yaw);
+
+            let moveX = 0, moveZ = 0;
+
+            if (keys['KeyW']) { moveX += forwardX; moveZ += forwardZ; }
+            if (keys['KeyS']) { moveX -= forwardX; moveZ -= forwardZ; }
+            if (keys['KeyD']) { moveX += rightX; moveZ += rightZ; }
+            if (keys['KeyA']) { moveX -= rightX; moveZ -= rightZ; }
+
+            if (isMobile && mobileJoystick.active) {
+                moveX += forwardX * mobileJoystick.moveZ + rightX * mobileJoystick.moveX;
+                moveZ += forwardZ * mobileJoystick.moveZ + rightZ * mobileJoystick.moveX;
+            }
+
+            const len = Math.hypot(moveX, moveZ);
+            if (len > 0) {
+                moveX = (moveX / len) * moveSpeed;
+                moveZ = (moveZ / len) * moveSpeed;
+            }
+
+            if ((keys['Space'] || mobileJumpPressed) && player.onGround) {
+                player.vy = jumpPower;
+                player.onGround = false;
+                mobileJumpPressed = false;
+            }
+
+            player.vy -= gravity * dt;
+
+            let newX = player.x + moveX * dt;
+            let newZ = player.z + moveZ * dt;
+            let newY = player.y + player.vy * dt;
+
+            if (!isWalkableWorld(newX, player.z, 0.35)) newX = player.x;
+            if (!isWalkableWorld(newX, newZ, 0.35)) newZ = player.z;
+
+            player.x = newX;
+            player.z = newZ;
+
+            // Decoration collision (standing on top)
+            let standingOnDecor = false;
+            let decorTopY = 0;
+            const activeDecorations = isEndlessMode ? endlessDecorations : decorations;
+            for (const d of activeDecorations) {
+                const distToDecor = Math.hypot(player.x - d.x, player.z - d.z);
+                if (distToDecor < d.radius + 0.3 && d.height) {
+                    const decorTop = d.height + 0.1;
+                    if (player.vy <= 0 && newY <= decorTop + 1.6 && newY > decorTop + 0.5) {
+                        decorTopY = decorTop;
+                        standingOnDecor = true;
+                        break;
+                    }
+                }
+            }
+
+            if (standingOnDecor && player.vy <= 0) {
+                newY = decorTopY + 1.6;
+                player.vy = 0;
+                player.onGround = true;
+            } else if (newY < 1.6) {
+                newY = 1.6;
+                player.vy = 0;
+                player.onGround = true;
+            }
+            if (newY > WALL_H - 0.3) { newY = WALL_H - 0.3; player.vy = 0; }
+            player.y = newY;
+
+            camera.position.set(player.x, player.y, player.z);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = player.yaw;
+            camera.rotation.x = player.pitch;
+
+            checkPowerupCollection();
+            checkCoinCollection();
+
+            if (isEscapeMode) checkEscapeDoors();
+            if (isEndlessMode) {
+                updateEndlessChunks();
+                checkEndlessDoors();
+            }
+        }
+
+        // ============ POWERUP COLLECTION ============
+        function checkPowerupCollection() {
+            for (const p of powerups) {
+                if (p.collected) continue;
+                const dist = Math.hypot(p.x - player.x, p.z - player.z);
+                if (dist < 1.5) {
+                    p.collected = true;
+                    if (p.sprite) scene.remove(p.sprite);
+                    activatePowerup(p.type);
+                }
+            }
+        }
+
+        function activatePowerup(type) {
+            const msg = document.getElementById('pickup-msg');
+            const upg = saveData.upgrades;
+
+            if (type === 'ice') {
+                let freezeTime = 3;
+                if (upg.ice >= 1) freezeTime += 1;
+                if (upg.ice >= 2) freezeTime += 2;
+                if (upg.ice >= 3) { kanye.halfSpeed = true; kanye.halfSpeedTimer = 3; }
+                kanye.frozen = true;
+                kanye.frozenTimer = freezeTime;
+                document.getElementById('freeze-overlay').style.opacity = '1';
+                msg.textContent = `❄️ FROZEN FOR ${freezeTime} SECONDS!`;
+                document.getElementById('slot-ice').classList.add('active');
+                setTimeout(() => document.getElementById('slot-ice').classList.remove('active'), freezeTime * 1000);
+            } else if (type === 'speed') {
+                let duration = 10;
+                if (upg.speed >= 1) duration += 3;
+                if (upg.speed >= 2) duration += 2;
+                if (upg.speed >= 3) { player.speedBoost = true; player.speedBoostTimer = 5; }
+                player.infiniteStamina = true;
+                player.infiniteStaminaTimer = duration;
+                document.getElementById('stamina-bar').classList.add('infinite');
+                if (upg.speed >= 3) document.getElementById('stamina-bar').classList.add('boosted');
+                msg.textContent = `⚡ INFINITE STAMINA FOR ${duration} SECONDS!`;
+                document.getElementById('slot-speed').classList.add('active');
+                setTimeout(() => document.getElementById('slot-speed').classList.remove('active'), duration * 1000);
+            } else if (type === 'shield') {
+                if (player.shieldHits > 0) {
+                    msg.textContent = '🛡️ SHIELD ALREADY ACTIVE!';
+                } else {
+                    player.shieldHits = upg.shield >= 3 ? 2 : 1;
+                    document.getElementById('shield-indicator').style.opacity = '1';
+                    msg.textContent = upg.shield >= 3 ? '🛡️ DOUBLE SHIELD ACQUIRED!' : '🛡️ SHIELD ACQUIRED!';
+                    document.getElementById('slot-shield').classList.add('active');
+                }
+            }
+
+            msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+        }
+
+        // ============ COIN COLLECTION ============
+        function checkCoinCollection() {
+            let needRespawn = false;
+            for (const c of coins) {
+                if (c.collected) continue;
+                const dist = Math.hypot(c.x - player.x, c.z - player.z);
+                if (dist < 1.5) {
+                    c.collected = true;
+                    if (c.sprite) scene.remove(c.sprite);
+                    sessionCoins++;
+                    document.getElementById('hud-coins').textContent = '💰 ' + sessionCoins;
+                    needRespawn = true;
+                    const msg = document.getElementById('pickup-msg');
+                    msg.textContent = '💰 +1 COIN';
+                    msg.style.opacity = '1';
+                    setTimeout(() => { msg.style.opacity = '0'; }, 1000);
+                }
+            }
+            if (needRespawn) setTimeout(spawnCoins, 2000);
+        }
+
+        // ============ UPDATE KANYE ============
+        function updateKanye(dt) {
+            if (!kanye.sprite || isPaused) return;
+
+            if (kanye.usesVideo && scpVideoTexture) {
+                scpVideoTexture.needsUpdate = true;
+            }
+
+            if (kanye.frozen) {
+                kanye.frozenTimer -= dt;
+                if (kanye.frozenTimer <= 0) {
+                    kanye.frozen = false;
+                    document.getElementById('freeze-overlay').style.opacity = '0';
+                }
+                kanye.sprite.material.color.setHex(kanye.frozen ? 0x88ccff : 0xffffff);
+                return;
+            }
+
+            if (kanye.halfSpeed) {
+                kanye.halfSpeedTimer -= dt;
+                if (kanye.halfSpeedTimer <= 0) kanye.halfSpeed = false;
+            }
+
+            let kanyeBaseSpeed = currentMap === 'warehouse' ? 8.5 : 7.5;
+            const kanyeMaxSpeed = kanye.halfSpeed ? kanyeBaseSpeed * 0.6 : kanyeBaseSpeed;
+            const kanyeTurnSpeed = 3.5;
+
+            kanye.pathTimer -= dt;
+            if (kanye.pathTimer <= 0) {
+                kanye.pathTimer = 0.3;
+                kanye.path = smartFindPath(kanye.x, kanye.z, player.x, player.z);
+                kanye.pathIndex = 0;
+            }
+
+            let targetX = player.x;
+            let targetZ = player.z;
+
+            if (kanye.path.length > 0) {
+                while (kanye.pathIndex < kanye.path.length) {
+                    const node = kanye.path[kanye.pathIndex];
+                    let nodePos;
+                    if (isEndlessMode) {
+                        nodePos = endlessGridToWorld(node.x, node.z);
+                    } else {
+                        nodePos = gridToWorld(node.x, node.z);
+                    }
+                    const distToNode = Math.hypot(nodePos.x - kanye.x, nodePos.z - kanye.z);
+                    if (distToNode < 1.5 && kanye.pathIndex < kanye.path.length - 1) {
+                        kanye.pathIndex++;
+                    } else {
+                        targetX = nodePos.x;
+                        targetZ = nodePos.z;
+                        break;
+                    }
+                }
+            }
+
+            const dx = targetX - kanye.x;
+            const dz = targetZ - kanye.z;
+            const dist = Math.hypot(dx, dz);
+
+            if (dist > 0.1) {
+                const desiredVx = (dx / dist) * kanyeMaxSpeed;
+                const desiredVz = (dz / dist) * kanyeMaxSpeed;
+                kanye.vx += (desiredVx - kanye.vx) * kanyeTurnSpeed * dt;
+                kanye.vz += (desiredVz - kanye.vz) * kanyeTurnSpeed * dt;
+                const speed = Math.hypot(kanye.vx, kanye.vz);
+                if (speed > kanyeMaxSpeed) {
+                    kanye.vx = (kanye.vx / speed) * kanyeMaxSpeed;
+                    kanye.vz = (kanye.vz / speed) * kanyeMaxSpeed;
+                }
+            }
+
+            let newX = kanye.x + kanye.vx * dt;
+            let newZ = kanye.z + kanye.vz * dt;
+
+            if (!isWalkableWorld(newX, kanye.z, 0.4)) {
+                newX = kanye.x;
+                kanye.vx *= -0.5;
+            }
+            if (!isWalkableWorld(kanye.x, newZ, 0.4)) {
+                newZ = kanye.z;
+                kanye.vz *= -0.5;
+            }
+
+            const movement = Math.hypot(newX - kanye.x, newZ - kanye.z);
+            if (movement < 0.01 * dt && Math.hypot(kanye.vx, kanye.vz) > 0.1) {
+                kanye.pathTimer = 0;
+                const randomAngle = Math.random() * Math.PI * 2;
+                kanye.vx = Math.cos(randomAngle) * 2;
+                kanye.vz = Math.sin(randomAngle) * 2;
+            }
+
+            kanye.x = newX;
+            kanye.z = newZ;
+            kanye.sprite.position.set(kanye.x, 1.25, kanye.z);
+
+            // Audio and fear effects
+            const distToPlayer = Math.hypot(kanye.x - player.x, kanye.z - player.z);
+            const audioRange = 70;
+            let vol = distToPlayer < audioRange ? Math.pow(1 - (distToPlayer / audioRange), 0.5) : 0;
+            setAudioVolume(vol);
+
+            const fear = document.getElementById('fear-overlay');
+            const warn = document.getElementById('warning');
+            if (distToPlayer < 20) {
+                fear.style.opacity = (1 - distToPlayer / 20) * 0.6;
+                warn.style.opacity = distToPlayer < 10 ? 1 : 0;
+            } else {
+                fear.style.opacity = 0;
+                warn.style.opacity = 0;
+            }
+
+            // Catch player
+            if (distToPlayer < 1.2) {
+                if (player.shieldHits > 0) {
+                    player.shieldHits--;
+
+                    let freezeOnBlock = 0;
+                    if (saveData.upgrades.shield >= 1) freezeOnBlock = 1;
+                    if (saveData.upgrades.shield >= 2) freezeOnBlock = 2;
+                    if (saveData.upgrades.shield >= 3) freezeOnBlock = 2;
+
+                    if (freezeOnBlock > 0) {
+                        kanye.frozen = true;
+                        kanye.frozenTimer = freezeOnBlock;
+                    }
+
+                    if (player.shieldHits <= 0) {
+                        document.getElementById('shield-indicator').style.opacity = '0';
+                        document.getElementById('slot-shield').classList.remove('active');
+                    }
+
+                    const bounceDir = Math.atan2(kanye.z - player.z, kanye.x - player.x);
+                    kanye.x += Math.cos(bounceDir) * 8;
+                    kanye.z += Math.sin(bounceDir) * 8;
+                    kanye.vx = Math.cos(bounceDir) * 10;
+                    kanye.vz = Math.sin(bounceDir) * 10;
+
+                    // Find walkable position if bounced into wall
+                    if (!isWalkableWorld(kanye.x, kanye.z, 0.4)) {
+                        const nearCells = isEndlessMode ? getEndlessWalkableCellsNear(kanye.x, kanye.z, 10) : walkableCells;
+                        let bestDist = Infinity, bestPos = null;
+                        for (const c of nearCells) {
+                            let wp;
+                            if (isEndlessMode) wp = { x: c.wx, z: c.wz };
+                            else wp = gridToWorld(c.x, c.z);
+                            const dd = Math.hypot(wp.x - kanye.x, wp.z - kanye.z);
+                            if (dd < bestDist) { bestDist = dd; bestPos = wp; }
+                        }
+                        if (bestPos) { kanye.x = bestPos.x; kanye.z = bestPos.z; }
+                    }
+
+                    kanye.pathTimer = 0;
+                    const msg = document.getElementById('pickup-msg');
+                    msg.textContent = player.shieldHits > 0 ? '🛡️ SHIELD BLOCKED! 1 HIT LEFT!' : '🛡️ SHIELD BLOCKED!';
+                    msg.style.opacity = '1';
+                    setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+                } else {
+                    killPlayer();
+                }
+            }
+        }
+
+        // ============ MINIMAP ============
+        function updateMinimap() {
+            if (isEscapeMode || isEndlessMode) return;
+
+            const canvas = document.getElementById('minimap-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const scale = w / GRID_SIZE;
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = '#444';
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let z = 0; z < GRID_SIZE; z++) {
+                    if (maze[x] && maze[x][z] === 1) {
+                        ctx.fillRect(x * scale, z * scale, scale, scale);
+                    }
+                }
+            }
+
+            for (const p of powerups) {
+                if (p.collected) continue;
+                const px = (p.x / CELL + GRID_SIZE / 2) * scale;
+                const pz = (p.z / CELL + GRID_SIZE / 2) * scale;
+                ctx.fillStyle = p.type === 'ice' ? '#88ccff' : p.type === 'speed' ? '#ffcc00' : '#44ff44';
+                ctx.beginPath();
+                ctx.arc(px, pz, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const c of coins) {
+                if (c.collected) continue;
+                const cx = (c.x / CELL + GRID_SIZE / 2) * scale;
+                const cz = (c.z / CELL + GRID_SIZE / 2) * scale;
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(cx, cz, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const playerMapX = (player.x / CELL + GRID_SIZE / 2) * scale;
+            const playerMapZ = (player.z / CELL + GRID_SIZE / 2) * scale;
+            ctx.fillStyle = '#4f4';
+            ctx.beginPath();
+            ctx.arc(playerMapX, playerMapZ, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#4f4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(playerMapX, playerMapZ);
+            ctx.lineTo(playerMapX - Math.sin(player.yaw) * 14, playerMapZ - Math.cos(player.yaw) * 14);
+            ctx.stroke();
+
+            const kanyeMapX = (kanye.x / CELL + GRID_SIZE / 2) * scale;
+            const kanyeMapZ = (kanye.z / CELL + GRID_SIZE / 2) * scale;
+            ctx.fillStyle = kanye.frozen ? '#88ccff' : '#f44';
+            ctx.beginPath();
+            ctx.arc(kanyeMapX, kanyeMapZ, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            const mapNames = { backrooms: '🏢 Backrooms', warehouse: '🏭 Warehouse', hospital: '🏥 Hospital' };
+            document.getElementById('minimap-floor').textContent = mapNames[currentMap] || 'Unknown';
+        }
+
+        // ============ TIMER ============
+        function updateTimer() {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+            document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ============ DEATH ============
+        function killPlayer() {
+            if (isDead) return;
+            isDead = true;
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+
+            if (!isEndlessMode) {
+                saveData.highscores.push(elapsed);
+                saveData.highscores.sort((a, b) => b - a);
+                saveData.highscores = saveData.highscores.slice(0, 3);
+            }
+
+            saveData.coins += sessionCoins;
+            saveSaveData();
+
+            const skinData = SKINS.find(s => s.id === saveData.selectedSkin);
+            let deathMsg = 'Caught you...';
+            if (skinData) {
+                if (skinData.id === 'scp_wish') deathMsg = 'SCP Wish I New found you...';
+                else if (skinData.id === 'hamood') deathMsg = 'Hamood Habibi got you...';
+                else deathMsg = skinData.name + ' caught you...';
+            }
+
+            document.getElementById('death-msg').textContent = deathMsg;
+            document.getElementById('survival-time').textContent = `Survived: ${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('coins-earned').textContent = `+${sessionCoins} coins`;
+            document.getElementById('death-screen').style.display = 'flex';
+
+            stopAudio();
+            if (!isMobile) document.exitPointerLock();
+        }
+
+        // ============ PAUSE ============
+        function togglePause() {
+            if (!gameStarted || isDead) return;
+
+            isPaused = !isPaused;
+            document.getElementById('pause-screen').style.display = isPaused ? 'flex' : 'none';
+
+            const currentSens = isMobile ? saveData.settings.mobileSensitivity : saveData.settings.desktopSensitivity;
+            document.getElementById('pause-sensitivity').value = currentSens;
+            document.getElementById('pause-sensitivity').max = 20;
+            document.getElementById('pause-sens-display').textContent = currentSens;
+            document.getElementById('pause-volume').value = saveData.settings.musicVolume;
+
+            if (isPaused) {
+                pauseAudio();
+                if (!isMobile) document.exitPointerLock();
+            } else {
+                if (!isMobile) renderer.domElement.requestPointerLock();
+            }
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            document.getElementById('pause-screen').style.display = 'none';
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        function quitGame() {
+            sessionCoins = 0;
+            returnToMenu();
+        }
+
+        function returnToMenu() {
+            gameStarted = false;
+            isPaused = false;
+            isDead = false;
+            isEscapeMode = false;
+            isEndlessMode = false;
+            GRID_SIZE = baseGridSize;
+
+            stopAudio();
+            if (!isMobile) document.exitPointerLock();
+
+            document.getElementById('death-screen').style.display = 'none';
+            document.getElementById('pause-screen').style.display = 'none';
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('escape-hud').style.display = 'none';
+            document.getElementById('endless-hud').style.display = 'none';
+
+            if (saveData.settings.minimapEnabled !== false) {
+                document.getElementById('minimap').style.display = 'block';
+                document.getElementById('minimap-floor').style.display = 'block';
+            }
+
+            // Cleanup endless
+            endlessChunkMeshes.forEach((meshes) => { meshes.forEach(m => scene.remove(m)); });
+            endlessChunks.clear();
+            endlessChunkMeshes.clear();
+            endlessLRU.length = 0;
+            endlessDoorsList = [];
+            endlessDecorations = [];
+
+            updateUI();
+        }
+
+        // ============ ESCAPE MODE (2 DOORS) ============
+        function startEscapeMode() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameStarted = true;
+            isEscapeMode = true;
+            isEndlessMode = false;
+            escapeRound = 1;
+            startTime = Date.now();
+            stamina = 100;
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+
+            const escapeMaps = ['backrooms', 'hospital'];
+            currentMap = escapeMaps[Math.floor(Math.random() * escapeMaps.length)];
+            GRID_SIZE = baseGridSize * 2;
+
+            document.getElementById('minimap').style.display = 'none';
+            document.getElementById('minimap-floor').style.display = 'none';
+            document.getElementById('escape-hud').style.display = 'block';
+            document.getElementById('endless-hud').style.display = 'none';
+            document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
+            document.getElementById('escape-door-indicator').textContent = '🚪 FIND AN EXIT!';
+            document.getElementById('escape-door-indicator').classList.remove('nearby');
+
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            generateMaze();
+            buildWorld();
+            createKanye();
+            spawnEntities();
+            createEscapeDoors();
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        function createDoorMesh(worldX, worldZ, direction) {
+            const doorGroup = new THREE.Group();
+            const frameMat = new THREE.MeshBasicMaterial({ color: 0x3d2817 });
+            const doorMat = new THREE.MeshBasicMaterial({ color: 0x5c3a21 });
+            const knobMat = new THREE.MeshBasicMaterial({ color: 0xb8860b });
+
+            let doorX = worldX, doorZ = worldZ, rotY = 0;
+            if (direction === 'east') { doorX -= CELL / 2 - 0.3; rotY = Math.PI / 2; }
+            else if (direction === 'west') { doorX += CELL / 2 - 0.3; rotY = Math.PI / 2; }
+            else if (direction === 'south') { doorZ -= CELL / 2 - 0.3; }
+            else if (direction === 'north') { doorZ += CELL / 2 - 0.3; }
+
+            const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
+            frameLeft.position.set(-0.55, 1.4, 0);
+            doorGroup.add(frameLeft);
+
+            const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.8, 0.3), frameMat);
+            frameRight.position.set(0.55, 1.4, 0);
+            doorGroup.add(frameRight);
+
+            const frameTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.15, 0.3), frameMat);
+            frameTop.position.set(0, 2.75, 0);
+            doorGroup.add(frameTop);
+
+            const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.5, 0.15), doorMat);
+            doorPanel.position.set(0, 1.3, 0.25);
+            doorGroup.add(doorPanel);
+
+            const doorknob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), knobMat);
+            doorknob.position.set(0.35, 1.1, 0.38);
+            doorGroup.add(doorknob);
+
+            const glow = new THREE.PointLight(0x44ff44, 1.5, 10);
+            glow.position.set(0, 1.5, 0.6);
+            doorGroup.add(glow);
+
+            doorGroup.position.set(doorX, 0, doorZ);
+            doorGroup.rotation.y = rotY;
+            return doorGroup;
+        }
+
+        function createEscapeDoors() {
+            escapeDoors.forEach(d => { if (d.mesh) scene.remove(d.mesh); });
+            escapeDoors = [];
+
+            const candidates = [];
+            for (let x = 2; x < GRID_SIZE - 2; x++) {
+                for (let z = 2; z < GRID_SIZE - 2; z++) {
+                    if (maze[x][z] === 1) {
+                        const adjacentDirs = [
+                            { wx: x - 1, wz: z, dir: 'east' },
+                            { wx: x + 1, wz: z, dir: 'west' },
+                            { wx: x, wz: z - 1, dir: 'south' },
+                            { wx: x, wz: z + 1, dir: 'north' }
+                        ];
+                        for (const adj of adjacentDirs) {
+                            if (isWalkableGrid(adj.wx, adj.wz)) {
+                                const doorPos = gridToWorld(x, z);
+                                if (Math.hypot(doorPos.x - player.x, doorPos.z - player.z) < 20) continue;
+
+                                // Verify reachability from player
+                                const pGrid = worldToGrid(player.x, player.z);
+                                const testPath = findPath(pGrid.x, pGrid.z, adj.wx, adj.wz, 2000);
+                                if (testPath.length > 0) {
+                                    candidates.push({ x, z, adjX: adj.wx, adjZ: adj.wz, dir: adj.dir });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (candidates.length < 2) return;
+
+            const shuffled = candidates.sort(() => Math.random() - 0.5);
+
+            // Pick first door
+            const door1Data = shuffled[0];
+            const d1Pos = gridToWorld(door1Data.x, door1Data.z);
+
+            // Pick second door far from first (at least 30 units apart)
+            let door2Data = null;
+            for (let i = 1; i < shuffled.length; i++) {
+                const d2Pos = gridToWorld(shuffled[i].x, shuffled[i].z);
+                if (Math.hypot(d2Pos.x - d1Pos.x, d2Pos.z - d1Pos.z) > 30) {
+                    door2Data = shuffled[i];
+                    break;
+                }
+            }
+            if (!door2Data) door2Data = shuffled[Math.min(1, shuffled.length - 1)];
+
+            // Create both doors
+            [door1Data, door2Data].forEach(dd => {
+                const doorWorldPos = gridToWorld(dd.x, dd.z);
+                const adjWorldPos = gridToWorld(dd.adjX, dd.adjZ);
+                const doorMesh = createDoorMesh(doorWorldPos.x, doorWorldPos.z, dd.dir);
+                scene.add(doorMesh);
+                escapeDoors.push({ mesh: doorMesh, x: adjWorldPos.x, z: adjWorldPos.z, gridX: dd.x, gridZ: dd.z });
+            });
+        }
+
+        function checkEscapeDoors() {
+            if (!isEscapeMode) return;
+            let nearestDist = Infinity;
+
+            for (const door of escapeDoors) {
+                const doorWorldPos = gridToWorld(door.gridX, door.gridZ);
+                const dist = Math.hypot(doorWorldPos.x - player.x, doorWorldPos.z - player.z);
+                if (dist < nearestDist) nearestDist = dist;
+                if (dist < 2.5) {
+                    winEscapeRound();
+                    return;
+                }
+            }
+
+            const indicator = document.getElementById('escape-door-indicator');
+            if (nearestDist < 15) {
+                indicator.textContent = '🚪 EXIT NEARBY!';
+                indicator.classList.add('nearby');
+            } else {
+                indicator.textContent = '🚪 FIND AN EXIT!';
+                indicator.classList.remove('nearby');
+            }
+        }
+
+        function winEscapeRound() {
+            escapeRound++;
+            if (escapeRound - 1 > saveData.escapeRecord) {
+                saveData.escapeRecord = escapeRound - 1;
+                saveSaveData();
+            }
+
+            const msg = document.getElementById('pickup-msg');
+            msg.textContent = '🚪 ESCAPED! Round ' + escapeRound + ' starting...';
+            msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+
+            document.getElementById('escape-round').textContent = 'Round: ' + escapeRound;
+
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            currentMap = ['backrooms', 'hospital'][Math.floor(Math.random() * 2)];
+            generateMaze();
+            buildWorld();
+            createKanye();
+            spawnEntities();
+            createEscapeDoors();
+        }
+
+        // ============ ENDLESS MODE ============
+        function startEndlessMode() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameStarted = true;
+            isEndlessMode = true;
+            isEscapeMode = false;
+            startTime = Date.now();
+            stamina = 100;
+            sessionCoins = 0;
+            endlessDoorsFound = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+
+            document.getElementById('minimap').style.display = 'none';
+            document.getElementById('minimap-floor').style.display = 'none';
+            document.getElementById('escape-hud').style.display = 'none';
+            document.getElementById('endless-hud').style.display = 'block';
+            document.getElementById('endless-score').textContent = 'Doors: 0';
+            document.getElementById('endless-door-hint').textContent = '';
+
+            // Clean scene
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            endlessChunks.clear();
+            endlessChunkMeshes.clear();
+            endlessLRU.length = 0;
+            endlessDoorsList = [];
+            endlessDecorations = [];
+
+            const maps = ['backrooms', 'hospital', 'warehouse'];
+            currentMap = maps[Math.floor(Math.random() * maps.length)];
+
+            const { fogColor } = getMapMaterials();
+            scene.background = new THREE.Color(fogColor);
+            scene.fog = new THREE.Fog(fogColor, 2, 35);
+            scene.add(new THREE.AmbientLight(0xfff5e0, 0.9));
+
+            player.x = 2 * CELL;
+            player.z = 2 * CELL;
+            player.y = 1.6;
+            player.yaw = 0;
+            player.pitch = 0;
+            player.vy = 0;
+            player.onGround = true;
+            player.shieldHits = 0;
+            player.infiniteStamina = false;
+            player.speedBoost = false;
+
+            if (document.getElementById('endless-shield-toggle').checked && saveData.coins >= 5) {
+                saveData.coins -= 5;
+                player.shieldHits = saveData.upgrades.shield >= 3 ? 2 : 1;
+                document.getElementById('shield-indicator').style.opacity = '1';
+                document.getElementById('slot-shield').classList.add('active');
+                saveSaveData();
+                updateUI();
+            }
+
+            updateEndlessChunks();
+            ensurePlayerWalkable();
+            spawnKanyeEndless();
+            createKanye();
+            createPowerups();
+            createCoins();
+            camera.position.set(player.x, player.y, player.z);
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        function ensurePlayerWalkable() {
+            if (isWalkableWorld(player.x, player.z, 0.35)) return;
+            const cells = getEndlessWalkableCellsNear(player.x, player.z, 20);
+            if (cells.length > 0) {
+                cells.sort((a, b) => Math.hypot(a.wx - player.x, a.wz - player.z) - Math.hypot(b.wx - player.x, b.wz - player.z));
+                player.x = cells[0].wx;
+                player.z = cells[0].wz;
+            }
+        }
+
+        function spawnKanyeEndless() {
+            const cells = getEndlessWalkableCellsNear(player.x, player.z, 40);
+            const far = cells.filter(c => Math.hypot(c.wx - player.x, c.wz - player.z) > 20);
+            const spawn = far.length > 0 ? far[Math.floor(Math.random() * far.length)] : (cells.length > 0 ? cells[0] : null);
+            if (spawn) { kanye.x = spawn.wx; kanye.z = spawn.wz; }
+            else { kanye.x = player.x + 30; kanye.z = player.z + 30; }
+            kanye.vx = 0;
+            kanye.vz = 0;
+            kanye.pathTimer = 0;
+            kanye.path = [];
+            kanye.frozen = false;
+            kanye.halfSpeed = false;
+        }
+
+        function getChunkSeed(cx, cz) {
+            let h = cx * 374761393 + cz * 668265263;
+            h = (h ^ (h >> 13)) * 1274126177;
+            h = h ^ (h >> 16);
+            return Math.abs(h) % 2147483646 + 1;
+        }
+
+        function generateEndlessChunk(cx, cz) {
+            const key = cx + ',' + cz;
+            if (endlessChunks.has(key)) return endlessChunks.get(key);
+
+            const seed = getChunkSeed(cx, cz);
+            const data = generateMazeData(CHUNK_SIZE, seed);
+
+            // Open borders for connectivity
+            let rng = seed;
+            function srand() { rng = (rng * 16807) % 2147483647; return (rng - 1) / 2147483646; }
+
+            for (let i = 1; i < CHUNK_SIZE - 1; i += 2) {
+                if (srand() < 0.4) { data.maze[i][0] = 0; data.maze[i][CHUNK_SIZE - 1] = 0; }
+                if (srand() < 0.4) { data.maze[0][i] = 0; data.maze[CHUNK_SIZE - 1][i] = 0; }
+            }
+
+            // Ensure at least one opening per edge
+            ['top', 'bottom', 'left', 'right'].forEach(edge => {
+                let has = false;
+                for (let i = 1; i < CHUNK_SIZE - 1; i++) {
+                    if (edge === 'top' && data.maze[i][0] === 0) has = true;
+                    if (edge === 'bottom' && data.maze[i][CHUNK_SIZE - 1] === 0) has = true;
+                    if (edge === 'left' && data.maze[0][i] === 0) has = true;
+                    if (edge === 'right' && data.maze[CHUNK_SIZE - 1][i] === 0) has = true;
+                }
+                if (!has) {
+                    const mid = Math.floor(CHUNK_SIZE / 2);
+                    if (edge === 'top') data.maze[mid][0] = 0;
+                    if (edge === 'bottom') data.maze[mid][CHUNK_SIZE - 1] = 0;
+                    if (edge === 'left') data.maze[0][mid] = 0;
+                    if (edge === 'right') data.maze[CHUNK_SIZE - 1][mid] = 0;
+                }
+            });
+
+            // Recalculate walkable
+            data.walkable = [];
+            for (let x = 0; x < CHUNK_SIZE; x++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    if (data.maze[x][z] === 0) data.walkable.push({ x, z });
+                }
+            }
+
+            // 1/20 chance of door
+            data.hasDoor = false;
+            data.doorInfo = null;
+            if (srand() < 0.05) {
+                const wallCandidates = [];
+                for (let x = 2; x < CHUNK_SIZE - 2; x++) {
+                    for (let z = 2; z < CHUNK_SIZE - 2; z++) {
+                        if (data.maze[x][z] === 1) {
+                            for (const adj of [{ dx: -1, dz: 0 }, { dx: 1, dz: 0 }, { dx: 0, dz: -1 }, { dx: 0, dz: 1 }]) {
+                                const ax = x + adj.dx, az = z + adj.dz;
+                                if (ax >= 0 && ax < CHUNK_SIZE && az >= 0 && az < CHUNK_SIZE && data.maze[ax][az] === 0) {
+                                    wallCandidates.push({ wx: x, wz: z, ax, az, dir: adj });
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (wallCandidates.length > 0) {
+                    const dc = wallCandidates[Math.floor(srand() * wallCandidates.length)];
+                    data.hasDoor = true;
+                    data.doorInfo = dc;
+                }
+            }
+
+            data.cx = cx;
+            data.cz = cz;
+            endlessChunks.set(key, data);
+
+            // LRU management
+            const lruIdx = endlessLRU.indexOf(key);
+            if (lruIdx >= 0) endlessLRU.splice(lruIdx, 1);
+            endlessLRU.push(key);
+
+            while (endlessLRU.length > MAX_CACHED_CHUNKS) {
+                const oldKey = endlessLRU.shift();
+                if (endlessChunkMeshes.has(oldKey)) {
+                    endlessLRU.push(oldKey);
+                    break;
+                }
+                endlessChunks.delete(oldKey);
+            }
+
+            return data;
+        }
+
+        function buildEndlessChunkMeshes(cx, cz) {
+            const key = cx + ',' + cz;
+            if (endlessChunkMeshes.has(key)) return;
+            const chunk = endlessChunks.get(key);
+            if (!chunk) return;
+
+            const { wallMat, floorMat, ceilMat } = getMapMaterials();
+            const meshes = [];
+
+            for (let x = 0; x < CHUNK_SIZE; x++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    if (chunk.maze[x][z] === 1) {
+                        const wp = endlessLocalToWorld(x, z, cx, cz);
+                        const w = new THREE.Mesh(new THREE.BoxGeometry(CELL, WALL_H, CELL), wallMat);
+                        w.position.set(wp.x, WALL_H / 2, wp.z);
+                        scene.add(w);
+                        meshes.push(w);
+                    }
+                }
+            }
+
+            // Floor and ceiling
+            const offsetX = (cx * CHUNK_SIZE + CHUNK_SIZE / 2) * CELL;
+            const offsetZ = (cz * CHUNK_SIZE + CHUNK_SIZE / 2) * CELL;
+            const fg = new THREE.PlaneGeometry(CHUNK_SIZE * CELL, CHUNK_SIZE * CELL);
+            const f = new THREE.Mesh(fg, floorMat);
+            f.rotation.x = -Math.PI / 2;
+            f.position.set(offsetX, 0.01, offsetZ);
+            scene.add(f);
+            meshes.push(f);
+
+            const c = new THREE.Mesh(fg.clone(), ceilMat);
+            c.rotation.x = Math.PI / 2;
+            c.position.set(offsetX, WALL_H, offsetZ);
+            scene.add(c);
+            meshes.push(c);
+
+            // Door if exists
+            if (chunk.hasDoor && chunk.doorInfo) {
+                const di = chunk.doorInfo;
+                const dwp = endlessLocalToWorld(di.wx, di.wz, cx, cz);
+                const awp = endlessLocalToWorld(di.ax, di.az, cx, cz);
+
+                let direction = 'north';
+                if (di.dir.dx === -1) direction = 'east';
+                else if (di.dir.dx === 1) direction = 'west';
+                else if (di.dir.dz === -1) direction = 'south';
+                else direction = 'north';
+
+                const doorMesh = createDoorMesh(dwp.x, dwp.z, direction);
+                // Purple glow for endless doors
+                doorMesh.children.forEach(child => {
+                    if (child.isPointLight) {
+                        child.color.setHex(0xc084fc);
+                    }
+                });
+                scene.add(doorMesh);
+                meshes.push(doorMesh);
+
+                endlessDoorsList.push({ mesh: doorMesh, x: awp.x, z: awp.z, chunkKey: key, used: false });
+            }
+
+            endlessChunkMeshes.set(key, meshes);
+        }
+
+        function unloadEndlessChunkMeshes(key) {
+            const meshes = endlessChunkMeshes.get(key);
+            if (!meshes) return;
+            meshes.forEach(m => scene.remove(m));
+            endlessChunkMeshes.delete(key);
+            endlessDoorsList = endlessDoorsList.filter(d => d.chunkKey !== key);
+        }
+
+        function updateEndlessChunks() {
+            const pChunk = endlessWorldToChunk(player.x, player.z);
+
+            // Load nearby chunks
+            for (let dx = -endlessLoadRadius; dx <= endlessLoadRadius; dx++) {
+                for (let dz = -endlessLoadRadius; dz <= endlessLoadRadius; dz++) {
+                    const cx = pChunk.cx + dx;
+                    const cz = pChunk.cz + dz;
+                    const key = cx + ',' + cz;
+                    if (!endlessChunks.has(key)) generateEndlessChunk(cx, cz);
+                    if (!endlessChunkMeshes.has(key)) buildEndlessChunkMeshes(cx, cz);
+                    // Update LRU
+                    const li = endlessLRU.indexOf(key);
+                    if (li >= 0) { endlessLRU.splice(li, 1); endlessLRU.push(key); }
+                }
+            }
+
+            // Unload distant chunks
+            const toUnload = [];
+            endlessChunkMeshes.forEach((meshes, key) => {
+                const parts = key.split(',');
+                const cx = parseInt(parts[0]);
+                const cz = parseInt(parts[1]);
+                if (Math.abs(cx - pChunk.cx) > endlessUnloadRadius || Math.abs(cz - pChunk.cz) > endlessUnloadRadius) {
+                    toUnload.push(key);
+                }
+            });
+            toUnload.forEach(k => unloadEndlessChunkMeshes(k));
+        }
+
+        function checkEndlessDoors() {
+            let nearestDist = Infinity;
+            for (const door of endlessDoorsList) {
+                if (door.used) continue;
+                const d = Math.hypot(door.x - player.x, door.z - player.z);
+                if (d < nearestDist) nearestDist = d;
+                if (d < 2.5) {
+                    door.used = true;
+                    endlessDoorsFound++;
+                    if (endlessDoorsFound > (saveData.endlessRecord || 0)) {
+                        saveData.endlessRecord = endlessDoorsFound;
+                        saveSaveData();
+                    }
+                    document.getElementById('endless-score').textContent = 'Doors: ' + endlessDoorsFound;
+                    const msg = document.getElementById('pickup-msg');
+                    msg.textContent = '🚪 DOOR ' + endlessDoorsFound + ' FOUND!';
+                    msg.style.opacity = '1';
+                    setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+                    if (door.mesh) scene.remove(door.mesh);
+                }
+            }
+            const hint = document.getElementById('endless-door-hint');
+            if (nearestDist < 15) { hint.textContent = '🚪 DOOR NEARBY!'; hint.style.color = '#ffff00'; }
+            else if (nearestDist < 40) { hint.textContent = '🚪 Door in range...'; hint.style.color = '#a78bfa'; }
+            else { hint.textContent = ''; }
+        }
+
+        // ============ INIT ============
+        function init() {
+            detectMobile();
+            loadSaveData();
+            forceInputMode = saveData.settings.inputMode || 'auto';
+            detectMobile();
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+            scene.fog = new THREE.Fog(0x1a1a1a, 2, 30);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+
+            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'low-power' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            const mmCanvas = document.getElementById('minimap-canvas');
+            mmCanvas.width = 160;
+            mmCanvas.height = 160;
+
+            loadTextures(() => {
+                generateMaze();
+                buildWorld();
+                createKanye();
+            });
+
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === sprintKeyCode) isSprinting = true;
+                if (e.code === 'Space') e.preventDefault();
+                if (e.code === 'Escape' && gameStarted && !isDead) {
+                    e.preventDefault();
+                    togglePause();
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+                if (e.code === sprintKeyCode) isSprinting = false;
+            });
+
+            // Mouse
+            document.addEventListener('mousemove', (e) => {
+                if (!isLocked || !gameStarted || isDead || isPaused) return;
+                player.yaw -= e.movementX * mouseSensitivity;
+                player.pitch -= e.movementY * mouseSensitivity;
+                player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                isLocked = document.pointerLockElement === renderer.domElement;
+            });
+
+            renderer.domElement.addEventListener('click', () => {
+                if (gameStarted && !isDead && !isPaused && !isMobile) renderer.domElement.requestPointerLock();
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            if (isMobile) setupMobileControls();
+            renderCrosshair();
+            buildCrosshairShapeButtons();
+            buildCrosshairColorSwatches();
+        }
+
+        // ============ MOBILE CONTROLS ============
+        function setupMobileControls() {
+            const joystick = document.getElementById('joystick-move');
+            const knob = document.getElementById('joystick-knob');
+            const btnJump = document.getElementById('btn-jump');
+            const btnSprint = document.getElementById('btn-sprint');
+            const btnPause = document.getElementById('btn-pause');
+
+            let joystickTouchId = null;
+
+            joystick.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (joystickTouchId !== null) return;
+                const touch = e.changedTouches[0];
+                joystickTouchId = touch.identifier;
+                const rect = joystick.getBoundingClientRect();
+                mobileJoystick.startX = rect.left + rect.width / 2;
+                mobileJoystick.startY = rect.top + rect.height / 2;
+                mobileJoystick.active = true;
+            }, { passive: false });
+
+            joystick.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === joystickTouchId) {
+                        const dx = touch.clientX - mobileJoystick.startX;
+                        const dy = touch.clientY - mobileJoystick.startY;
+                        const dist = Math.hypot(dx, dy);
+                        const maxDist = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
+
+                        let clampedX = dx;
+                        let clampedY = dy;
+                        if (dist > maxDist) {
+                            clampedX = (dx / dist) * maxDist;
+                            clampedY = (dy / dist) * maxDist;
+                        }
+
+                        knob.style.transform = `translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px))`;
+                        mobileJoystick.moveX = clampedX / maxDist;
+                        mobileJoystick.moveZ = -clampedY / maxDist;
+                    }
+                }
+            }, { passive: false });
+
+            joystick.addEventListener('touchend', (e) => {
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === joystickTouchId) {
+                        joystickTouchId = null;
+                        mobileJoystick.active = false;
+                        mobileJoystick.moveX = 0;
+                        mobileJoystick.moveZ = 0;
+                        knob.style.transform = 'translate(-50%, -50%)';
+                    }
+                }
+            });
+
+            joystick.addEventListener('touchcancel', () => {
+                joystickTouchId = null;
+                mobileJoystick.active = false;
+                mobileJoystick.moveX = 0;
+                mobileJoystick.moveZ = 0;
+                knob.style.transform = 'translate(-50%, -50%)';
+            });
+
+            btnJump.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileJumpPressed = true;
+            }, { passive: false });
+
+            btnJump.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                mobileJumpPressed = false;
+            }, { passive: false });
+
+            btnSprint.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileSprintActive = !mobileSprintActive;
+                btnSprint.classList.toggle('active', mobileSprintActive);
+            }, { passive: false });
+
+            btnPause.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameStarted && !isDead) togglePause();
+            }, { passive: false });
+
+            // Look controls (swipe on canvas)
+            let lookTouchId = null;
+
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                if (!gameStarted || isDead || isPaused) return;
+                for (const touch of e.changedTouches) {
+                    const touchX = touch.clientX;
+                    const touchY = touch.clientY;
+                    const rects = [joystick, btnJump, btnSprint, btnPause].map(el => el.getBoundingClientRect());
+                    const onControl = rects.some(r => touchX >= r.left && touchX <= r.right && touchY >= r.top && touchY <= r.bottom);
+                    if (!onControl && lookTouchId === null) {
+                        lookTouchId = touch.identifier;
+                        mobileLook.startX = touch.clientX;
+                        mobileLook.startY = touch.clientY;
+                        mobileLook.active = true;
+                    }
+                }
+            }, { passive: true });
+
+            renderer.domElement.addEventListener('touchmove', (e) => {
+                if (!gameStarted || isDead || isPaused) return;
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === lookTouchId) {
+                        const dx = touch.clientX - mobileLook.startX;
+                        const dy = touch.clientY - mobileLook.startY;
+                        player.yaw -= dx * mobileTouchSensitivity;
+                        player.pitch -= dy * mobileTouchSensitivity;
+                        player.pitch = Math.max(-1.4, Math.min(1.4, player.pitch));
+                        mobileLook.startX = touch.clientX;
+                        mobileLook.startY = touch.clientY;
+                    }
+                }
+            }, { passive: true });
+
+            renderer.domElement.addEventListener('touchend', (e) => {
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier === lookTouchId) {
+                        lookTouchId = null;
+                        mobileLook.active = false;
+                    }
+                }
+            });
+
+            renderer.domElement.addEventListener('touchcancel', () => {
+                lookTouchId = null;
+                mobileLook.active = false;
+            });
+        }
+
+        // ============ GAME LOOP ============
+        let lastTime = 0;
+        function animate(time) {
+            requestAnimationFrame(animate);
+            const dt = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+
+            if (gameStarted && !isDead && !isPaused) {
+                updatePlayer(dt);
+                updateKanye(dt);
+                updateMinimap();
+                updateTimer();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ============ START / RESTART ============
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameStarted = true;
+            isEscapeMode = false;
+            isEndlessMode = false;
+            startTime = Date.now();
+            stamina = 100;
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+
+            const maps = ['backrooms', 'warehouse', 'hospital'];
+            currentMap = maps[Math.floor(Math.random() * maps.length)];
+            GRID_SIZE = baseGridSize;
+
+            if (saveData.settings.minimapEnabled !== false) {
+                document.getElementById('minimap').style.display = 'block';
+                document.getElementById('minimap-floor').style.display = 'block';
+            }
+            document.getElementById('escape-hud').style.display = 'none';
+            document.getElementById('endless-hud').style.display = 'none';
+
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+            generateMaze();
+            buildWorld();
+            createKanye();
+            spawnEntities();
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        function restartGame() {
+            while (scene.children.length > 0) scene.remove(scene.children[0]);
+
+            // Clean up endless
+            endlessChunkMeshes.forEach((meshes) => { meshes.forEach(m => scene.remove(m)); });
+            endlessChunks.clear();
+            endlessChunkMeshes.clear();
+            endlessLRU.length = 0;
+            endlessDoorsList = [];
+            endlessDecorations = [];
+
+            if (isEndlessMode) {
+                isDead = false;
+                stamina = 100;
+                startTime = Date.now();
+                sessionCoins = 0;
+                endlessDoorsFound = 0;
+                document.getElementById('hud-coins').textContent = '💰 0';
+                document.getElementById('endless-score').textContent = 'Doors: 0';
+                document.getElementById('endless-hud').style.display = 'block';
+                document.getElementById('minimap').style.display = 'none';
+                document.getElementById('minimap-floor').style.display = 'none';
+
+                const maps = ['backrooms', 'hospital', 'warehouse'];
+                currentMap = maps[Math.floor(Math.random() * maps.length)];
+                const { fogColor } = getMapMaterials();
+                scene.background = new THREE.Color(fogColor);
+                scene.fog = new THREE.Fog(fogColor, 2, 35);
+                scene.add(new THREE.AmbientLight(0xfff5e0, 0.9));
+
+                player.x = 2 * CELL;
+                player.z = 2 * CELL;
+                player.y = 1.6;
+                player.yaw = 0;
+                player.pitch = 0;
+                player.vy = 0;
+                player.onGround = true;
+                player.shieldHits = 0;
+                player.infiniteStamina = false;
+                player.speedBoost = false;
+
+                updateEndlessChunks();
+                ensurePlayerWalkable();
+                spawnKanyeEndless();
+                createKanye();
+                createPowerups();
+                createCoins();
+                camera.position.set(player.x, player.y, player.z);
+            } else if (isEscapeMode) {
+                escapeRound = 1;
+                GRID_SIZE = baseGridSize * 2;
+                document.getElementById('escape-hud').style.display = 'block';
+                document.getElementById('escape-round').textContent = 'Round: 1';
+                document.getElementById('minimap').style.display = 'none';
+                document.getElementById('minimap-floor').style.display = 'none';
+                currentMap = ['backrooms', 'hospital'][Math.floor(Math.random() * 2)];
+                generateMaze();
+                buildWorld();
+                createKanye();
+                spawnEntities();
+                createEscapeDoors();
+            } else {
+                GRID_SIZE = baseGridSize;
+                document.getElementById('escape-hud').style.display = 'none';
+                document.getElementById('endless-hud').style.display = 'none';
+                if (saveData.settings.minimapEnabled !== false) {
+                    document.getElementById('minimap').style.display = 'block';
+                    document.getElementById('minimap-floor').style.display = 'block';
+                }
+                const maps = ['backrooms', 'warehouse', 'hospital'];
+                currentMap = maps[Math.floor(Math.random() * maps.length)];
+                generateMaze();
+                buildWorld();
+                createKanye();
+                spawnEntities();
+            }
+
+            isDead = false;
+            stamina = 100;
+            startTime = Date.now();
+            sessionCoins = 0;
+            document.getElementById('hud-coins').textContent = '💰 0';
+            kanye.pathTimer = 0;
+            kanye.frozen = false;
+            kanye.halfSpeed = false;
+            kanye.vx = 0;
+            kanye.vz = 0;
+
+            document.getElementById('death-screen').style.display = 'none';
+            document.getElementById('fear-overlay').style.opacity = 0;
+            document.getElementById('warning').style.opacity = 0;
+            document.getElementById('freeze-overlay').style.opacity = 0;
+            document.getElementById('shield-indicator').style.opacity = 0;
+            document.getElementById('stamina-bar').classList.remove('infinite');
+            document.getElementById('stamina-bar').classList.remove('boosted');
+            document.querySelectorAll('.powerup-slot').forEach(s => s.classList.remove('active'));
+
+            mobileSprintActive = false;
+            const btnSprint = document.getElementById('btn-sprint');
+            if (btnSprint) btnSprint.classList.remove('active');
+
+            initAudio();
+            if (!isMobile) renderer.domElement.requestPointerLock();
+        }
+
+        init();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
