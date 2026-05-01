@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Haunted House — Psychological Horror</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- MAIN MENU OVERLAY -->
+    <div id="main-menu" class="overlay active">
+        <div class="menu-container">
+            <h1 class="glitch-title" data-text="THE HAUNTED HOUSE">THE HAUNTED HOUSE</h1>
+            <p class="subtitle">You shouldn't have come here.</p>
+            <button id="btn-start" class="menu-btn pulse">START GAME</button>
+            <button id="btn-controls-menu" class="menu-btn">CONTROLS</button>
+            <div class="warning-text">⚠ Headphones recommended. Contains flashing images.</div>
+        </div>
+    </div>
+
+    <!-- PAUSE MENU OVERLAY -->
+    <div id="pause-menu" class="overlay glassmorphism">
+        <div class="pause-container">
+            <h2>PAUSED</h2>
+            <div class="controls-section">
+                <h3>KEYBINDINGS</h3>
+                <div class="keybind-row">
+                    <span>Move Forward</span>
+                    <button class="keybind-btn" data-action="forward">W</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Move Back</span>
+                    <button class="keybind-btn" data-action="backward">S</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Move Left</span>
+                    <button class="keybind-btn" data-action="left">A</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Move Right</span>
+                    <button class="keybind-btn" data-action="right">D</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Sprint</span>
+                    <button class="keybind-btn" data-action="sprint">SHIFT</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Interact</span>
+                    <button class="keybind-btn" data-action="interact">E</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Flashlight</span>
+                    <button class="keybind-btn" data-action="flashlight">F</button>
+                </div>
+                <div class="keybind-row">
+                    <span>Sensor</span>
+                    <button class="keybind-btn" data-action="sensor">Q</button>
+                </div>
+            </div>
+            <div class="slider-section">
+                <h3>MOUSE SENSITIVITY</h3>
+                <input type="range" id="sensitivity-slider" min="1" max="20" value="10" class="styled-slider">
+                <span id="sensitivity-value">10</span>
+            </div>
+            <div class="slider-section">
+                <h3>MASTER VOLUME</h3>
+                <input type="range" id="volume-slider" min="0" max="100" value="70" class="styled-slider">
+                <span id="volume-value">70</span>
+            </div>
+            <button id="btn-resume" class="menu-btn">RESUME</button>
+            <button id="btn-quit" class="menu-btn danger">QUIT TO MENU</button>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hud hidden">
+        <div id="hud-top-left">
+            <div class="hud-item" id="hud-battery">
+                <span class="hud-icon">🔦</span>
+                <div class="hud-bar-container">
+                    <div class="hud-bar" id="battery-bar"></div>
+                </div>
+                <span class="hud-label" id="battery-label">100%</span>
+            </div>
+            <div class="hud-item" id="hud-fear">
+                <span class="hud-icon">💀</span>
+                <div class="hud-bar-container">
+                    <div class="hud-bar fear-bar" id="fear-bar"></div>
+                </div>
+                <span class="hud-label" id="fear-label">0%</span>
+            </div>
+        </div>
+        <div id="hud-top-right">
+            <div class="hud-item" id="hud-shards">
+                <span class="hud-icon">🔮</span>
+                <span class="hud-label" id="shards-label">0 / 3 Shards</span>
+            </div>
+            <div class="hud-item" id="hud-fuse">
+                <span class="hud-icon">⚡</span>
+                <span class="hud-label" id="fuse-label">No Fuse</span>
+            </div>
+        </div>
+        <div id="hud-center">
+            <div id="crosshair">+</div>
+            <div id="interaction-prompt" class="hidden">[E] Interact</div>
+        </div>
+        <div id="hud-bottom">
+            <div id="objective-text" class="objective-animate"></div>
+            <div id="sensor-display" class="hidden">
+                <span class="sensor-icon">📡</span>
+                <span id="sensor-distance">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- JUMPSCARE OVERLAY -->
+    <div id="jumpscare-overlay" class="hidden"></div>
+
+    <!-- BLACKOUT OVERLAY -->
+    <div id="blackout-overlay" class="hidden">
+        <div id="blackout-timer">30</div>
+        <div id="blackout-text">SURVIVE</div>
+    </div>
+
+    <!-- WIN/LOSE SCREENS -->
+    <div id="death-screen" class="overlay hidden">
+        <div class="menu-container">
+            <h1 class="glitch-title" data-text="YOU DIED">YOU DIED</h1>
+            <p class="subtitle" id="death-message">The darkness consumed you.</p>
+            <button id="btn-retry" class="menu-btn pulse">TRY AGAIN</button>
+        </div>
+    </div>
+    <div id="win-screen" class="overlay hidden">
+        <div class="menu-container">
+            <h1 class="win-title">ESCAPED</h1>
+            <p class="subtitle">But some doors should never be opened...</p>
+            <button id="btn-menu-return" class="menu-btn">MAIN MENU</button>
+        </div>
+    </div>
+
+    <!-- CANVAS -->
+    <canvas id="application-canvas"></canvas>
+
+    <!-- VHS SHADER (inline) -->
+    <script id="vhs-frag" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec2 vUv0;
+        uniform sampler2D uColorBuffer;
+        uniform float uTime;
+        uniform float uFearLevel;
+        uniform float uJumpscare;
+        uniform float uBlackout;
+
+        float random(vec2 st){
+            return fract(sin(dot(st,vec2(12.9898,78.233)))*43758.5453123);
+        }
+
+        void main(){
+            vec2 uv = vUv0;
+
+            // Chromatic aberration — scales with fear
+            float caAmount = 0.002 + uFearLevel * 0.008 + uJumpscare * 0.04;
+            float r = texture2D(uColorBuffer, uv + vec2(caAmount, 0.0)).r;
+            float g = texture2D(uColorBuffer, uv).g;
+            float b = texture2D(uColorBuffer, uv - vec2(caAmount, 0.0)).b;
+            vec3 color = vec3(r, g, b);
+
+            // Scanlines
+            float scanline = sin(uv.y * 400.0 + uTime * 2.0) * 0.04 * (0.5 + uFearLevel * 0.5);
+            color -= scanline;
+
+            // Vignette
+            float vig = distance(uv, vec2(0.5));
+            vig = smoothstep(0.4, 0.9, vig);
+            color *= 1.0 - vig * (0.6 + uFearLevel * 0.4);
+
+            // Film grain
+            float grain = random(uv + fract(uTime)) * 0.06 * (0.5 + uFearLevel);
+            color += grain;
+
+            // Jumpscare distortion
+            if(uJumpscare > 0.0){
+                float d = sin(uv.y * 50.0 + uTime * 20.0) * uJumpscare * 0.05;
+                color = mix(color, vec3(1.0, 0.0, 0.0), uJumpscare * 0.3);
+                float noise = random(uv * uTime) * uJumpscare;
+                color += noise * 0.3;
+            }
+
+            // Blackout
+            color *= (1.0 - uBlackout * 0.85);
+
+            // Glitch lines (fear-based)
+            if(uFearLevel > 0.5){
+                float glitchChance = random(vec2(floor(uTime * 8.0), floor(uv.y * 20.0)));
+                if(glitchChance > 0.97){
+                    uv.x += (random(vec2(uTime)) - 0.5) * 0.1 * uFearLevel;
+                    color = texture2D(uColorBuffer, uv).rgb;
+                }
+            }
+
+            gl_FragColor = vec4(color, 1.0);
+        }
+    </script>
+
+    <!-- SCRIPTS (order matters) -->
+    <script src="audio-system.js"></script>
+    <script src="input-system.js"></script>
+    <script src="environment.js"></script>
+    <script src="player.js"></script>
+    <script src="ai-system.js"></script>
+    <script src="game-objects.js"></script>
+    <script src="main.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f4f1662d85e8f96',t:'MTc3NzY0MTY2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
