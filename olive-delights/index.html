@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Olive Delights</title>
+<link rel="stylesheet" href="styles.css?v=27b">
+</head>
+<body>
+<!-- ==================== START SCREEN ==================== -->
+<div id="start-screen" class="menu-overlay">
+    <h1>🫒 OLIVE DELIGHTS 🫒</h1>
+    <h2>Escape the Nextbot</h2>
+    <div id="game-version-badge">Version <span id="game-version">2.7.2</span></div>
+    <!-- Asset load failure banner — hidden until assets fail -->
+    <div id="asset-warning" style="display:none; background:rgba(200,60,30,0.92); border:2px solid #ff6644; border-radius:8px; padding:10px 14px; margin:8px 0; max-width:420px; text-align:center; font-size:13px; color:#fff;">
+        ⚠️ <strong><span id="asset-warn-count">1</span> asset(s) failed to load.</strong><br>
+        Refresh the page or check your connection.<br>
+        <em style="color:#ffd0b0;">Some visuals or sounds may be missing.</em><br>
+        <button class="menu-btn small" style="margin-top:8px;" onclick="document.getElementById('asset-warning').style.display='none'">Continue anyway →</button>
+    </div>
+    <div class="coins-display">💰 Coins: <span id="total-coins">0</span></div>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('play',this)">PLAY</button>
+        <button class="tab-btn" onclick="showTab('escape',this)">ESCAPE</button>
+        <button class="tab-btn" onclick="showTab('endless',this)">ENDLESS</button>
+        <button class="tab-btn" onclick="showTab('chaos',this)">CHAOS</button>
+        <button class="tab-btn" onclick="showTab('darkescape',this)">🔦 DARK</button>
+        <button class="tab-btn" onclick="showTab('shop',this)">SHOP</button>
+        <button class="tab-btn" onclick="showTab('upgrades',this)">UPGRADES</button>
+        <button class="tab-btn" onclick="showTab('settings',this)">SETTINGS</button>
+    </div>
+
+    <!-- PLAY TAB -->
+    <div id="tab-play" class="tab-content active">
+        <div class="menu-section">
+            <h3>🏆 TOP 3 RUNS</h3>
+            <div class="highscores" id="highscores">
+                <span>1. --:--</span>
+                <span>2. --:--</span>
+                <span>3. --:--</span>
+            </div>
+        </div>
+        <div class="menu-section desktop-controls">
+            <p><strong>CONTROLS:</strong><br>
+            WASD - Move | <span id="sprint-key-display">SHIFT</span> - Sprint | SPACE - Jump<br>
+            ESC - Pause</p>
+        </div>
+        <div class="menu-section mobile-controls-info">
+            <p><strong>CONTROLS:</strong><br>
+            Joystick - Move | Swipe - Look<br>
+            ⚡ Sprint | 🦘 Jump</p>
+        </div>
+        <div class="menu-section map-picker" style="display:none;">
+            <h3>🗺️ SELECT MAP</h3>
+            <div class="settings-row">
+                <label>Map:</label>
+                <select class="map-picker-select" onchange="updateSelectedMap(this.value)"></select>
+            </div>
+        </div>
+        <div class="menu-section">
+            <label><input type="checkbox" id="start-shield-toggle"> Start with Shield (5 coins)</label>
+        </div>
+        <button class="menu-btn" onclick="startGame()">START GAME</button>
+    </div>
+
+    <!-- ESCAPE TAB -->
+    <div id="tab-escape" class="tab-content">
+        <div class="menu-section">
+            <h3>🚪 ESCAPE MODE</h3>
+            <p>Find one of TWO exit doors per round!<br>
+            2x larger map, no minimap. +3 coins per escape!</p>
+        </div>
+        <div class="menu-section">
+            <h3>🏆 BEST STREAK</h3>
+            <div class="highscores">
+                <span id="escape-record">Best: 0 escapes</span>
+            </div>
+        </div>
+        <div class="menu-section map-picker" style="display:none;">
+            <h3>🗺️ SELECT MAP</h3>
+            <div class="settings-row">
+                <label>Map:</label>
+                <select class="map-picker-select" onchange="updateSelectedMap(this.value)"></select>
+            </div>
+        </div>
+        <div class="menu-section">
+            <label><input type="checkbox" id="escape-shield-toggle"> Start with Shield (5 coins)</label>
+        </div>
+        <button class="menu-btn" onclick="startEscapeMode()">START ESCAPE MODE</button>
+    </div>
+
+    <!-- ENDLESS TAB -->
+    <div id="tab-endless" class="tab-content">
+        <div class="menu-section">
+            <h3>♾️ ENDLESS MODE</h3>
+            <p>Infinite procedural world. Doors spawn rarely.<br>
+            +3 coins per door. Smart AI. No minimap.</p>
+        </div>
+        <div class="menu-section">
+            <h3>🏆 BEST SCORE</h3>
+            <div class="highscores">
+                <span id="endless-record">Best: 0 doors</span>
+            </div>
+        </div>
+        <div class="menu-section">
+            <label><input type="checkbox" id="endless-shield-toggle"> Start with Shield (5 coins)</label>
+        </div>
+        <button class="menu-btn purple" onclick="startEndlessMode()">START ENDLESS MODE</button>
+    </div>
+
+    <!-- CHAOS TAB -->
+    <div id="tab-chaos" class="tab-content">
+        <div class="menu-section">
+            <h3>🔥 CHAOS MODE</h3>
+            <p>3 nextbots chase you at once!<br>
+            Coins worth 2x. Boosted powerups.<br>
+            How long can you survive?</p>
+        </div>
+        <div class="menu-section">
+            <h3>🏆 BEST TIME</h3>
+            <div class="highscores">
+                <span id="chaos-record">Best: 0:00</span>
+            </div>
+        </div>
+        <div class="menu-section map-picker" style="display:none;">
+            <h3>🗺️ SELECT MAP</h3>
+            <div class="settings-row">
+                <label>Map:</label>
+                <select class="map-picker-select" onchange="updateSelectedMap(this.value)"></select>
+            </div>
+        </div>
+        <div class="menu-section">
+            <label><input type="checkbox" id="chaos-shield-toggle"> Start with Shield (5 coins)</label>
+        </div>
+        <button class="menu-btn red" onclick="startChaosMode()">START CHAOS MODE</button>
+    </div>
+
+    <!-- DARK ESCAPE TAB -->
+    <div id="tab-darkescape" class="tab-content">
+        <div class="menu-section">
+            <h3>🔦 DARK ESCAPE</h3>
+            <p>Pitch-black Backrooms or Hospital.<br>
+            Find <strong>3 keys</strong>, then find the exit door.<br>
+            Use your flashlight to see. Press your <strong>flashlight key</strong> (default F)<br>
+            or tap the <strong>🔦 button</strong> to toggle it.<br>
+            Powerups respawn all round. Change keys in Settings.</p>
+        </div>
+        <div class="menu-section">
+            <h3>🟢 EASY MODE</h3>
+            <p>Infinite flashlight battery.<br>
+            Shows a door proximity notice.<br>
+            +1 coin per pickup.</p>
+            <button class="menu-btn" onclick="startDarkEscapeMode('easy')">START EASY DARK ESCAPE</button>
+        </div>
+        <div class="menu-section">
+            <h3>😈 HARD MODE</h3>
+            <p>Limited flashlight battery (visible).<br>
+            No door proximity notice.<br>
+            +2 coins per pickup.</p>
+            <button class="menu-btn red" onclick="startDarkEscapeMode('hard')">START HARD DARK ESCAPE</button>
+        </div>
+        <div class="menu-section">
+            <h3>🔥 EXTREME MODE</h3>
+            <p>Battery meter is <strong>hidden</strong>.<br>
+            Faster chaser + bigger map.<br>
+            Flashlight can break (10-30s, 10% chance, max 2).<br>
+            +2 coins per pickup, +5 per win.<br>
+            No door notice. No mercy.</p>
+            <button class="menu-btn dark" onclick="startDarkEscapeMode('extreme')">START EXTREME DARK ESCAPE</button>
+        </div>
+    </div>
+
+    <!-- SHOP TAB -->
+    <div id="tab-shop" class="tab-content">
+        <div class="menu-section">
+            <h3>👕 NEXTBOT SKINS</h3>
+            <div id="price-boost-note" style="display:none; color:#fbbf24; font-size:12px; margin-bottom:8px;"></div>
+            <div class="shop-grid" id="skin-shop"></div>
+        </div>
+    </div>
+
+    <!-- UPGRADES TAB -->
+    <div id="tab-upgrades" class="tab-content">
+        <div id="upgrade-price-boost-note" style="display:none; color:#fbbf24; font-size:12px; margin-bottom:8px;"></div>
+        <div class="menu-section">
+            <h3>❄️ ICE UPGRADES</h3>
+            <div id="ice-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>⚡ SPEED UPGRADES</h3>
+            <div id="speed-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🛡️ SHIELD UPGRADES</h3>
+            <div id="shield-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🏃 STAMINA CAPACITY</h3>
+            <div id="stamina-cap-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🔋 STAMINA REGEN</h3>
+            <div id="stamina-regen-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🛡️➕ SHIELD STACK</h3>
+            <div id="shield-stack-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🔋 BATTERY PICKUP</h3>
+            <small style="color:#888;display:block;margin-bottom:6px;">Dark Escape only</small>
+            <div id="battery-pickup-upgrades"></div>
+        </div>
+        <div class="menu-section">
+            <h3>🔦 FLASHLIGHT LIFE</h3>
+            <small style="color:#888;display:block;margin-bottom:6px;">Dark Escape only</small>
+            <div id="flashlight-life-upgrades"></div>
+        </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="tab-content">
+        <div class="menu-section">
+            <h3>⚙️ GENERAL</h3>
+            <div class="settings-row desktop-controls">
+                <label>Sprint Key:</label>
+                <button id="sprint-key-btn" class="menu-btn small" onclick="startKeyCapture('sprint', this)">SHIFT</button>
+            </div>
+            <div class="settings-row">
+                <label>Sprint Mode:</label>
+                <select id="sprint-mode-select" onchange="updateSprintMode()">
+                    <option value="hold">Hold</option>
+                    <option value="toggle">Toggle</option>
+                </select>
+            </div>
+            <div class="settings-row desktop-controls">
+                <label>Flashlight Key:</label>
+                <button id="flashlight-key-btn" class="menu-btn small" onclick="startKeyCapture('flashlight', this)">F</button>
+            </div>
+            <div class="settings-row">
+                <label>Music Volume:</label>
+                <input type="range" id="music-volume" min="0" max="100" value="100" oninput="updateMusicVolume()">
+                <span class="sensitivity-value" id="music-vol-display">100</span>
+            </div>
+            <div class="settings-row">
+                <label>Minimap:</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="minimap-toggle" checked onchange="updateMinimapToggle()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="settings-row">
+                <label>Field of View:</label>
+                <input type="range" id="fov-set" min="50" max="110" value="75" oninput="updateFov()">
+                <span class="sensitivity-value" id="fov-d">75</span>
+            </div>
+            <div class="settings-row">
+                <label>Map Picker:</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="map-picker-enabled" onchange="updateMapPickerEnabled()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="settings-row">
+                <label>Fullscreen:</label>
+                <button class="menu-btn small fullscreen-btn" id="fullscreen-btn" onclick="toggleFullscreen()">Enter Fullscreen</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h3>🎯 SENSITIVITY</h3>
+            <div class="settings-subsection">
+                <h4>Input Mode</h4>
+                <div class="settings-row">
+                    <label>Mode:</label>
+                    <div class="input-mode-toggle">
+                        <button class="input-mode-btn" id="mode-desktop" onclick="setInputMode('desktop')">🖥️ Desktop</button>
+                        <button class="input-mode-btn" id="mode-mobile" onclick="setInputMode('mobile')">📱 Mobile</button>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-subsection" id="desktop-sens-section">
+                <h4>🖥️ Desktop</h4>
+                <div class="settings-row">
+                    <label>Look Speed:</label>
+                    <input type="range" id="desktop-sensitivity" min="1" max="20" value="5" oninput="updateDesktopSensitivity()">
+                    <span class="sensitivity-value" id="desktop-sens-display">5</span>
+                </div>
+            </div>
+            <div class="settings-subsection" id="mobile-sens-section">
+                <h4>📱 Mobile</h4>
+                <div class="settings-row">
+                    <label>Look Speed:</label>
+                    <input type="range" id="mobile-sensitivity" min="1" max="20" value="8" oninput="updateMobileSensitivity()">
+                    <span class="sensitivity-value" id="mobile-sens-display">8</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h3>🎯 CROSSHAIR</h3>
+            <div class="settings-subsection">
+                <h4>Shape</h4>
+                <div class="shape-options" id="crosshair-shapes"></div>
+            </div>
+            <div class="settings-subsection">
+                <h4>Color</h4>
+                <div class="color-options" id="crosshair-colors"></div>
+            </div>
+            <div class="settings-subsection">
+                <h4>Size &amp; Style</h4>
+                <div class="settings-row">
+                    <label>Size:</label>
+                    <input type="range" id="ch-size" min="2" max="20" value="6" oninput="updateCrosshairSettings()">
+                    <span class="sensitivity-value" id="ch-size-d">6</span>
+                </div>
+                <div class="settings-row">
+                    <label>Opacity:</label>
+                    <input type="range" id="ch-opacity" min="10" max="100" value="80" oninput="updateCrosshairSettings()">
+                    <span class="sensitivity-value" id="ch-opa-d">80%</span>
+                </div>
+                <div class="settings-row">
+                    <label>Thickness:</label>
+                    <input type="range" id="ch-thick" min="1" max="6" value="2" oninput="updateCrosshairSettings()">
+                    <span class="sensitivity-value" id="ch-thk-d">2</span>
+                </div>
+            </div>
+            <div class="settings-subsection">
+                <h4>Preview</h4>
+                <div class="crosshair-preview" id="ch-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGELOG / VERSION -->
+    <div class="menu-section changelog-section">
+        <details id="changelog">
+            <summary>📜 CHANGELOG <span id="changelog-version">v2.7.2</span></summary>
+            <div id="changelog-body">
+                <ul>
+                    <li><strong>v2.7.2</strong> — Added Creepy Ye skin, fixed powerup left-wall clustering, corrected flashlight life upgrade, updated battery URL, added asset-load failure notice.</li>
+                    <li><strong>v2.7.1</strong> — Fixed escape door in path, added battery powerup + two upgrades, extreme keys one-at-a-time, flashlight button hidden outside Dark Escape, sensitivity sliders filtered by input mode.</li>
+                    <li><strong>v2.7.0</strong> — Fixed walk-through objects, fixed escape doors floating in walls, fixed mobile controls, added Shield Stack upgrade.</li>
+                    <li><strong>v2.6.10</strong> — Fixed key spawning on small maps; Dark Escape now spawns 20 powerups with even type distribution.</li>
+                    <li><strong>v2.6.9</strong> — Removed Warehouse map; fixed jump-onto threshold; fixed mobile flashlight crash; prevented duplicate listeners.</li>
+                    <li><strong>v2.6.8</strong> — Added jumpable flag to gurney, wheelchair, barrel, and single crates.</li>
+                    <li><strong>v2.6.7</strong> — Fixed jumping onto forest props; reduced audio range to 90.</li>
+                    <li><strong>v2.6.6</strong> — Increased audio range and lowered falloff so the chaser is heard from further away.</li>
+                    <li><strong>v2.6.5</strong> — Fixed audio resume, SCP video playback after pause, and pauseAudio for video skins.</li>
+                    <li><strong>v2.6.4</strong> — Fixed Dark Escape AI never moving; fixed restartGame state reset order.</li>
+                    <li><strong>v2.6.3</strong> — Fixed door colour, jump-onto threshold, +45% flashlight battery, key spacing, and door indicator.</li>
+                    <li><strong>v2.6.2</strong> — Fixed Dark Escape door in wall; restored AI movement; reduced key spawn distance.</li>
+                    <li><strong>v2.6.1</strong> — Fixed A* diagonal corner-cutting, double updateKanye, and Easy door indicator.</li>
+                    <li><strong>v2.6.0</strong> — Version bump and expanded changelog.</li>
+                    <li><strong>v2.5.9</strong> — Extended off-mode glow range; added version badge.</li>
+                    <li><strong>v2.5.8</strong> — Updated Captain Clark skin URL.</li>
+                    <li><strong>v2.5.6</strong> — Added Captain Clark skin (60 💰).</li>
+                    <li><strong>v2.5.4</strong> — Extended glow range and prolonged flashlight battery.</li>
+                    <li><strong>v2.5.3</strong> — Tuned Extreme chaser speed and off-mode glow.</li>
+                    <li><strong>v2.5.2</strong> — Brightened body glow, sprint re-press required, close-warning fades with distance.</li>
+                    <li><strong>v2.5.1</strong> — Fixed Dark Escape light cone and screen overlay.</li>
+                    <li><strong>v2.5.0</strong> — Aligned flashlight beam on game start.</li>
+                    <li><strong>v2.4.0</strong> — Added focused flashlight, forest border wall, AI unstick, and stamina lock.</li>
+                    <li><strong>v2.3.6</strong> — Darkened Dark Escape materials; added press-to-bind key capture.</li>
+                    <li><strong>v2.3.5</strong> — Switched to real Backrooms/Hospital maps in Dark Escape.</li>
+                    <li><strong>v2.3.4</strong> — Tuned Dark Escape: Extreme breaks, rebindable keys, sprint mode.</li>
+                    <li><strong>v2.3.1</strong> — Added Extreme difficulty, realistic flashlight, breaks, and powerup respawns.</li>
+                    <li><strong>v2.3.0</strong> — Fixed Dark Escape door reachability.</li>
+                    <li><strong>v2.2.0</strong> — Added Dark Escape mode.</li>
+                    <li><strong>v2.1.0</strong> — Added Park map, FOV setting, map picker, and performance optimisations.</li>
+                    <li><strong>v1.x.x / Before v2</strong> — Classic version: original Play and Escape modes, base controls, skins, shop, and upgrades.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</div>
+
+<!-- ==================== GAME UI ==================== -->
+<div id="ui">
+    <div id="crosshair"></div>
+    <div id="stamina-container">
+        <div id="stamina-bar"></div>
+    </div>
+    <div id="powerups-display">
+        <div class="powerup-slot" id="slot-ice"><span style="color:#666;">❄️</span></div>
+        <div class="powerup-slot" id="slot-speed"><span style="color:#666;">⚡</span></div>
+        <div class="powerup-slot" id="slot-shield"><span style="color:#666;">🛡️</span></div>
+    </div>
+    <div id="warning">⚠️ HE'S CLOSE ⚠️</div>
+    <div id="shield-indicator">🛡️ SHIELD ACTIVE</div>
+    <div id="timer">0:00</div>
+    <div id="hud-coins">💰 0</div>
+    <div id="minimap"><canvas id="minimap-canvas"></canvas></div>
+    <div id="minimap-floor">Map: Backrooms</div>
+    <div id="pickup-msg"></div>
+    <div id="escape-hud">
+        <div id="escape-round">Round: 1</div>
+        <div id="escape-door-indicator">🚪 FIND AN EXIT!</div>
+    </div>
+    <div id="endless-hud">
+        <div id="endless-door-indicator">🚪 Explore to find doors...</div>
+        <div id="endless-score">Doors: 0</div>
+    </div>
+    <div id="chaos-hud">
+        <div id="chaos-timer-display">🔥 CHAOS 🔥</div>
+        <div id="chaos-chasers">3 Nextbots hunting you!</div>
+    </div>
+    <div id="darkescape-hud" style="display:none;">
+        <div id="darkescape-mode">🟢 EASY</div>
+        <div id="darkescape-heading">🔑 FIND 3 KEYS TO ESCAPE</div>
+        <div id="darkescape-keys">🔑 0 / 3</div>
+        <div id="darkescape-battery-wrap"><div id="darkescape-battery">🔋 100%</div></div>
+        <div id="darkescape-door-indicator">🔑 FIND 3 KEYS TO ESCAPE</div>
+        <div id="darkescape-controls">🔦 Toggle: F (or mobile 🔦 button) · Sprints: Hold/Toggle in Settings</div>
+    </div>
+</div>
+
+<!-- ==================== MOBILE CONTROLS ==================== -->
+<div id="mobile-controls">
+    <div class="mobile-joystick" id="joystick-move">
+        <div class="joystick-knob" id="joystick-knob"></div>
+    </div>
+    <div class="mobile-btn" id="btn-jump">🦘</div>
+    <div class="mobile-btn" id="btn-sprint">⚡</div>
+    <div class="mobile-btn" id="btn-flashlight">🔦</div>
+</div>
+<div class="mobile-btn" id="btn-pause">⏸️</div>
+
+<!-- ==================== OVERLAYS ==================== -->
+<div class="vignette"></div>
+<div id="fear-overlay"></div>
+<div id="freeze-overlay"></div>
+<div id="darkness-overlay"></div>
+<div id="flashlight-vision"></div>
+
+<!-- ==================== PAUSE SCREEN ==================== -->
+<div id="pause-screen">
+    <h1>⏸️ PAUSED</h1>
+    <div class="menu-section">
+        <h3>Quick Settings</h3>
+        <div class="settings-row">
+            <label>Volume:</label>
+            <input type="range" id="pause-volume" min="0" max="100" value="100" oninput="updateMusicVolume()">
+        </div>
+        <div class="settings-row">
+            <label>Sensitivity:</label>
+            <input type="range" id="pause-sensitivity" min="1" max="20" value="5" oninput="updatePauseSensitivity()">
+            <span class="sensitivity-value" id="pause-sens-d">5</span>
+        </div>
+        <div class="settings-row">
+            <label>Field of View:</label>
+            <input type="range" id="pause-fov" min="50" max="110" value="75" oninput="updatePauseFov()">
+            <span class="sensitivity-value" id="pause-fov-d">75</span>
+        </div>
+        <div class="settings-row">
+            <label>Fullscreen:</label>
+            <button class="menu-btn small" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+        </div>
+    </div>
+    <button class="menu-btn" onclick="resumeGame()">RESUME</button>
+    <button class="menu-btn secondary" onclick="quitGame()">QUIT</button>
+</div>
+
+<!-- ==================== DEATH SCREEN ==================== -->
+<div id="death-screen">
+    <h1>YOU DIED</h1>
+    <p id="death-msg">Caught...</p>
+    <p id="survival-time">Survived: 0:00</p>
+    <p class="coins-earned" id="coins-earned">+0 coins</p>
+    <button class="menu-btn" onclick="restartGame()">TRY AGAIN</button>
+    <button class="menu-btn secondary" onclick="returnToMenu()">MAIN MENU</button>
+</div>
+
+<!-- ==================== WIN SCREEN ==================== -->
+<div id="win-screen">
+    <h1>🎉 ESCAPED!</h1>
+    <p id="win-msg">You found all 3 keys and escaped!</p>
+    <p class="coins-earned" id="win-coins">+0 coins</p>
+    <button class="menu-btn" onclick="restartGame()">PLAY AGAIN</button>
+    <button class="menu-btn secondary" onclick="returnToMenu()">MAIN MENU</button>
+</div>
+
+<!-- Hidden video for SCP skin -->
+<video id="scp-video" loop muted playsinline style="display:none;"></video>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/mode-normal.js?v=27b"></script>
+<script src="js/mode-escape.js?v=27b"></script>
+<script src="js/mode-endless.js?v=27b"></script>
+<script src="js/mode-chaos.js?v=27b"></script>
+<script src="js/mode-darkescape.js?v=27b"></script>
+<script src="js/core.js?v=27b"></script>
+</body>
+</html>
