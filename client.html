@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Pocket Proxy — client</title>
+<style>
+  :root { color-scheme: dark; --bg:#0a0c11; --panel:#0f1219; --line:#232a37; --ink:#e8ebf1;
+          --dim:#9aa3b2; --faint:#6f7888; --blue:#4b7bff; --green:#8ef0c0; --red:#ff9d9d; }
+  * { box-sizing: border-box }
+  body { margin:0; min-height:100vh; background:
+           radial-gradient(1100px 600px at 12% -10%, #1a2540 0%, transparent 58%),
+           radial-gradient(900px 520px at 100% 0%, #2a1a33 0%, transparent 55%), var(--bg);
+         color:var(--ink); font:15px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif }
+  main { width:min(820px,100%); margin:0 auto; padding:44px 18px 70px }
+  .badge { display:inline-flex; align-items:center; gap:8px; font:600 11px/1 ui-monospace,Menlo,monospace;
+           letter-spacing:1.3px; color:var(--green); background:#0f2a20; border:1px solid #1d4f3b;
+           padding:7px 11px; border-radius:999px }
+  h1 { font-size:30px; margin:16px 0 6px; letter-spacing:-.4px }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:1.4px; color:#c8d0de; margin:30px 0 10px }
+  p { color:var(--dim); margin:8px 0 }
+  a { color:#7cc4ff; text-decoration:none } a:hover { text-decoration:underline }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 18px 16px }
+  form.go { display:flex; gap:9px; flex-wrap:wrap; margin:18px 0 6px }
+  input[type=text], input[type=url] { flex:1 1 340px; min-width:0; padding:14px 15px; border-radius:12px;
+           border:1px solid #2a3140; background:#141822; color:var(--ink); font:inherit }
+  input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(75,123,255,.18) }
+  button { padding:14px 20px; border-radius:12px; border:1px solid #3f6dff;
+           background:linear-gradient(#3f6dff,#2f55e0); color:#fff; font:600 15px/1 inherit; cursor:pointer }
+  button:hover { filter:brightness(1.07) }
+  button.ghost { background:#141822; border-color:#2a3140; color:#cbd3e1; font-weight:500 }
+  button.ghost:hover { border-color:var(--blue); color:#fff }
+  button.sm { padding:9px 12px; font-size:13px }
+  .row { display:flex; gap:9px; align-items:center; flex-wrap:wrap; margin-top:12px }
+  .label { font-size:12.5px; color:var(--faint); min-width:74px }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:9px }
+  .grid a { display:block; padding:11px 13px; border:1px solid #222836; border-radius:11px; background:#12161f;
+            color:#cdd5e3; font-size:13.5px }
+  .grid a:hover { border-color:#3a4bff; color:#fff }
+  code, .mono { font:12.5px ui-monospace,Menlo,monospace }
+  code { background:#1a1f29; padding:2px 6px; border-radius:6px; color:#dfe5ef }
+  .status { margin-top:12px; font:12.5px/1.7 ui-monospace,Menlo,monospace; white-space:pre-wrap }
+  .ok { color:var(--green) } .bad { color:var(--red) } .dim { color:var(--faint) }
+  .note { margin-top:14px; padding:13px 15px; border:1px dashed #2b3341; border-radius:12px;
+          color:#8b93a3; font-size:13px }
+  .note b { color:#c3cad8 }
+  details { margin-top:12px } summary { cursor:pointer; color:#c8d0de; font-size:13.5px }
+  .bar { display:flex; gap:9px; align-items:center; margin-top:10px }
+  .bar input[type=text] { flex:1 1 auto; padding:10px 12px; font:13px/1.2 inherit }
+  .bar button { padding:10px 13px; font-size:13px; border-radius:10px }
+  #readerOut { margin-top:14px; background:#0c0f15; border:1px solid var(--line); border-radius:12px;
+               padding:16px 18px; max-height:70vh; overflow:auto; white-space:pre-wrap; word-break:break-word;
+               font:14px/1.7 ui-serif,Georgia,serif; color:#dbe2ee }
+  .hidden { display:none !important }
+</style>
+</head>
+<body>
+<main>
+  <span class="badge">● CLIENT — RENDERING HAPPENS IN THIS BROWSER</span>
+  <h1>Pocket Proxy</h1>
+  <p>Point this client at your own relay, type a URL, browse. The relay only fetches and rewrites
+     the page's bytes; this browser does all the rendering — and the target page is never put in
+     an iframe.</p>
+
+  <form class="go" id="goForm">
+    <input type="text" id="url" placeholder="en.wikipedia.org" autocomplete="off" spellcheck="false"
+           inputmode="url" autofocus>
+    <button type="submit">Go →</button>
+  </form>
+  <div class="row">
+    <button class="ghost sm" type="button" id="readerBtn">Reader mode</button>
+    <button class="ghost sm" type="button" id="openRealBtn">Open unproxied</button>
+    <span class="mono dim" id="relayShown"></span>
+  </div>
+
+  <h2>Relay</h2>
+  <div class="panel">
+    <div class="row" style="margin-top:0">
+      <span class="label">Address</span>
+      <input type="text" id="relayUrl" placeholder="https://your-relay.example" spellcheck="false"
+             style="flex:1 1 340px">
+      <button class="ghost sm" type="button" id="saveRelay">Save</button>
+      <button class="ghost sm" type="button" id="testRelay">Test</button>
+    </div>
+    <div class="row">
+      <span class="label">Access key</span>
+      <input type="text" id="accessKey" placeholder="only if your relay sets ACCESS_KEY" spellcheck="false"
+             style="flex:1 1 340px">
+      <button class="ghost sm" type="button" id="saveKey">Save</button>
+    </div>
+    <div class="status" id="relayStatus" class="dim">Not tested yet.</div>
+    <div class="note" id="deployHint">No relay yet? Deploy <code>relay/relay.js</code> — on Cloudflare Workers you can
+      paste it into the dashboard and click Deploy, no terminal involved. Then paste the URL it gives you here.</div>
+  </div>
+
+  <h2>Bookmarks</h2>
+  <div class="grid" id="bookmarks"></div>
+  <div class="bar">
+    <input type="text" id="newMark" placeholder="Add a bookmark: name | https://example.com" spellcheck="false">
+    <button class="ghost sm" type="button" id="addMark">Add</button>
+  </div>
+
+  <h2>Reader mode</h2>
+  <div id="readerBox">
+    <p class="dim" style="font-size:13.5px;margin-top:0">Fetches the page through your relay and extracts the text
+       here — useful for sites that refuse to be proxied or are simply too heavy to render.</p>
+  </div>
+  <div id="readerOut" class="hidden"></div>
+
+  <details>
+    <summary>What works, and what can't</summary>
+    <p><b>Works:</b> articles, docs, wikis, forums and most server-rendered sites with their real CSS, images and
+       fonts; in-page links, Back/Forward, GET and POST forms, and sessions — the relay keeps a cookie jar per host,
+       so log-ins can survive.</p>
+    <p><b>Can't:</b> Google, Cloudflare challenges and banks fingerprint datacenter IPs and will refuse; WebSockets
+       and live video (a socket cannot be re-headed through an HTTP relay); and your browser's own cookies for the
+       real site are never sent — the relay keeps its own jar instead.</p>
+    <p><b>Escape hatch:</b> ctrl-click or middle-click any link to open the genuine page directly.</p>
+  </details>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- storage (localStorage, with a memory fallback for file://) ---------- */
+  var mem = {};
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { mem[k] = v; } }
+  function load(k) { try { var v = localStorage.getItem(k); return v == null ? mem[k] : v; } catch (e) { return mem[k]; } }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) { delete mem[k]; } }
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- relay configuration ---------- */
+  function cleanRelay(v) {
+    v = String(v || '').trim().replace(/\s+/g, '');
+    if (!v) return '';
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    return v.replace(/\/+$/, '');
+  }
+  function relay() { return cleanRelay(load('pp.relay')); }
+  function key() { return load('pp.key') || ''; }
+  function keyQuery() { return key() ? '&key=' + encodeURIComponent(key()) : ''; }
+
+  function b64url(s) {
+    return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function normalizeUrl(u) {
+    u = String(u || '').trim();
+    if (!u) return null;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u) && !/^https?:/i.test(u)) return null;
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, '');
+    try { return new URL(u).href; } catch (e) { return null; }
+  }
+
+  /** Where a proxied page lives. `home` teaches the relay's toolbar how to get back here. */
+  function proxyUrl(target) {
+    var r = relay();
+    if (!r) return null;
+    var q = '?home=' + encodeURIComponent(location.href) + keyQuery();
+    return r + '/__p/' + b64url(target) + q;
+  }
+
+  /* ---------- navigation ---------- */
+  function go(target) {
+    var url = normalizeUrl(target);
+    if (!url) return flash('That does not look like a URL.');
+    var dest = proxyUrl(url);
+    if (!dest) { flash('Set your relay address first.'); return; }
+    store('pp.last', url);
+    location.href = dest;
+  }
+  function flash(msg) {
+    var box = $('relayStatus');
+    box.className = 'status bad';
+    box.textContent = msg;
+  }
+
+  /* ---------- relay test: real diagnostics, not a green light that lies ---------- */
+  function testRelay() {
+    var r = relay();
+    var box = $('relayStatus');
+    if (!r) { box.className = 'status bad'; box.textContent = 'No relay address set.'; return; }
+    box.className = 'status dim';
+    box.textContent = 'Testing ' + r + ' …';
+
+    var started = Date.now();
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+
+    fetch(r + '/__probe?url=' + encodeURIComponent('https://example.com/') + keyQuery(),
+          { mode: 'cors', cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status + (res.status === 401 ? ' — wrong or missing access key' : ''));
+        return res.json();
+      })
+      .then(function (d) {
+        clearTimeout(timer);
+        if (d.blocked) throw new Error('relay refused the test target: ' + d.blocked);
+        if (d.error) throw new Error('relay could not reach the test target: ' + d.error);
+        var lines = [
+          '✓ relay reachable — ' + r + '  (' + (Date.now() - started) + ' ms round trip)',
+          '  test fetch : HTTP ' + d.status + ', ' + d.bytes + ' bytes, ' + d.ms + ' ms',
+          '  content    : ' + (d.content_type || 'unknown'),
+          '  features   : rewrite=' + d.features.rewrite + '  raw=' + d.features.raw_passthrough +
+            '  cookie jar=' + d.features.cookie_jar +
+            '  sessions=' + (d.features.sessions_binding ? 'persistent' : 'in-memory') +
+            '  access key=' + (d.features.access_key ? 'required' : 'not set')
+        ];
+        if (d.final_url && d.final_url.replace(/\/$/, '') !== 'https://example.com') {
+          lines.push('  note       : the test URL redirected to ' + d.final_url);
+        }
+        box.className = 'status ok';
+        box.textContent = lines.join('\n');
+        store('pp.lastTest', String(Date.now()));
+        $('deployHint').classList.add('hidden');
+      })
+      .catch(function (err) {
+        clearTimeout(timer);
+        box.className = 'status bad';
+        box.textContent = [
+          '✗ ' + ((err && err.message) || err),
+          '',
+          'Check that:',
+          '  • the address is the relay\'s origin, e.g. https://my-relay.workers.dev',
+          '  • the relay is deployed and its /__health returns “ok”',
+          '  • you appended the access key above if the relay sets ACCESS_KEY',
+          '  • the relay allows cross-origin reads (the one in this repo does)'
+        ].join('\n');
+      });
+  }
+
+  /* ---------- reader mode: fetched through the relay, stripped in this browser ---------- */
+  function reader(target) {
+    var url = normalizeUrl(target || $('url').value);
+    if (!url) return flash('Reader mode needs a URL.');
+    var r = relay();
+    if (!r) return flash('Set your relay address first.');
+    var out = $('readerOut');
+    out.classList.remove('hidden');
+    out.textContent = 'Fetching ' + url + ' through the relay…';
+
+    fetch(r + '/raw?url=' + encodeURIComponent(url) + keyQuery(), { mode: 'cors', cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function (html) {
+        var text = extractText(html, url);
+        out.innerHTML = '';
+        var h = document.createElement('p');
+        h.style.cssText = 'margin:0 0 12px;color:#8b93a3;font:12.5px ui-monospace,Menlo,monospace';
+        h.textContent = url + '  ·  ' + text.length.toLocaleString() + ' characters of text';
+        out.appendChild(h);
+        var body = document.createElement('div');
+        body.textContent = text;
+        out.appendChild(body);
+        out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch(function (err) {
+        out.textContent = 'Reader mode failed: ' + ((err && err.message) || err);
+      });
+  }
+
+  /** Small readable-text extractor: prefer <article>/<main>, drop chrome, keep headings. */
+  function extractText(html, baseUrl) {
+    var doc;
+    try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+    catch (e) { return 'Could not parse that page.'; }
+
+    var host = '';
+    try { host = new URL(baseUrl).hostname; } catch (e) {}
+    var title = (doc.querySelector('title') || {}).textContent || host;
+    var root = doc.querySelector('article') || doc.querySelector('main') ||
+               doc.querySelector('[role=main]') || doc.body;
+    if (!root) return 'That page had no readable content.';
+
+    var kill = 'script,style,noscript,template,svg,canvas,iframe,nav,aside,footer,header,form,button,select,input';
+    Array.prototype.forEach.call(root.querySelectorAll(kill), function (n) {
+      if (n.parentNode) n.parentNode.removeChild(n);
+    });
+
+    var lines = [title, ''];
+    var blocks = root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,pre,td');
+    var seen = 0;
+    Array.prototype.forEach.call(blocks, function (el) {
+      var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!t || t.length < 2) return;
+      if (el.tagName === 'LI') t = '· ' + t;
+      if (el.tagName === 'H1') t = '\n# ' + t;
+      if (el.tagName === 'H2') t = '\n## ' + t;
+      if (el.tagName === 'H3' || el.tagName === 'H4') t = '\n### ' + t;
+      lines.push(t, '');
+      seen++;
+    });
+    if (!seen) {
+      lines.push((root.textContent || '').replace(/\s+/g, ' ').trim());
+    }
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  /* ---------- bookmarks ---------- */
+  var DEFAULT_BOOKMARKS = [
+    ['Wikipedia', 'https://en.wikipedia.org/wiki/Web_proxy'],
+    ['Hacker News', 'https://news.ycombinator.com/'],
+    ['Example', 'https://example.com/'],
+    ['MDN', 'https://developer.mozilla.org/en-US/'],
+    ['Text-only CNN', 'https://lite.cnn.com/'],
+    ['Text-only NPR', 'https://text.npr.org/']
+  ];
+  function bookmarks() {
+    var raw = load('pp.marks');
+    if (!raw) return DEFAULT_BOOKMARKS.slice();
+    try { var list = JSON.parse(raw); return Array.isArray(list) ? list : DEFAULT_BOOKMARKS.slice(); }
+    catch (e) { return DEFAULT_BOOKMARKS.slice(); }
+  }
+  function saveBookmarks(list) { store('pp.marks', JSON.stringify(list)); renderBookmarks(); }
+  function renderBookmarks() {
+    var box = $('bookmarks');
+    var list = bookmarks();
+    box.innerHTML = '';
+    list.forEach(function (pair, i) {
+      var a = document.createElement('a');
+      a.href = '#';
+      a.textContent = pair[0];
+      a.title = pair[1] + '  (right-click-free: shift+click removes)';
+      a.onclick = function (ev) {
+        ev.preventDefault();
+        if (ev.shiftKey) {
+          var next = bookmarks().filter(function (_, j) { return j !== i; });
+          saveBookmarks(next);
+          return;
+        }
+        go(pair[1]);
+      };
+      box.appendChild(a);
+    });
+    if (!list.length) {
+      var empty = document.createElement('span');
+      empty.className = 'dim';
+      empty.style.fontSize = '13.5px';
+      empty.textContent = 'No bookmarks. Add one below.';
+      box.appendChild(empty);
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  function paintRelay() {
+    var r = relay();
+    $('relayUrl').value = r;
+    $('relayShown').textContent = r || 'no relay configured';
+    $('accessKey').value = key();
+    if (r) {
+      var last = load('pp.lastTest');
+      if (last) {
+        $('relayStatus').className = 'status dim';
+        $('relayStatus').textContent = 'Last tested ' + new Date(Number(last)).toLocaleString() + '. Test again to re-check.';
+      }
+    }
+  }
+
+  $('goForm').onsubmit = function (ev) { ev.preventDefault(); go($('url').value); };
+  $('saveRelay').onclick = function () {
+    var v = cleanRelay($('relayUrl').value);
+    if (v) store('pp.relay', v); else drop('pp.relay');
+    paintRelay();
+    if (v) testRelay(); else flash('Relay cleared.');
+  };
+  $('saveKey').onclick = function () { store('pp.key', $('accessKey').value.trim()); paintRelay(); flash('Access key saved.'); };
+  $('testRelay').onclick = testRelay;
+  $('readerBtn').onclick = function () { reader($('url').value || load('pp.last') || ''); };
+  $('openRealBtn').onclick = function () {
+    var u = normalizeUrl($('url').value || load('pp.last') || '');
+    if (u) window.open(u, '_blank', 'noopener');
+  };
+  $('addMark').onclick = function () {
+    var v = $('newMark').value.trim();
+    if (!v) return;
+    var parts = v.split('|');
+    var name, url;
+    if (parts.length > 1) { name = parts[0].trim(); url = normalizeUrl(parts.slice(1).join('|')); }
+    else { url = normalizeUrl(v); name = url ? url.replace(/^https?:\/\//, '').replace(/\/$/, '').slice(0, 28) : null; }
+    if (!url) return;
+    var list = bookmarks();
+    list.push([name, url]);
+    saveBookmarks(list);
+    $('newMark').value = '';
+  };
+
+  /* keep the last URL in the box when coming back */
+  var last = load('pp.last');
+  if (last && !$('url').value) $('url').value = last.replace(/^https?:\/\//, '');
+
+  paintRelay();
+  renderBookmarks();
+  if (relay()) testRelay();
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40eec47bdeb8f73',t:'MTc5MDM5MDYyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
